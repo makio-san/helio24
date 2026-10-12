@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 import pytest
 from streamlit.testing.v1 import AppTest
@@ -21,7 +22,6 @@ def test_replay_and_validation_threshold_do_not_change_saved_test_metrics():
     app = AppTest.from_file(str(ROOT / 'app.py'), default_timeout=30).run()
     assert not app.exception
     fixed = [metric.value for metric in app.metric[:7]]
-    import json
     report = json.loads((ROOT / 'artifacts/report.json').read_text())
     saved = next(row for row in report['metrics'] if row['split'] == 'validation' and row['model'] == report['selection']['model'])
     assert app.metric[-3].value == f'{100*saved["recall"]:.1f}%'
@@ -36,3 +36,18 @@ def test_replay_and_validation_threshold_do_not_change_saved_test_metrics():
         app.selectbox[0].set_value(int(app.selectbox[0].options[1].split()[-1])).run()
         assert not app.exception
         assert app.toggle[0].value is False
+
+
+@pytest.mark.skipif(not (ROOT / 'artifacts/report.json').exists(), reason='Requires local real-data experiment')
+def test_error_filters_replay_matching_outcomes_without_changing_test_metrics():
+    app = AppTest.from_file(str(ROOT / 'app.py'), default_timeout=30).run()
+    fixed = [metric.value for metric in app.metric[3:7]]
+    for mode, outcome in [('Misses', 'Miss'), ('False alarms', 'False alarm'), ('Hits', 'Hit')]:
+        app.radio[0].set_value(mode).run()
+        assert not app.exception
+        app.toggle[0].set_value(True).run()
+        assert not app.exception
+        assert any(item.value == f'**Window outcome:** {outcome}' for item in app.markdown)
+        assert [metric.value for metric in app.metric[3:7]] == fixed
+    app.radio[0].set_value('All windows').run()
+    assert not app.exception

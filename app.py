@@ -7,6 +7,7 @@ import streamlit as st
 
 from helio24.data import MAGNETIC_COLUMNS, ROOT, read_observation, trusted_measurements
 from helio24.modeling import metrics
+from helio24.review import classify_windows, review_export
 
 st.set_page_config(
     page_title='Helio24 | Solar flare research console',
@@ -203,6 +204,7 @@ sample_description = (
 )
 names = {'baseline': 'Constant baseline', 'logistic': 'Logistic regression', 'xgboost': 'XGBoost'}
 test = predictions[(predictions.model == chosen) & (predictions.split == 'test')].copy()
+review = classify_windows(test, threshold)
 model_name = names.get(chosen, chosen.replace('_', ' ').title())
 
 st.markdown(
@@ -226,19 +228,30 @@ with replay_tab:
         'Choose a region and time from the held-out test partition. '
         'Every timestamp is shown in UTC.'
     )
+    outcome_counts = review.outcome.value_counts()
+    review_modes = ['All windows'] + [name for name in ['Misses', 'False alarms', 'Hits', 'Correct quiet forecasts'] if outcome_counts.get(name, 0)]
+    mode = st.radio(
+        'Review windows', review_modes, horizontal=True,
+        format_func=lambda name: f'{name} ({len(review) if name == "All windows" else outcome_counts[name]:,})',
+    )
+    visible = review if mode == 'All windows' else review[review.outcome.eq(mode)]
+    if mode != 'All windows':
+        st.caption('This filter uses recorded outcomes for retrospective error analysis. The forecast and alarm threshold remain fixed.')
     with st.container(border=True):
         region_col, date_col, time_col = st.columns([1, 1.35, 1.35], gap='large')
         with region_col:
             region = st.selectbox(
                 'Active region',
-                sorted(test.harp.unique()),
+                sorted(visible.harp.unique()),
                 format_func=lambda value: f'HARP {value}',
+                key=f'region_{mode}',
             )
-        available = test[test.harp.eq(region)].sort_values('forecast_time')
+        available = visible[visible.harp.eq(region)].sort_values('forecast_time')
         with date_col:
             day = st.selectbox(
                 'Forecast date · UTC',
                 sorted(available.forecast_time.dt.date.unique()),
+                key=f'date_{mode}_{region}',
             )
         windows = available[available.forecast_time.dt.date.eq(day)]
         with time_col:
@@ -246,6 +259,7 @@ with replay_tab:
                 'Forecast time · UTC',
                 options=windows.forecast_time.tolist(),
                 format_func=lambda value: value.strftime('%H:%M'),
+                key=f'time_{mode}_{region}_{day}',
             )
     row = windows[windows.forecast_time.eq(stamp)].iloc[0]
     st.markdown(
@@ -474,6 +488,17 @@ with performance_tab:
         st.caption(
             'False-positive rate is FP/(FP+TN); false-alarm ratio is FP/(TP+FP).'
         )
+
+    st.markdown('<div class="section-label">Review missed windows and false alarms</div>', unsafe_allow_html=True)
+    errors = review[review.outcome.isin(['Misses', 'False alarms'])]
+    st.caption('Use the review filters in Historical replay to inspect these windows. These test outcomes are for diagnosis, not further threshold selection on this test set.')
+    with st.expander(f'Error records ({len(errors):,} windows)'):
+        st.dataframe(
+            errors[['harp', 'forecast_time', 'label', 'probability', 'outcome']].sort_values(['outcome', 'forecast_time']),
+            hide_index=True, width='stretch',
+        )
+        st.download_button('Download error review (CSV)', review_export(errors),
+                           file_name='helio24-error-review.csv', mime='text/csv')
 
 with data_tab:
     st.subheader('Data provenance and evaluation design')

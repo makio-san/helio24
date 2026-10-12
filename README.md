@@ -74,6 +74,17 @@ the previous 12 hours, and reveal the next 24 hours' recorded outcome.
 The performance tab compares the models and allows threshold exploration on
 validation data without changing the fixed test evaluation.
 
+Replay filters isolate misses, false alarms, hits, or correct quiet forecasts.
+Only regions and times matching the selected outcome are offered. The evaluation
+tab includes an error table and a CSV download without local paths or model inputs.
+Outcome-based filtering is retrospective analysis; it does not change predictions.
+
+## Commit style
+
+Use short, descriptive English messages with a type, scope, and final period:
+`fix(replay): preserve missing observation gaps.` Keep commits focused on one
+verified change and exclude datasets, credentials, and generated artifacts.
+
 ## Verification
 
 ```sh
