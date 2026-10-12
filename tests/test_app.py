@@ -21,6 +21,10 @@ def test_replay_and_validation_threshold_do_not_change_saved_test_metrics():
     app = AppTest.from_file(str(ROOT / 'app.py'), default_timeout=30).run()
     assert not app.exception
     fixed = [metric.value for metric in app.metric[:7]]
+    import json
+    report = json.loads((ROOT / 'artifacts/report.json').read_text())
+    saved = next(row for row in report['metrics'] if row['split'] == 'validation' and row['model'] == report['selection']['model'])
+    assert app.metric[-3].value == f'{100*saved["recall"]:.1f}%'
     app.toggle[0].set_value(True).run()
     assert not app.exception
     assert any('Window outcome' in item.value for item in app.markdown)
@@ -31,3 +35,4 @@ def test_replay_and_validation_threshold_do_not_change_saved_test_metrics():
     if len(app.selectbox[0].options) > 1:
         app.selectbox[0].set_value(int(app.selectbox[0].options[1].split()[-1])).run()
         assert not app.exception
+        assert app.toggle[0].value is False

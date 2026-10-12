@@ -54,14 +54,23 @@ def read_observation(path, metadata=None):
     return frame
 
 
-def extract_features(frame):
-    """Only allow listed magnetic measurements; never labels, IDs or X-ray flux."""
+def trusted_measurements(frame):
+    """Preserve timestamps and gaps while masking untrusted or nonfinite values."""
     measurements = frame[MAGNETIC_COLUMNS].apply(pd.to_numeric, errors='coerce')
     measurements = measurements.replace([np.inf, -np.inf], np.nan)
     trusted = frame['IS_TMFI'].astype(str).str.lower().isin(['true', '1', '1.0'])
     trusted &= pd.to_numeric(frame['QUALITY'], errors='coerce').eq(0)
+    return measurements.where(trusted, np.nan, axis=0)
+
+
+def extract_features(frame):
+    """Only allow listed magnetic measurements; never labels, IDs or X-ray flux."""
+    measurements = frame[MAGNETIC_COLUMNS].apply(pd.to_numeric, errors='coerce')
+    measurements = measurements.replace([np.inf, -np.inf], np.nan)
     raw_missing = measurements.isna().sum()
-    measurements = measurements.where(trusted, np.nan, axis=0)
+    trusted = frame['IS_TMFI'].astype(str).str.lower().isin(['true', '1', '1.0'])
+    trusted &= pd.to_numeric(frame['QUALITY'], errors='coerce').eq(0)
+    measurements = trusted_measurements(frame)
     values = {}
     for column in MAGNETIC_COLUMNS:
         series = measurements[column]

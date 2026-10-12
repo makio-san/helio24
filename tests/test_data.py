@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from helio24.data import MAGNETIC_COLUMNS, FEATURE_COLUMNS, parse_name, extract_features, read_observation, chronological_split
+from helio24.data import MAGNETIC_COLUMNS, FEATURE_COLUMNS, parse_name, extract_features, read_observation, chronological_split, trusted_measurements
 
 
 def test_forecast_boundary_and_target():
@@ -38,6 +38,19 @@ def test_untrusted_endpoint_is_not_used():
     assert np.isnan(features['USFLUX__delta'])
     assert features['USFLUX__mean'] == 29
     assert quality['untrusted_rows'] == 1
+
+
+def test_plot_measurements_preserve_invalid_gaps_and_match_features():
+    frame = observation()
+    frame.loc[10, 'QUALITY'] = 1
+    frame.loc[20, 'USFLUX'] = np.inf
+    frame.loc[30, 'IS_TMFI'] = False
+    clean = trusted_measurements(frame)
+    assert len(clean) == 60
+    assert clean.index.equals(frame.index)
+    assert clean.loc[[10, 20, 30], 'USFLUX'].isna().all()
+    features, _, _ = extract_features(frame)
+    assert clean.USFLUX.mean() == features['USFLUX__mean']
 
 
 def test_future_row_is_rejected(tmp_path):

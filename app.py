@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
-from helio24.data import MAGNETIC_COLUMNS, ROOT, read_observation
+from helio24.data import MAGNETIC_COLUMNS, ROOT, read_observation, trusted_measurements
 from helio24.modeling import metrics
 
 st.set_page_config(
@@ -281,23 +281,20 @@ with replay_tab:
         path = ROOT / row.file
         if path.exists():
             observation = read_observation(path)
-            trusted = observation.IS_TMFI.astype(str).str.lower().isin(['true', '1', '1.0'])
-            trusted &= observation.QUALITY.eq(0)
-            series = pd.to_numeric(observation[measurement], errors='coerce').where(trusted)
-            observed = series.dropna()
+            series = trusted_measurements(observation)[measurement]
             with plt.style.context('dark_background'):
                 fig, ax = plt.subplots(figsize=(8.4, 3.15))
                 fig.patch.set_alpha(0)
                 ax.set_facecolor('#0a151e')
                 ax.plot(
-                    observation.loc[observed.index, 'Timestamp'],
-                    observed,
+                    observation['Timestamp'],
+                    series,
                     color='#ffb45e',
                     linewidth=2,
                 )
                 ax.fill_between(
-                    observation.loc[observed.index, 'Timestamp'],
-                    observed.to_numpy(),
+                    observation['Timestamp'],
+                    series.to_numpy(),
                     color='#ffb45e',
                     alpha=.08,
                 )
@@ -306,12 +303,14 @@ with replay_tab:
                 for spine in ax.spines.values():
                     spine.set_visible(False)
                 ax.margins(x=.01)
+                ax.set_xlabel('Observation time · UTC', color='#8093a2', fontsize=8)
                 st.pyplot(fig, use_container_width=True)
                 plt.close(fig)
             st.caption(
                 f'Observation window: {row.observation_start:%d %b %Y, %H:%M}–'
-                f'{row.forecast_time:%H:%M} UTC (end exclusive). '
-                f'Last sample: {row.observation_last:%H:%M}.'
+                f'{row.forecast_time:%d %b %Y, %H:%M} UTC (end exclusive). '
+                f'Last sample: {row.observation_last:%H:%M}. '
+                'Gaps indicate missing or untrusted measurements.'
             )
         else:
             st.warning(
@@ -325,7 +324,7 @@ with replay_tab:
             f'Outcome window: {row.forecast_time:%d %b %Y, %H:%M}–'
             f'{row.prediction_end:%d %b %Y, %H:%M} UTC (end exclusive).'
         )
-        if st.toggle('Reveal recorded outcome', value=False):
+        if st.toggle('Reveal recorded outcome', value=False, key=f'outcome_{region}_{stamp.isoformat()}'):
             if row.target:
                 st.error(f'M/X-class flare recorded · {row.label.split("@")[0]}')
             else:
@@ -461,7 +460,7 @@ with performance_tab:
             'Experimental alarm threshold (%)',
             0.0,
             100.0,
-            float(round(threshold*100, 2)),
+            float(threshold*100),
             step=0.01,
         )
         validation = predictions[
