@@ -152,3 +152,18 @@ alarms at an equivalent recall operating point.
 Uncertainty uses 1,000 whole-HARP bootstrap resamples. These intervals account
 for within-region window dependence but exclude model-fitting uncertainty and
 do not capture every source of cross-region or solar-cycle dependence.
+
+## Experiment 3: temporal discrimination
+
+The fixed [temporal protocol](docs/third-experiment-protocol.md) compares the
+existing 12-hour summaries with recent 1-, 3- and 6-hour slopes, changes and
+change volatility. Generate its ignored feature caches without expanding the
+archives:
+
+```sh
+python scripts/prepare_temporal.py --workers 2
+```
+
+The command verifies every source archive and writes only bounded Parquet
+batches under `data/temporal/`. It can safely reuse a complete cache whose data,
+code and catalog hashes still match.
