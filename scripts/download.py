@@ -29,7 +29,7 @@ def download_catalog(metadata):
         (ROOT / 'data/flare_catalog.csv').write_bytes(content)
 
 
-def download(partition, fraction, metadata):
+def download(partition, fraction, metadata, archives_only=False):
     filename = f'partition{partition}_instances.tar.gz'
     info = next(f['dataFile'] for f in metadata['data']['latestVersion']['files']
                 if f['dataFile']['filename'] == filename)
@@ -37,7 +37,7 @@ def download(partition, fraction, metadata):
     archive.parent.mkdir(parents=True, exist_ok=True)
     destination = ROOT / 'data/raw' / f'partition{partition}'
     manifest_path = ROOT / 'data' / f'partition{partition}-manifest.json'
-    if manifest_path.exists():
+    if manifest_path.exists() and not archives_only:
         manifest = json.loads(manifest_path.read_text())
         if manifest['fraction'] == fraction and all((ROOT / p).exists() for p in manifest['files']):
             print(f'partition{partition}: verified download already processed', flush=True)
@@ -52,6 +52,9 @@ def download(partition, fraction, metadata):
         digest = hashlib.file_digest(stream, 'md5').hexdigest()
     if digest != info['checksum']['value']:
         raise ValueError(f'Checksum mismatch: {archive}')
+    if archives_only:
+        print(f'partition{partition}: archive checksum verified', flush=True)
+        return
     counts, kept, files = Counter(), Counter(), []
     with tarfile.open(archive, 'r|gz') as tar:
         for member in tar:
@@ -88,6 +91,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--partitions', nargs='+', type=int, default=[1, 3, 5], choices=range(1, 6))
     parser.add_argument('--fraction', type=float, default=0.1)
+    parser.add_argument('--archives-only', action='store_true', help='Verify compressed archives without extracting records')
     args = parser.parse_args()
     if not 0 < args.fraction <= 1:
         parser.error('fraction must be in (0, 1]')
@@ -99,4 +103,4 @@ if __name__ == '__main__':
     metadata = json.loads(metadata_path.read_text())
     download_catalog(metadata)
     with ThreadPoolExecutor(max_workers=3) as executor:
-        list(executor.map(lambda p: download(p, args.fraction, metadata), args.partitions))
+        list(executor.map(lambda p: download(p, args.fraction, metadata, args.archives_only), args.partitions))

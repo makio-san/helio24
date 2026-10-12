@@ -38,15 +38,16 @@ def parse_name(path):
                 flare_id=int(event['id']) if event else -1)
 
 
-def read_observation(path, metadata=None):
+def read_observation(path, metadata=None, magnetic_only=False):
     """Fail closed on malformed or future-containing observation files."""
     metadata = metadata or parse_name(path)
-    frame = pd.read_csv(path, sep='\t', na_values=['None', 'null'])
     required = ['Timestamp', 'IS_TMFI', 'QUALITY', *MAGNETIC_COLUMNS]
+    frame = pd.read_csv(path, sep='\t', na_values=['None', 'null'],
+                        usecols=(lambda name: name in required) if magnetic_only else None)
     missing = set(required) - set(frame.columns)
     if missing:
         raise ValueError(f'Missing columns: {sorted(missing)}')
-    stamps = pd.to_datetime(frame['Timestamp'], errors='raise')
+    stamps = pd.to_datetime(frame['Timestamp'], errors='raise', format='ISO8601')
     expected = pd.date_range(metadata['observation_start'], periods=60, freq='12min')
     if len(frame) != 60 or not np.array_equal(stamps.to_numpy(), expected.to_numpy()):
         raise ValueError('Observation timestamps are missing, duplicated, unordered, or outside the window')
@@ -65,24 +66,24 @@ def trusted_measurements(frame):
 
 def extract_features(frame):
     """Only allow listed magnetic measurements; never labels, IDs or X-ray flux."""
-    measurements = frame[MAGNETIC_COLUMNS].apply(pd.to_numeric, errors='coerce')
-    measurements = measurements.replace([np.inf, -np.inf], np.nan)
-    raw_missing = measurements.isna().sum()
+    numeric = frame[MAGNETIC_COLUMNS].apply(pd.to_numeric, errors='coerce')
+    values = numeric.to_numpy(dtype=float, na_value=np.nan, copy=True)
+    values[~np.isfinite(values)] = np.nan
+    raw_missing = np.isnan(values).sum(axis=0)
     trusted = frame['IS_TMFI'].astype(str).str.lower().isin(['true', '1', '1.0'])
     trusted &= pd.to_numeric(frame['QUALITY'], errors='coerce').eq(0)
-    measurements = trusted_measurements(frame)
-    values = {}
-    for column in MAGNETIC_COLUMNS:
-        series = measurements[column]
-        values.update({f'{column}__mean': series.mean(),
-                       f'{column}__std': series.std(ddof=0),
-                       f'{column}__last': series.iloc[-1],
-                       f'{column}__delta': series.iloc[-1] - series.iloc[0]})
+    values[~trusted.to_numpy(), :] = np.nan
+    counts = np.isfinite(values).sum(axis=0)
+    denominator = np.where(counts > 0, counts, np.nan)
+    means = np.nansum(values, axis=0) / denominator
+    std = np.sqrt(np.nansum((values-means)**2, axis=0) / denominator)
+    summaries = np.column_stack([means, std, values[-1], values[-1]-values[0]])
+    features = dict(zip(FEATURE_COLUMNS, summaries.ravel()))
     quality = dict(raw_missing=int(raw_missing.sum()),
-                   masked_missing=int(measurements.isna().sum().sum()),
+                   masked_missing=int(np.isnan(values).sum()),
                    untrusted_rows=int((~trusted).sum()),
-                   max_missing_fraction=float(measurements.isna().mean().max()))
-    return values, quality, raw_missing.to_dict()
+                   max_missing_fraction=float(np.isnan(values).mean(axis=0).max()))
+    return features, quality, dict(zip(MAGNETIC_COLUMNS, map(int, raw_missing)))
 
 
 def build_dataset(partitions=(1, 3, 5), root=ROOT):
