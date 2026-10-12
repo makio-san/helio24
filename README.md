@@ -13,6 +13,8 @@ calibration, recall targets and whole-region uncertainty intervals.
 See [the first experiment](docs/first-experiment.md) for measured results and
 [the data contract](docs/data-contract.md) for label semantics and leakage controls.
 See [the second experiment](docs/second-experiment.md) for the full-data audit.
+The [third experiment protocol](docs/third-experiment-protocol.md) fixes the
+temporal-feature comparison before its results are generated.
 
 ## Setup
 
