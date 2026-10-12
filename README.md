@@ -29,7 +29,7 @@ python scripts/download.py
 The script downloads partitions 1, 3, and 5 (about 3.3 GB in total), verifies
 archive checksums, and retains a deterministic 10% sample from each partition.
 Sampling uses the HARP identifier and observation start, without using the label.
-The full archives remain on disk. Interrupted downloads restart on the next run.
+The full archives remain on disk. Interrupted downloads resume on the next run.
 
 Use `--partitions 1 2 3 4 5 --fraction 1` to retain all records from all partitions.
 This requires additional download time and disk space.

@@ -13,6 +13,22 @@ ROOT = Path(__file__).resolve().parents[1]
 API = 'https://dataverse.harvard.edu/api'
 
 
+def download_catalog(metadata):
+    info = next(f['dataFile'] for f in metadata['data']['latestVersion']['files']
+                if f['dataFile']['filename'] == 'addenda.tar.gz')
+    archive = ROOT / 'data/downloads/addenda.tar.gz'
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    if not archive.exists():
+        subprocess.run(['curl', '-fsSL', '--retry', '3', f'{API}/access/datafile/{info["id"]}',
+                        '-o', str(archive)], check=True)
+    with archive.open('rb') as stream:
+        if hashlib.file_digest(stream, 'md5').hexdigest() != info['checksum']['value']:
+            raise ValueError('Addenda checksum mismatch')
+    with tarfile.open(archive) as tar:
+        content = tar.extractfile('integrated_flare_data/goes_flares_integrated.csv').read()
+        (ROOT / 'data/flare_catalog.csv').write_bytes(content)
+
+
 def download(partition, fraction, metadata):
     filename = f'partition{partition}_instances.tar.gz'
     info = next(f['dataFile'] for f in metadata['data']['latestVersion']['files']
@@ -28,11 +44,12 @@ def download(partition, fraction, metadata):
             return
     if not archive.exists():
         partial = archive.with_suffix('.part')
-        subprocess.run(['curl', '-fSL', '--retry', '3', '--max-time', '900',
+        subprocess.run(['curl', '-fSL', '--retry', '3', '--max-time', '900', '--continue-at', '-',
                         f'{API}/access/datafile/{info["id"]}', '-o', str(partial)],
                        check=True, stderr=subprocess.DEVNULL)
         partial.rename(archive)
-    digest = hashlib.file_digest(archive.open('rb'), 'md5').hexdigest()
+    with archive.open('rb') as stream:
+        digest = hashlib.file_digest(stream, 'md5').hexdigest()
     if digest != info['checksum']['value']:
         raise ValueError(f'Checksum mismatch: {archive}')
     counts, kept, files = Counter(), Counter(), []
@@ -80,5 +97,6 @@ if __name__ == '__main__':
         subprocess.run(['curl', '-fsSL', f'{API}/datasets/:persistentId/?persistentId=doi:10.7910/DVN/EBCFKM',
                         '-o', str(metadata_path)], check=True)
     metadata = json.loads(metadata_path.read_text())
+    download_catalog(metadata)
     with ThreadPoolExecutor(max_workers=3) as executor:
         list(executor.map(lambda p: download(p, args.fraction, metadata), args.partitions))
