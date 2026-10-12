@@ -32,10 +32,12 @@ def run():
         if sha256(snapshot / name) != digest:
             raise ValueError(f'Experiment 1 snapshot changed: {name}')
     sources = [ROOT / f'data/full/partition{p}.parquet' for p in range(1, 6)]
+    source_audits = []
     for p, source in enumerate(sources, 1):
         audit = json.loads((source.with_suffix('.json')).read_text())
         if sha256(source) != audit['features_sha256']:
             raise ValueError(f'Feature checksum mismatch: partition {p}')
+        source_audits.append(audit)
     table = pd.concat([pd.read_parquet(path) for path in sources], ignore_index=True)
     groups, exclusions = split_roles(table)
     summary = {name: dict(n=len(frame), positives=int(frame.target.sum()), harps=int(frame.harp.nunique()),
@@ -95,6 +97,7 @@ def run():
     pd.concat(reliability, ignore_index=True).to_csv(output / 'calibration.csv', index=False)
     pd.concat(frames, ignore_index=True).to_parquet(output / 'predictions.parquet', index=False)
     report = dict(protocol=frozen, roles=summary, purge_audit=exclusions, metrics=results,
+                  archive_sources=source_audits, reference_model_sha256=snapshot_hashes['model.joblib'],
                   paired_brier_difference=paired, bootstrap=dict(draws=1000, seed=24, unit='HARP', confidence=.95),
                   source_features={path.name: sha256(path) for path in sources},
                   source_code={name: sha256(ROOT / name) for name in ['helio24/data.py', 'helio24/calibration.py', 'helio24/modeling.py', 'scripts/run_calibration.py']},
@@ -103,6 +106,7 @@ def run():
                                 scipy=version('scipy'), pyarrow=version('pyarrow'), joblib=version('joblib')),
                   scope='Full-data retrospective audit; partition 5 was inspected in experiment 1; not an untouched test')
     (output / 'report.json').write_text(json.dumps(report, indent=2, allow_nan=False))
+    (output / 'protocol.md').write_text((ROOT / 'docs/second-experiment-protocol.md').read_text())
     print(pd.DataFrame(results).query('split == "audit"')[['model', 'recall_target', 'recall', 'precision', 'fp', 'fn', 'brier']].to_string(index=False), flush=True)
     print('Paired calibrated-minus-raw Brier:', paired, flush=True)
     return report

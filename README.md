@@ -6,11 +6,13 @@ an M- or X-class flare within the next 24 hours.
 ## Current status
 
 The first real-data experiment and local Streamlit dashboard are implemented.
-The experiment uses a deterministic 10% sample from SWAN-SF partitions 1, 3,
-and 5. It is a development evaluation, not a full-dataset benchmark.
+That experiment uses a deterministic 10% sample from partitions 1, 3 and 5.
+A second experiment now covers all five archives, with chronological probability
+calibration, recall targets and whole-region uncertainty intervals.
 
 See [the first experiment](docs/first-experiment.md) for measured results and
 [the data contract](docs/data-contract.md) for label semantics and leakage controls.
+See [the second experiment](docs/second-experiment.md) for the full-data audit.
 
 ## Setup
 
@@ -105,10 +107,46 @@ artifacts exist.
 - Report recall, precision, false alarms, Brier score, and calibration bins.
 - Count forecast windows, not independent flare events.
 
-The probabilities are raw model estimates. Additional probability calibration,
-group-aware uncertainty intervals, a full-data experiment, and temporal models
-remain future work. The test set is now inspected; future changes must not be
-presented as another untouched evaluation on the same test records.
+The dashboard still shows experiment 1's raw model estimates. Experiment 2 adds
+calibration and region-based uncertainty without automatically replacing that
+model. Temporal models and an untouched later-period evaluation remain future
+work. Reusing inspected test records must not be presented as a fresh evaluation.
 
 The first version uses historical data. Flare probability does not estimate
 damage to a satellite or the impact on Earth.
+
+## Experiment 2: full-data calibration
+
+The [fixed protocol](docs/second-experiment-protocol.md) assigns partitions 1–2
+to training, 3 to calibration, 4 to threshold selection, and 5 to a retrospective
+audit. Partition 5 was already inspected; it is not an untouched final test.
+
+```sh
+python scripts/freeze_experiment.py
+python scripts/download.py --partitions 1 2 3 4 5 --archives-only
+python scripts/prepare_full.py --workers 2
+python scripts/run_calibration.py
+python scripts/report_calibration.py
+```
+
+Preparation streams compressed archives instead of extracting every raw file.
+It writes bounded batches and verified per-partition feature caches; rerunning
+preparation reuses complete caches when code, catalog and file hashes match.
+The five compressed archives total about 5.7 GB. Feature tables and outputs need
+additional space, but expanded raw archives are not required.
+
+Results go to `artifacts/experiment2/`, including a standalone `report.html`,
+PNG figures, metrics, probability-bin counts, frozen thresholds and HARP-cluster
+intervals. Experiment 1 and the dashboard model remain unchanged. An existing
+experiment 2 report is never silently replaced by the training command.
+
+The comparison includes the frozen sample model, full-data raw XGBoost, its
+sigmoid calibration and a constant reference. Calibration fits only on partition
+3. Recall targets of 80%, 90% and 95% are selected on partition 4 before auditing
+partition 5. A validation recall target is not guaranteed on a later period.
+Strictly monotonic calibration preserves ordering; it cannot alone reduce false
+alarms at an equivalent recall operating point.
+
+Uncertainty uses 1,000 whole-HARP bootstrap resamples. These intervals account
+for within-region window dependence but exclude model-fitting uncertainty and
+do not capture every source of cross-region or solar-cycle dependence.
