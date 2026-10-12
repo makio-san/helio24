@@ -1,0 +1,27 @@
+# Local environments and Python caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Datasets, downloads, and generated outputs stay local
+data/
+artifacts/
+*.joblib
+*.pkl
+*.pickle
+*.part
+*.log
+
+# Credentials and machine-specific settings
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pem
+*.key
+.DS_Store
+.idea/
+.vscode/
