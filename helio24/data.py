@@ -120,6 +120,7 @@ def build_dataset(partitions=(1, 3, 5), root=ROOT):
     table = pd.DataFrame(records).sort_values(['forecast_time', 'harp']).reset_index(drop=True)
     if table.duplicated(['harp', 'forecast_time']).any():
         raise ValueError('Duplicate HARP/forecast time across the selected partitions')
+    table.attrs['sample_fractions'] = {str(p['partition']): p['fraction'] for p in partition_audit}
     destination = root / 'data/prepared'
     destination.mkdir(parents=True, exist_ok=True)
     table.to_parquet(destination / 'features.parquet', index=False)

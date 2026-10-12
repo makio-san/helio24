@@ -25,7 +25,7 @@ been available in real time. Replay is a retrospective experiment.
 
 ## Implementation decisions
 
-The inspected instance files have 54 columns including `Timestamp`; this differs
+The inspected instance files have 55 columns including `Timestamp`; this differs
 from the publication's count for the original region series. Only 24 explicitly
 listed magnetic columns enter the model. IDs, filename labels, flare histories,
 coordinates, X-ray measurements, and catalog information are excluded.
