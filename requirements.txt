@@ -1,0 +1,10 @@
+numpy>=2.2
+pandas>=2.2
+scikit-learn>=1.6
+xgboost>=3.0
+matplotlib>=3.9
+streamlit>=1.45
+nbformat>=5.10
+nbclient>=0.10
+ipykernel>=6.29
+pytest>=8.3
