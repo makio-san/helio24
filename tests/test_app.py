@@ -12,7 +12,7 @@ def test_no_model_has_actionable_empty_state(monkeypatch, tmp_path):
     monkeypatch.setattr(data, 'ROOT', tmp_path)
     app = AppTest.from_file(str(ROOT / 'app.py'), default_timeout=30).run()
     assert not app.exception
-    assert 'Henüz değerlendirilmiş bir model yok' in app.info[0].value
+    assert 'No evaluated model artifacts were found' in app.info[0].value
     assert len(app.metric) == 0
 
 
@@ -23,7 +23,7 @@ def test_replay_and_validation_threshold_do_not_change_saved_test_metrics():
     fixed = [metric.value for metric in app.metric[:7]]
     app.toggle[0].set_value(True).run()
     assert not app.exception
-    assert any('Bu pencerenin sonucu' in item.value for item in app.markdown)
+    assert any('Window outcome' in item.value for item in app.markdown)
     app.slider[0].set_value(100.0).run()
     assert not app.exception
     assert [metric.value for metric in app.metric[:7]] == fixed
