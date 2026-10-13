@@ -17,6 +17,8 @@ The [third experiment protocol](docs/third-experiment-protocol.md) fixes the
 temporal-feature comparison before its results are generated.
 Its [measured results](docs/third-experiment.md) reject the fixed temporal
 candidate under the preregistered development rule.
+An [event and alarm audit](docs/event-audit.md) now measures persistent alarm
+periods, covered catalog events and disagreements with benchmark labels.
 
 ## Setup
 
@@ -113,8 +115,9 @@ artifacts exist.
 
 The dashboard still shows experiment 1's raw model estimates. Experiment 2 adds
 calibration and region-based uncertainty without automatically replacing that
-model. Temporal models and an untouched later-period evaluation remain future
-work. Reusing inspected test records must not be presented as a fresh evaluation.
+model. The temporal-feature comparison and event audit are development analyses;
+an untouched later-period evaluation remains future work. Reusing inspected test
+records must not be presented as a fresh evaluation.
 
 The first version uses historical data. Flare probability does not estimate
 damage to a satellite or the impact on Earth.
@@ -179,3 +182,29 @@ Render the standalone local report after a completed run:
 ```sh
 python scripts/report_temporal.py
 ```
+
+## Alarm periods and catalog event audit
+
+After experiment 2, run the fixed [event audit protocol](docs/event-audit-protocol.md):
+
+```sh
+python scripts/prepare_event_mapping.py
+python scripts/run_event_audit.py
+python scripts/report_event_audit.py
+```
+
+Preparation scans the existing partition-4 archive for verified catalog/HARP
+associations, including events omitted from strongest-window labels. The audit
+uses frozen development predictions; no model fitting or threshold tuning occurs.
+It preserves gaps in alarm periods, reports coverage-conditioned event recall,
+and exports ambiguous, uncovered and conflicting associations separately.
+
+Open `artifacts/event_audit/report.html` for the self-contained report or use the
+dashboard's **Alarm & event audit** tab. Select a region, inspect probability and
+magnetic measurements on a shared timeline, and explicitly reveal mapped peaks.
+CSV downloads include region summaries, episodes and catalog coverage.
+
+Durations use an explicit one-hour forecast-state convention. Region-hours sum
+across regions. Event recall includes only uniquely mapped, forecast-covered
+events; it is not a complete solar-event detection rate. Current data include ten
+event/window label conflicts, detailed in the [results](docs/event-audit.md).
