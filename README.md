@@ -15,6 +15,8 @@ See [the first experiment](docs/first-experiment.md) for measured results and
 See [the second experiment](docs/second-experiment.md) for the full-data audit.
 The [third experiment protocol](docs/third-experiment-protocol.md) fixes the
 temporal-feature comparison before its results are generated.
+Its [measured results](docs/third-experiment.md) reject the fixed temporal
+candidate under the preregistered development rule.
 
 ## Setup
 
@@ -171,3 +173,9 @@ code and catalog hashes still match.
 The experiment command first writes its development decision, then loads the
 previously inspected fifth partition for a descriptive stability check. Results
 stay under `artifacts/experiment3/`; an existing final report is not overwritten.
+
+Render the standalone local report after a completed run:
+
+```sh
+python scripts/report_temporal.py
+```
