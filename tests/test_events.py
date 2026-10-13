@@ -97,3 +97,25 @@ def test_archive_mapping_verifies_catalog_time_and_detects_ambiguity(tmp_path):
     archive.write_bytes(b'corrupt')
     with pytest.raises(ValueError, match='checksum'):
         prepare_mapping(tmp_path)
+
+
+def test_timeline_keeps_gaps_and_hides_peaks_until_revealed():
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from helio24.event_views import timeline
+
+    frame = windows([0, 1, 4], [.9, .9, .1]).assign(USFLUX__last=[1., np.nan, 3.])
+    states, runs = alarm_episodes(frame, .5)
+    events = pd.DataFrame(dict(harp=[1], status=['evaluated'],
+                               peak_time=[pd.Timestamp('2014-01-01 03:00')], goes_class=['M1.0']))
+    hidden = timeline(states, runs, events, 1, .5)
+    assert len(hidden.axes[0].lines) == 3  # Two disjoint steps and one threshold.
+    assert len(hidden.axes[1].lines) == 2
+    assert np.isnan(hidden.axes[1].lines[0].get_ydata()[1])
+    assert len(hidden.axes[0].texts) == 0
+    shown = timeline(states, runs, events, 1, .5, reveal=True)
+    assert len(shown.axes[0].lines) == 4
+    assert len(shown.axes[0].texts) == 1
+    plt.close(hidden)
+    plt.close(shown)

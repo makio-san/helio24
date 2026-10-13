@@ -8,6 +8,7 @@ import streamlit as st
 from helio24.data import MAGNETIC_COLUMNS, ROOT, read_observation, trusted_measurements
 from helio24.modeling import metrics
 from helio24.review import classify_windows, review_export
+from helio24.event_views import render_event_tab
 
 st.set_page_config(
     page_title='Helio24 | Solar flare research console',
@@ -210,7 +211,7 @@ model_name = names.get(chosen, chosen.replace('_', ' ').title())
 st.markdown(
     f'''
     <div class="run-strip">
-        <div><span>Selected model</span><strong>{model_name}</strong></div>
+        <div><span>Replay model · Experiment 1</span><strong>{model_name}</strong></div>
         <div><span>Fixed alarm threshold</span><strong>{100*threshold:.2f}%</strong></div>
         <div><span>Evaluation mode</span><strong>Held-out historical data</strong></div>
     </div>
@@ -218,8 +219,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-replay_tab, performance_tab, data_tab = st.tabs(
-    ['Historical replay', 'Model evaluation', 'Data & method']
+replay_tab, performance_tab, data_tab, event_tab = st.tabs(
+    ['Historical replay', 'Model evaluation', 'Data & method', 'Alarm & event audit']
 )
 
 with replay_tab:
@@ -574,3 +575,6 @@ with data_tab:
         'Flare probability is not a satellite-damage or Earth-impact probability.</div>',
         unsafe_allow_html=True,
     )
+
+with event_tab:
+    render_event_tab(ROOT)

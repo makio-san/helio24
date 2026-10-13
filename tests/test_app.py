@@ -51,3 +51,20 @@ def test_error_filters_replay_matching_outcomes_without_changing_test_metrics():
         assert [metric.value for metric in app.metric[3:7]] == fixed
     app.radio[0].set_value('All windows').run()
     assert not app.exception
+
+
+@pytest.mark.skipif(not (ROOT / 'artifacts/event_audit/report.json').exists(), reason='Requires local event audit')
+def test_event_audit_reveal_and_region_change_preserve_replay_metrics():
+    app = AppTest.from_file(str(ROOT / 'app.py'), default_timeout=30).run()
+    assert not app.exception
+    fixed = [metric.value for metric in app.metric]
+    assert any(tab.label == 'Alarm & event audit' for tab in app.tabs)
+    app.checkbox[0].set_value(True).run()
+    assert not app.exception
+    assert [metric.value for metric in app.metric] == fixed
+    selector = app.selectbox(key='event_region_false_hours')
+    next_harp = int(selector.options[1].split()[-1])
+    selector.set_value(next_harp).run()
+    assert not app.exception
+    assert not app.checkbox[0].value
+    assert [metric.value for metric in app.metric] == fixed
