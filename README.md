@@ -162,8 +162,12 @@ archives:
 
 ```sh
 python scripts/prepare_temporal.py --workers 2
+python scripts/run_temporal_experiment.py
 ```
 
 The command verifies every source archive and writes only bounded Parquet
 batches under `data/temporal/`. It can safely reuse a complete cache whose data,
 code and catalog hashes still match.
+The experiment command first writes its development decision, then loads the
+previously inspected fifth partition for a descriptive stability check. Results
+stay under `artifacts/experiment3/`; an existing final report is not overwritten.
