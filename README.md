@@ -221,3 +221,18 @@ python scripts/investigate_event_provenance.py
 Evidence stays under `artifacts/event_provenance/` and appears in the dashboard's
 **Label provenance investigation** expander. The investigation preserves original
 labels and explicitly distinguishes NOAA-based and location-based associations.
+
+Compare timestamp and association conventions on those same frozen predictions:
+
+```sh
+python scripts/run_label_sensitivity.py
+```
+
+The [sensitivity protocol](docs/label-sensitivity-protocol.md) fixes six variants
+before their comparison. The command verifies source hashes, reproduces the
+original event audit, and writes a new `artifacts/label_sensitivity/` directory.
+Existing outputs are never overwritten. Open its standalone `report.html` or
+the **Label association sensitivity** expander in **Alarm & event audit** for
+metrics and downloads. Results distinguish changing event eligibility from
+performance on the same events and regions; benchmark labels remain unchanged.
+See the [measured results and limitations](docs/label-sensitivity.md).
