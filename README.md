@@ -19,6 +19,8 @@ Its [measured results](docs/third-experiment.md) reject the fixed temporal
 candidate under the preregistered development rule.
 An [event and alarm audit](docs/event-audit.md) now measures persistent alarm
 periods, covered catalog events and disagreements with benchmark labels.
+The [provenance investigation](docs/event-provenance.md) traces one disagreement
+to distinct association channels and checks annotation timestamp conventions.
 
 ## Setup
 
@@ -208,3 +210,14 @@ Durations use an explicit one-hour forecast-state convention. Region-hours sum
 across regions. Event recall includes only uniquely mapped, forecast-covered
 events; it is not a complete solar-event detection rate. Current data include ten
 event/window label conflicts, detailed in the [results](docs/event-audit.md).
+
+Investigate the association channels and timestamp conventions without changing
+those results:
+
+```sh
+python scripts/investigate_event_provenance.py
+```
+
+Evidence stays under `artifacts/event_provenance/` and appears in the dashboard's
+**Label provenance investigation** expander. The investigation preserves original
+labels and explicitly distinguishes NOAA-based and location-based associations.

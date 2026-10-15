@@ -1,5 +1,9 @@
 # Alarm episodes and covered catalog events
 
+Follow-up: the [provenance investigation](event-provenance.md) identifies a
+NOAA/location history disagreement for event 8864 and an interval-start timing
+pattern in the archive. The results below preserve the original conservative rules.
+
 The event audit is complete. Long alarm periods explain why a high event hit rate
 can coexist with many false-alarm windows. The audit also found a disagreement
 between one recovered catalog event and ten negative benchmark windows.
