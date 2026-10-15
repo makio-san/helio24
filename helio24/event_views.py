@@ -10,6 +10,18 @@ from helio24.events import HOUR
 from helio24.full_data import sha256
 
 
+def load_investigation(root):
+    directory = root / 'artifacts/event_provenance'
+    report = json.loads((directory / 'report.json').read_text())
+    for name, digest in report['source_hashes'].items():
+        if sha256(root / name) != digest:
+            raise ValueError(f'Investigation source changed: {name}')
+    for name, digest in report['artifact_hashes'].items():
+        if sha256(directory / name) != digest:
+            raise ValueError(f'Investigation evidence changed: {name}')
+    return report
+
+
 def load_audit(directory):
     report = json.loads((directory / 'report.json').read_text())
     for name, digest in report['artifact_hashes'].items():
@@ -97,6 +109,24 @@ def render_event_tab(root):
     if report['mapped_event_negative_label_conflicts']:
         st.warning(f"{report['mapped_event_negative_label_conflicts']} event/window associations conflict with "
                    'negative benchmark labels. Inspect the mapping conflicts below before interpreting event recall.')
+    if (root / 'artifacts/event_provenance/report.json').exists():
+        with st.expander('Label provenance investigation'):
+            try:
+                investigation = load_investigation(root)
+            except (ValueError, FileNotFoundError) as error:
+                st.error(f'Provenance evidence cannot be verified: {error}')
+            else:
+                st.write(f"Catalog event {investigation['case_event']}: archive history associations")
+                st.dataframe(pd.DataFrame(investigation['case_associations']), hide_index=True)
+                st.write('HARPs in positive filename labels for this event: '
+                         + (', '.join(map(str, investigation['case_filename_harps'])) or 'None in partition 4'))
+                st.caption('NOAA-number and location-based histories are distinct association methods. '
+                           'Agreement with a filename does not establish the physically correct location. '
+                           'The existing event audit retains its original conservative mapping rules.')
+                st.dataframe(pd.DataFrame(investigation['timing']), hide_index=True)
+                st.caption('Nearest-compatible: within six minutes of catalog peak. '
+                           'Containing-compatible: peak falls in [annotation time, annotation time + 12 minutes). '
+                           'These conventions differ; no automatic relabeling has been applied.')
     ordering = st.selectbox('Rank regions by', ['False-alarm hours', 'Longest all-negative period'], key='event_rank')
     key = 'false_hours' if ordering == 'False-alarm hours' else 'longest_all_negative_hours'
     ordered = regions.sort_values([key, 'harp'], ascending=[False, True])
