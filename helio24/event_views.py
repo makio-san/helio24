@@ -8,6 +8,7 @@ import pandas as pd
 
 from helio24.events import HOUR
 from helio24.full_data import sha256
+from helio24.sensitivity import load_sensitivity
 
 
 def load_investigation(root):
@@ -127,6 +128,30 @@ def render_event_tab(root):
                 st.caption('Nearest-compatible: within six minutes of catalog peak. '
                            'Containing-compatible: peak falls in [annotation time, annotation time + 12 minutes). '
                            'These conventions differ; no automatic relabeling has been applied.')
+    if (root / 'artifacts/label_sensitivity/report.json').exists():
+        with st.expander('Label association sensitivity'):
+            try:
+                sensitivity, metrics, transitions = load_sensitivity(root)
+            except (ValueError, FileNotFoundError) as error:
+                st.error(f'Sensitivity evidence cannot be verified: {error}')
+            else:
+                st.caption('Six development comparisons with fixed probabilities, threshold and benchmark labels. '
+                           'Every variant retains filename evidence; ambiguous mappings are excluded. '
+                           'Conditional event recall is not independent test performance.')
+                shown = metrics.copy()
+                for column in ['recall', 'fully_covered_recall', 'common_recall']:
+                    shown[column] = shown[column].map(lambda x: f'{x:.2%}' if pd.notna(x) else 'Not evaluated')
+                st.dataframe(shown, hide_index=True)
+                st.caption('Nearest: within six minutes of catalog peak. Containing: peak falls in the '
+                           '12-minute interval starting at the annotation. Common events are evaluated on '
+                           'the same HARP in all six variants. Conflicts count event/window pairs.')
+                st.write(f"Benchmark false-alarm region-hours remain {sensitivity['false_alarm_region_hours']:,.0f}.")
+                st.dataframe(transitions[transitions.changed], hide_index=True)
+                sensitivity_dir = root / 'artifacts/label_sensitivity'
+                st.download_button('Download sensitivity comparison', (sensitivity_dir / 'metrics.csv').read_bytes(),
+                                   file_name='label_sensitivity.csv', mime='text/csv', key='sensitivity_csv')
+                st.download_button('Download sensitivity report', (sensitivity_dir / 'report.html').read_bytes(),
+                                   file_name='label_sensitivity.html', mime='text/html', key='sensitivity_html')
     ordering = st.selectbox('Rank regions by', ['False-alarm hours', 'Longest all-negative period'], key='event_rank')
     key = 'false_hours' if ordering == 'False-alarm hours' else 'longest_all_negative_hours'
     ordered = regions.sort_values([key, 'harp'], ascending=[False, True])

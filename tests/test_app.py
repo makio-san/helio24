@@ -68,3 +68,17 @@ def test_event_audit_reveal_and_region_change_preserve_replay_metrics():
     assert not app.exception
     assert not app.checkbox[0].value
     assert [metric.value for metric in app.metric] == fixed
+
+
+@pytest.mark.skipif(not (ROOT / 'artifacts/label_sensitivity/report.json').exists(), reason='Requires local sensitivity run')
+def test_sensitivity_summary_and_downloads_are_available():
+    app = AppTest.from_file(str(ROOT / 'app.py'), default_timeout=30).run()
+    assert not app.exception
+    assert any(item.label == 'Label association sensitivity' for item in app.expander)
+    comparisons = [item.value for item in app.dataframe if 'common_recall' in item.value.columns]
+    assert len(comparisons) == 1
+    assert len(comparisons[0]) == 6
+    assert comparisons[0].common_events.nunique() == 1
+    labels = [item.label for item in app.get('download_button')]
+    assert 'Download sensitivity comparison' in labels
+    assert 'Download sensitivity report' in labels
