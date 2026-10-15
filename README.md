@@ -236,3 +236,18 @@ the **Label association sensitivity** expander in **Alarm & event audit** for
 metrics and downloads. Results distinguish changing event eligibility from
 performance on the same events and regions; benchmark labels remain unchanged.
 See the [measured results and limitations](docs/label-sensitivity.md).
+
+Review the three disputed events against separately retrieved NOAA and JSOC
+records, preserving all existing labels and model outputs:
+
+```sh
+python scripts/fetch_source_review.py
+python scripts/review_event_sources.py
+```
+
+The fetch command requires network access and saves small source snapshots under
+ignored `data/source_review/`. The offline review writes verified evidence under
+`artifacts/source_review/`. Both commands refuse to overwrite an existing run.
+See the [source findings](docs/event-source-review.md) for the NOAA report conflict,
+missing HARP associations, stronger support for HARP 4941, and transport/time-scale
+limitations. This is a provenance review, not a new model evaluation or relabeling.
