@@ -251,3 +251,21 @@ ignored `data/source_review/`. The offline review writes verified evidence under
 See the [source findings](docs/event-source-review.md) for the NOAA report conflict,
 missing HARP associations, stronger support for HARP 4941, and transport/time-scale
 limitations. This is a provenance review, not a new model evaluation or relabeling.
+
+## Consolidated performance report
+
+```sh
+python scripts/report_metrics.py
+```
+
+Open `artifacts/metrics_summary/report.html` for the Turkish standalone report,
+including all 50 saved operating points, derived accuracy/F1/balanced accuracy,
+uncertainty intervals, calibration bins and event-association sensitivity.
+Counts are checked before rendering; existing experiments are not modified.
+The [tracked metrics summary](docs/metrics-status-report.md) explains the headline
+results and their limits. The report does not turn previously inspected data
+into a new final test.
+
+The [next evaluation plan](docs/next-evaluation-plan.md) records the bounded V2
+schema and old-period overlap checks. Matching feature names did not establish
+numerical or quality-mask compatibility; a new-period evaluation is not ready yet.
