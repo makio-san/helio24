@@ -1,7 +1,10 @@
 # Next evaluation: compatibility before model selection
 
-Status on 2026-10-16: the metrics report is complete; no new model has been
-trained. Source review supports HARP 4941 for event 9529 more strongly, while
+Status on 2026-10-20: the eight-candidate recall-first experiment is complete;
+none improved on the control (see [results](recall-first-results.md)).
+The [measurement source trace](measurement-compatibility-report.md) now explains
+systematic force scaling on the bounded overlap and compares five JSOC headers.
+V2 compatibility remains unresolved. Source review supports HARP 4941 for event 9529 more strongly, while
 8765 and 8864 remain unresolved. Preserve the original labels and prior reports.
 The objective is reliable probability and alarm performance, not maximizing
 accuracy by exploiting class imbalance. No finite experiment proves that a
@@ -119,7 +122,8 @@ overlapping observation/target intervals and shared HARP identities across roles
 Keep the frozen experiment-2 model as a reference only if the feature bridge
 passes its checks. Compare it with a training-prevalence baseline and a bounded
 candidate set specified in the final protocol. Select thresholds on validation
-at recall targets of 80%, 90% and 95%, with 90% as the principal operating point.
+at recall targets of 90%, 95% and 99%, with 95% as the principal operating point,
+following the user's recall-first objective selected on 2026-10-19.
 Report all targets regardless of outcome.
 
 Use false-alarm burden at the principal recall target, AP, Brier, log loss,
