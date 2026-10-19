@@ -56,6 +56,24 @@ does not automatically change its experimental design.
 Datasets, local environments, generated outputs, and credentials are excluded
 from Git. Downloaded data is not redistributed in this repository.
 
+## Recall-first development results
+
+The [fourth experiment protocol](docs/fourth-experiment-protocol.md) fixes eight
+XGBoost candidates and a recall target of 95%. The
+[results report](docs/recall-first-results.md) compares every candidate, false
+alarms, probability quality, and threshold transfer between periods. None of
+the new candidates improved on the control. These are development results,
+not an independent test or a dashboard model replacement.
+
+```bash
+python scripts/run_recall_experiment.py
+python scripts/report_recall_experiment.py
+```
+
+Training requires verified original partition 1–4 feature tables and the frozen
+experiment-2 report. It refuses to overwrite `artifacts/experiment4/`. The report
+command can regenerate the standalone local HTML report without retraining.
+
 ## Run the experiment
 
 ```sh
