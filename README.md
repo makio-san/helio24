@@ -56,6 +56,15 @@ does not automatically change its experimental design.
 Datasets, local environments, generated outputs, and credentials are excluded
 from Git. Downloaded data is not redistributed in this repository.
 
+## Reports in Turkish and English
+
+All research and evaluation report documents are available in both languages
+through the [report index / rapor dizini](docs/reports.md).
+Publish their paired HTML editions with `python scripts/publish_reports.py`;
+open `artifacts/bilingual_reports/index.html` to choose a report and language.
+The publisher verifies source hashes and numerical table parity and preserves
+the original experiment artifacts. Future report revisions must update both editions.
+
 ## Recall-first development results
 
 The [fourth experiment protocol](docs/fourth-experiment-protocol.md) fixes eight
