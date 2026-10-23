@@ -75,5 +75,12 @@
     "source_sha256": "9253bfc7b4fb546f115014fe93755b81b7c37b12eb5480a224d533cd7407dadf",
     "en": "eps-quality-audit.md",
     "tr": "eps-quality-audit.tr.md"
+  },
+  {
+    "id": "spatial-event-review",
+    "source_language": "en",
+    "source_sha256": "2dcd25103ac32e68f97926b6ef48d9650f34c134dc11cd3245ccf85e0418ecec",
+    "en": "spatial-event-review.md",
+    "tr": "spatial-event-review.tr.md"
   }
 ]
