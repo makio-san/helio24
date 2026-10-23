@@ -34,7 +34,7 @@ def test_publish_keeps_sources_and_has_language_navigation(tmp_path):
     before = {p: p.read_bytes() for p in (ROOT / 'docs').glob('*') if p.is_file()}
     output = tmp_path / 'editions'
     manifest = publish(ROOT, output)
-    assert len(manifest['artifacts']) == 21
+    assert len(manifest['artifacts']) == 2 * len(validate_catalog(ROOT)) + 1
     for entry in validate_catalog(ROOT):
         for lang in ['tr', 'en']:
             page = (output / f'{entry["id"]}.{lang}.html').read_text()

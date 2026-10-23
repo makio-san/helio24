@@ -20,6 +20,7 @@ their historical context; translation does not constitute a new evaluation.
 | Toplu metrikler / Consolidated metrics | [Türkçe](metrics-status-report.md) | [English](metrics-status-report.en.md) |
 | Yakalama öncelikli deney / Recall-first experiment | [Türkçe](recall-first-results.md) | [English](recall-first-results.en.md) |
 | Ölçüm uyumluluğu / Measurement compatibility | [Türkçe](measurement-compatibility-report.md) | [English](measurement-compatibility-report.en.md) |
+| EPS ve kalite incelemesi / EPS and quality audit | [Türkçe](eps-quality-audit.tr.md) | [English](eps-quality-audit.md) |
 
 ## HTML çıktıları / HTML editions
 

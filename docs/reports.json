@@ -68,5 +68,12 @@
     "source_sha256": "80ad908b4799f78bdc3703356f966abb3b5188bfe2f09ff9567aec6ed13ed7de",
     "tr": "measurement-compatibility-report.md",
     "en": "measurement-compatibility-report.en.md"
+  },
+  {
+    "id": "eps-quality-audit",
+    "source_language": "en",
+    "source_sha256": "9253bfc7b4fb546f115014fe93755b81b7c37b12eb5480a224d533cd7407dadf",
+    "en": "eps-quality-audit.md",
+    "tr": "eps-quality-audit.tr.md"
   }
 ]
