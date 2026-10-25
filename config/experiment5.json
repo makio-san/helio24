@@ -1,0 +1,32 @@
+{
+  "id": "experiment5",
+  "version": 1,
+  "status": "design_frozen_data_contract_pending",
+  "question": "M or X flare peak in [forecast_time, forecast_time + 24h)",
+  "observation_hours": 12,
+  "prediction_hours": 24,
+  "time_scale": "UTC",
+  "roles": {
+    "train": ["2010-05-01T00:00:00Z", "2022-01-01T00:00:00Z"],
+    "calibration": ["2022-01-01T00:00:00Z", "2023-01-01T00:00:00Z"],
+    "validation": ["2023-01-01T00:00:00Z", "2024-01-01T00:00:00Z"],
+    "test": ["2024-01-01T00:00:00Z", "2026-01-01T00:00:00Z"]
+  },
+  "primary_recall": 0.95,
+  "sensitivity_recall": [0.9, 0.99],
+  "bootstrap": {"draws": 1000, "seed": 24, "unit": "HARP"},
+  "candidates": {
+    "baseline": {"method": "training_prevalence"},
+    "logistic": {"C": 1.0, "solver": "lbfgs", "max_iter": 2000, "class_weight": null, "random_state": 24},
+    "xgboost": {"n_estimators": 200, "max_depth": 3, "learning_rate": 0.04, "min_child_weight": 5, "reg_lambda": 5, "gamma": 0, "scale_pos_weight": 1, "subsample": 1, "colsample_bytree": 1, "tree_method": "hist", "eval_metric": "logloss", "n_jobs": 2, "random_state": 24}
+  },
+  "gates": {
+    "measurement_semantics": "pending",
+    "quality_policy": "pending",
+    "utc_conversion": "pending",
+    "label_inclusion_policy": "pending",
+    "versioned_dataset_manifest": "pending",
+    "development_coverage_audit": "pending",
+    "training_runner_review": "pending"
+  }
+}

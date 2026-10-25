@@ -12,8 +12,13 @@ def test_every_result_report_has_both_languages_and_identical_numeric_tables():
     catalog = validate_catalog(ROOT)
     registered = {entry[lang] for entry in catalog for lang in ['en', 'tr']}
     context = {'data-contract.md', 'next-evaluation-plan.md', 'reports.md'}
+    legacy_protocols = {
+        'event-audit-protocol.md', 'fourth-experiment-protocol.md',
+        'label-sensitivity-protocol.md', 'second-experiment-protocol.md',
+        'source-review-protocol.md', 'third-experiment-protocol.md',
+    }
     reports = {p.name for p in (ROOT / 'docs').glob('*.md')
-               if not p.name.endswith('-protocol.md') and p.name not in context}
+               if p.name not in context | legacy_protocols}
     assert reports == registered
 
 
