@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import pandas as pd
 import pytest
-from helio24.evaluation_protocol import development_split, preflight, require_training_ready
+from helio24.evaluation_protocol import development_split, preflight, protocol_errors, require_training_ready
 
 
 def protocol():
@@ -25,6 +25,18 @@ def test_current_protocol_cannot_train_or_test():
     assert not preflight(spec)['final_test_allowed']
     del spec['gates']['quality_policy']
     assert preflight(spec)['missing_gates'] == ['quality_policy']
+
+
+def test_protocol_structure_is_validated_before_training():
+    spec = protocol()
+    assert protocol_errors(spec) == []
+    spec['roles']['calibration'][0] = '2022-01-02T00:00:00Z'
+    spec['primary_recall'] = 2
+    spec['candidates'].pop('baseline')
+    errors = protocol_errors(spec)
+    assert 'train and calibration must be contiguous' in errors
+    assert 'primary_recall must be in (0, 1]' in errors
+    assert 'candidate set must be baseline, logistic and xgboost' in errors
 
 
 def test_temporal_boundaries_and_shared_regions_are_purged():

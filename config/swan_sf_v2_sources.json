@@ -1,0 +1,27 @@
+{
+  "id": "swan-sf-v2-preprint-v1-2026-10-01",
+  "status": "remote_identity_recorded_sha256_pending",
+  "paper": "https://arxiv.org/abs/2610.04591v1",
+  "dataset_index": "https://dmlab.cs.gsu.edu/solar/swan-sf/",
+  "retrieved_utc": "2026-10-25T14:08:50Z",
+  "archives": [
+    {"partition": 1, "url": "https://dmlab.cs.gsu.edu/solar/swan-sf/swan-mvts-part1.tar.gz", "content_length": 1177434736, "etag": "462e3a70-65ccb14823788", "last_modified": "2026-10-01T17:52:32Z", "sha256": null},
+    {"partition": 2, "url": "https://dmlab.cs.gsu.edu/solar/swan-sf/swan-mvts-part2.tar.gz", "content_length": 1284717836, "etag": "4c933d0c-65ccb20b27a70", "last_modified": "2026-10-01T17:55:56Z", "sha256": null},
+    {"partition": 3, "url": "https://dmlab.cs.gsu.edu/solar/swan-sf/swan-mvts-part3.tar.gz", "content_length": 1246106315, "etag": "4a4612cb-65ccb20d79562", "last_modified": "2026-10-01T17:55:59Z", "sha256": null},
+    {"partition": 4, "url": "https://dmlab.cs.gsu.edu/solar/swan-sf/swan-mvts-part4.tar.gz", "content_length": 1302570086, "etag": "4da3a466-65ccb2236ed31", "last_modified": "2026-10-01T17:56:22Z", "sha256": null}
+  ],
+  "schema": {
+    "format": "Parquet members in tar.gz archives",
+    "observation_clock": "timezone-naive JSOC TAI",
+    "event_clock": "timezone-naive source-catalog UTC",
+    "cadence_minutes": 12,
+    "measurement_columns": "24 lowercase unweighted magnetic parameters",
+    "outcome_columns": ["start_time", "peak_time", "end_time", "goes_class", "confidence", "has_goes", "has_ssw", "has_xrt", "harp_vote", "max_pair_distance_deg"]
+  },
+  "holdout_policy": "Logical readers must project named columns and filter obs_start before 2024-01-01 at the Parquet scan boundary during development.",
+  "limitations": [
+    "Archive SHA-256 values are not yet recorded.",
+    "The final Dataverse DOI is pending peer review.",
+    "The exact production commit for recalculated magnetic parameters is not identified."
+  ]
+}

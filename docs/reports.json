@@ -89,5 +89,12 @@
     "source_sha256": "81a4073560aace2b38a8d163509eaa192f3b71ad364473b34a8b0480e658f72c",
     "en": "fifth-experiment-protocol.md",
     "tr": "fifth-experiment-protocol.tr.md"
+  },
+  {
+    "id": "v2-data-contract-audit",
+    "source_language": "en",
+    "source_sha256": "8d047afec4eba31f58dde1ff9becee7404bcf7b3109ebb09df029c6d1da975f1",
+    "en": "v2-data-contract-audit.md",
+    "tr": "v2-data-contract-audit.tr.md"
   }
 ]

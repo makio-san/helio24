@@ -8,14 +8,58 @@ REQUIRED_GATES = {
 }
 
 
+def protocol_errors(protocol):
+    errors = []
+    if not isinstance(protocol.get('id'), str) or not protocol.get('id'):
+        errors.append('invalid protocol ID')
+    if not isinstance(protocol.get('version'), int) or protocol.get('version', 0) <= 0:
+        errors.append('version must be a positive integer')
+    for name in ['observation_hours', 'prediction_hours']:
+        if not isinstance(protocol.get(name), (int, float)) or protocol.get(name, 0) <= 0:
+            errors.append(f'{name} must be positive')
+    recall = protocol.get('primary_recall')
+    if not isinstance(recall, (int, float)) or not 0 < recall <= 1:
+        errors.append('primary_recall must be in (0, 1]')
+    roles = protocol.get('roles', {})
+    names = ['train', 'calibration', 'validation', 'test']
+    if set(roles) != set(names):
+        errors.append('roles must define train, calibration, validation and test')
+    else:
+        parsed = []
+        for name in names:
+            if not isinstance(roles[name], list) or len(roles[name]) != 2:
+                errors.append(f'{name} must have one start and one end')
+                continue
+            try:
+                start, end = map(pd.Timestamp, roles[name])
+            except (TypeError, ValueError):
+                errors.append(f'{name} boundaries must be valid timestamps')
+                continue
+            if start.tzinfo is None or end.tzinfo is None or str(start.tz) != 'UTC' or str(end.tz) != 'UTC':
+                errors.append(f'{name} boundaries must be explicit UTC')
+            if start >= end:
+                errors.append(f'{name} must have positive duration')
+            parsed.append((name, start, end))
+        if len(parsed) == len(names):
+            for left, right in zip(parsed, parsed[1:]):
+                if left[2] != right[1]:
+                    errors.append(f'{left[0]} and {right[0]} must be contiguous')
+    if set(protocol.get('candidates', {})) != {'baseline', 'logistic', 'xgboost'}:
+        errors.append('candidate set must be baseline, logistic and xgboost')
+    return errors
+
+
 def preflight(protocol):
     gates = protocol.get('gates', {})
     missing = sorted(REQUIRED_GATES - set(gates))
     pending = sorted(k for k in REQUIRED_GATES if gates.get(k) != 'verified')
     # Status is a separate lock: changing individual gate strings cannot unlock training.
     frozen_contract = protocol.get('status') == 'execution_contract_frozen'
-    return dict(protocol_id=protocol['id'], ready_for_training=not pending and frozen_contract,
+    errors = protocol_errors(protocol)
+    return dict(protocol_id=protocol.get('id'), protocol_version=protocol.get('version'),
+                ready_for_training=not pending and frozen_contract and not errors,
                 missing_gates=missing, pending_gates=pending, execution_contract_frozen=frozen_contract,
+                protocol_errors=errors,
                 final_test_allowed=False,
                 note='Readiness check only; no data, labels, model fitting or final-test access.')
 
@@ -23,7 +67,10 @@ def preflight(protocol):
 def require_training_ready(protocol):
     state = preflight(protocol)
     if not state['ready_for_training']:
-        raise ValueError('Training prerequisites unresolved: '+', '.join(state['pending_gates']))
+        details = state['pending_gates']+state['protocol_errors']
+        if not state['execution_contract_frozen']:
+            details.append('execution contract is not frozen')
+        raise ValueError('Training prerequisites unresolved: '+', '.join(details))
 
 
 def development_split(metadata, protocol):
