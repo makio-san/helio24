@@ -25,6 +25,7 @@ their historical context; translation does not constitute a new evaluation.
 | Sonraki dönem protokolü / Later-period protocol | [Türkçe](fifth-experiment-protocol.tr.md) | [English](fifth-experiment-protocol.md) |
 | V2 veri sözleşmesi denetimi / V2 data contract audit | [Türkçe](v2-data-contract-audit.tr.md) | [English](v2-data-contract-audit.md) |
 | V2 geliştirme yerleşimi denetimi / V2 development layout audit | [Türkçe](v2-development-layout-audit.tr.md) | [English](v2-development-layout-audit.md) |
+| V2 geliştirme kapsamı denetimi / V2 development coverage audit | [Türkçe](v2-development-coverage-audit.tr.md) | [English](v2-development-coverage-audit.md) |
 
 ## HTML çıktıları / HTML editions
 

@@ -103,5 +103,12 @@
     "source_sha256": "26466d6d9412d05ae774453e9ae457d73eb840517defd567b345d77ffa7f00ab",
     "en": "v2-development-layout-audit.md",
     "tr": "v2-development-layout-audit.tr.md"
+  },
+  {
+    "id": "v2-development-coverage-audit",
+    "source_language": "en",
+    "source_sha256": "66836b68a25d80f5d43e200382f70c9bfc274fca1659e1035189be5c31a138ac",
+    "en": "v2-development-coverage-audit.md",
+    "tr": "v2-development-coverage-audit.tr.md"
   }
 ]
