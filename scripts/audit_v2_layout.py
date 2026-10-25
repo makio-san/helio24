@@ -6,15 +6,13 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
-import tarfile
-from urllib.error import URLError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pandas as pd
 
 from helio24.data import ROOT
 from helio24.full_data import sha256
-from helio24.v2_archive import stream_verified_archive
+from helio24.v2_archive import stream_verified_archive_with_retries
 from helio24.v2_contract import tai_to_utc, tai_utc_offset, utc_to_tai
 from helio24.v2_sources import validate_manifest
 
@@ -75,17 +73,10 @@ def inspect_member(path, name, size, cutoff_tai, roles):
 
 
 def scan_partition(item, cutoff_tai, roles, attempts=3):
-    for attempt in range(1, attempts+1):
-        try:
-            return stream_verified_archive(
-                item, lambda path, name, size: inspect_member(
-                    path, name, size, cutoff_tai, roles),
-                temporary_root=ROOT / 'data/cache')
-        except (tarfile.ReadError, URLError, TimeoutError, ConnectionError, OSError):
-            if attempt == attempts:
-                raise
-            print(f'partition {item["partition"]}: transfer attempt {attempt} failed; retrying',
-                  flush=True)
+    return stream_verified_archive_with_retries(
+        item, lambda path, name, size: inspect_member(
+            path, name, size, cutoff_tai, roles),
+        temporary_root=ROOT / 'data/cache', attempts=attempts)
 
 
 def run(output, workers=4):

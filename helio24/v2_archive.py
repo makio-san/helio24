@@ -3,6 +3,7 @@ import hashlib
 from pathlib import Path
 import tarfile
 import tempfile
+from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 CHUNK = 4*1024*1024
@@ -67,3 +68,17 @@ def stream_verified_archive(item, handle_member, *, temporary_root=None, opener=
     return {'partition': item['partition'], 'members': len(names),
             'compressed_bytes': reader.count, 'sha256': reader.digest.hexdigest(),
             'results': results}
+
+
+def stream_verified_archive_with_retries(item, handle_member, *, temporary_root=None,
+                                         attempts=3, opener=urlopen):
+    """Restart interrupted immutable archive transfers from byte zero."""
+    for attempt in range(1, attempts+1):
+        try:
+            return stream_verified_archive(item, handle_member,
+                                           temporary_root=temporary_root, opener=opener)
+        except (tarfile.ReadError, URLError, TimeoutError, ConnectionError, OSError):
+            if attempt == attempts:
+                raise
+            print(f'partition {item["partition"]}: transfer attempt {attempt} failed; retrying',
+                  flush=True)
