@@ -1,0 +1,56 @@
+{
+  "id": "experiment5",
+  "version": 4,
+  "status": "design_frozen_label_inventory_pending",
+  "supersedes": "config/experiment5-v3.json",
+  "revision_reason": "Record verified pre-2024 measurement coverage while retaining the label-completeness gate for unassigned GOES M/X events.",
+  "data_contract": "swan-sf-v2-contract-v1",
+  "source_manifest": "config/swan_sf_v2_sources.verified.json",
+  "question": "M or X GOES flare peak in [forecast_time, forecast_time + 24h)",
+  "observation_hours": 12,
+  "prediction_hours": 24,
+  "time_scale": "UTC",
+  "roles": {
+    "train": ["2010-05-01T00:00:00Z", "2022-01-01T00:00:00Z"],
+    "calibration": ["2022-01-01T00:00:00Z", "2023-01-01T00:00:00Z"],
+    "validation": ["2023-01-01T00:00:00Z", "2024-01-01T00:00:00Z"],
+    "test": ["2024-01-01T00:00:00Z", "2026-01-01T00:00:00Z"]
+  },
+  "primary_recall": 0.95,
+  "sensitivity_recall": [0.9, 0.99],
+  "bootstrap": {"draws": 1000, "seed": 24, "unit": "HARP"},
+  "candidates": {
+    "baseline": {"method": "training_prevalence"},
+    "logistic": {"C": 1.0, "solver": "lbfgs", "max_iter": 2000, "class_weight": null, "random_state": 24},
+    "xgboost": {"n_estimators": 200, "max_depth": 3, "learning_rate": 0.04, "min_child_weight": 5, "reg_lambda": 5, "gamma": 0, "scale_pos_weight": 1, "subsample": 1, "colsample_bytree": 1, "tree_method": "hist", "eval_metric": "logloss", "n_jobs": 2, "random_state": 24}
+  },
+  "gates": {
+    "measurement_semantics": "pending",
+    "quality_policy": "verified",
+    "utc_conversion": "verified",
+    "label_inclusion_policy": "verified",
+    "versioned_dataset_manifest": "verified",
+    "development_coverage_audit": "pending",
+    "training_runner_review": "pending"
+  },
+  "gate_details": {
+    "development_coverage_audit": "pending_unassigned_major_event_inventory"
+  },
+  "evidence_files": [
+    "config/swan_sf_v2_sources.verified.json",
+    "docs/v2-data-contract-audit.md",
+    "docs/v2-data-contract-audit.tr.md",
+    "docs/v2-development-layout-audit.md",
+    "docs/v2-development-layout-audit.tr.md",
+    "docs/v2-development-coverage-audit.md",
+    "docs/v2-development-coverage-audit.tr.md",
+    "helio24/v2_contract.py",
+    "helio24/v2_sources.py",
+    "helio24/v2_archive.py",
+    "helio24/v2_coverage.py",
+    "scripts/audit_v2_contract.py",
+    "scripts/audit_v2_layout.py",
+    "scripts/audit_v2_development_coverage.py",
+    "scripts/hash_v2_archives.py"
+  ]
+}
