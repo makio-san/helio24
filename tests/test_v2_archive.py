@@ -49,6 +49,8 @@ def test_verified_archive_uses_fixed_temporary_path_and_checks_full_hash(tmp_pat
     assert seen[0][0] == 'member.parquet'
     assert seen[0][1] == 'part/sample.parquet'
     bad = item | {'sha256': '0'*64}
+    bad_seen = []
     with pytest.raises(ValueError, match='SHA-256'):
-        stream_verified_archive(bad, lambda *args: None, temporary_root=tmp_path,
+        stream_verified_archive(bad, lambda *args: bad_seen.append(args), temporary_root=tmp_path,
                                 opener=lambda request, timeout: Response(payload, 'frozen'))
+    assert bad_seen == []

@@ -10,35 +10,34 @@ CHUNK = 4*1024*1024
 MAX_MEMBER = 2*1024*1024*1024
 
 
-class HashingReader:
-    def __init__(self, source):
-        self.source = source
-        self.digest = hashlib.sha256()
-        self.count = 0
-
-    def read(self, size=-1):
-        chunk = self.source.read(size)
-        self.digest.update(chunk)
-        self.count += len(chunk)
-        return chunk
-
-
 def stream_verified_archive(item, handle_member, *, temporary_root=None, opener=urlopen):
     """Call ``handle_member`` for each Parquet member, then verify full bytes."""
     request = Request(item['url'], headers={'Accept-Encoding': 'identity',
                                             'User-Agent': 'Helio24-development-audit/1'})
     results, names = [], set()
-    with opener(request, timeout=120) as response:
-        if response.status != 200:
-            raise ValueError('Expected HTTP 200')
-        length = int(response.headers['Content-Length'])
-        etag = response.headers.get('ETag', '').strip('"')
-        if length != item['content_length'] or etag != item['etag']:
-            raise ValueError('Remote archive identity changed')
-        reader = HashingReader(response)
-        with tempfile.TemporaryDirectory(dir=temporary_root) as directory:
+    with tempfile.TemporaryDirectory(dir=temporary_root) as directory:
+        archive_path = Path(directory) / 'archive.tar.gz'
+        digest, received = hashlib.sha256(), 0
+        with opener(request, timeout=120) as response, archive_path.open('wb') as target:
+            if response.status != 200:
+                raise ValueError('Expected HTTP 200')
+            length = int(response.headers['Content-Length'])
+            etag = response.headers.get('ETag', '').strip('"')
+            if length != item['content_length'] or etag != item['etag']:
+                raise ValueError('Remote archive identity changed')
+            while chunk := response.read(CHUNK):
+                received += len(chunk)
+                if received > item['content_length']:
+                    raise ValueError('Oversized compressed archive')
+                digest.update(chunk)
+                target.write(chunk)
+        if received != item['content_length']:
+            raise ValueError('Incomplete compressed archive')
+        if digest.hexdigest() != item['sha256']:
+            raise ValueError('Compressed archive SHA-256 mismatch')
+        with archive_path.open('rb') as archive_source:
             destination = Path(directory) / 'member.parquet'
-            with tarfile.open(fileobj=reader, mode='r|gz') as archive:
+            with tarfile.open(fileobj=archive_source, mode='r|gz') as archive:
                 for member in archive:
                     if member.isdir():
                         continue
@@ -59,14 +58,8 @@ def stream_verified_archive(item, handle_member, *, temporary_root=None, opener=
                     if copied != member.size:
                         raise ValueError('Incomplete Parquet member')
                     results.append(handle_member(destination, member.name, member.size))
-            while reader.read(CHUNK):
-                pass
-    if reader.count != item['content_length']:
-        raise ValueError('Incomplete compressed archive')
-    if reader.digest.hexdigest() != item['sha256']:
-        raise ValueError('Compressed archive SHA-256 mismatch')
     return {'partition': item['partition'], 'members': len(names),
-            'compressed_bytes': reader.count, 'sha256': reader.digest.hexdigest(),
+            'compressed_bytes': received, 'sha256': digest.hexdigest(),
             'results': results}
 
 
