@@ -57,8 +57,8 @@ def run(output, workers=2):
     events = pd.concat([value[2] for value in results], ignore_index=True)
     if events.event_id.duplicated().any():
         raise ValueError('Event IDs repeat across monthly ownership intervals')
-    if events.duplicated(['peak_time', 'goes_class']).any():
-        raise ValueError('Peak/class identities repeat across HEK events')
+    duplicate_peak_class = events.duplicated(['peak_time', 'goes_class'], keep=False)
+    duplicate_keys = events.loc[duplicate_peak_class, ['peak_time', 'goes_class']].drop_duplicates()
     events.to_csv(output / 'events.csv', index=False)
     months = [{
         'start': start.isoformat(), 'end': end.isoformat(), 'url': url,
@@ -69,6 +69,10 @@ def run(output, workers=2):
         'scope': 'Official HEK SWPC GOES M/X events with peak in [2010-05-01, 2024-01-01)',
         'retrieved_utc': datetime.now(timezone.utc).isoformat(),
         'months': len(months), 'events': len(events),
+        'distinct_peak_class_events': int(
+            len(events.drop_duplicates(['peak_time', 'goes_class']))),
+        'duplicate_peak_class_keys': len(duplicate_keys),
+        'duplicate_peak_class_rows': int(duplicate_peak_class.sum()),
         'providers': {str(k): int(v) for k, v in events.provider.value_counts().items()},
         'class_counts': {str(k): int(v) for k, v in events.goes_class.str[0].value_counts().items()},
         'raw_response_set_sha256': hashlib.sha256(''.join(

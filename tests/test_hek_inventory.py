@@ -47,3 +47,12 @@ def test_month_parser_rejects_invalid_event_contract():
     with pytest.raises(ValueError, match='order'):
         parse_month(payload([bad]), pd.Timestamp('2023-01-01'),
                     pd.Timestamp('2023-03-01'))
+
+
+def test_distinct_ids_may_describe_the_same_peak_and_class():
+    rows = [event(), event(kb_archivid='ivo://event/revision')]
+    frame = parse_month(payload(rows), pd.Timestamp('2023-02-01'),
+                        pd.Timestamp('2023-03-01'))
+    assert len(frame) == 2
+    assert frame.event_id.nunique() == 2
+    assert len(frame.drop_duplicates(['peak_time', 'goes_class'])) == 1
