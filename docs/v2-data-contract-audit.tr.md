@@ -1,7 +1,7 @@
 # SWAN-SF-V2 veri sözleşmesi denetimi
 
 Tarih: 2026-10-25. Karar: **UTC dönüşümü, V2 kalite politikası ve GOES
-etiket politikası sabitlendi; diğer dört koşul eğitimi engellemeye devam
+etiket politikası sabitlendi; diğer üç koşul eğitimi engellemeye devam
 ediyor.** Bu bir geliştirme verisi denetimidir, model deneyi değildir. Yeni
 tahmin skoru içermez; 2024-2025 satırlarını veya sonuçlarını incelemez.
 
@@ -18,19 +18,20 @@ kontrol edildi:
 
 | Bölüm | İçerik uzunluğu (bayt) | ETag | Son değişiklik (UTC) | SHA-256 |
 | ---: | ---: | --- | --- | --- |
-| 1 | 1,177,434,736 | 462e3a70-65ccb14823788 | 2026-10-01 17:52:32 | pending |
-| 2 | 1,284,717,836 | 4c933d0c-65ccb20b27a70 | 2026-10-01 17:55:56 | pending |
-| 3 | 1,246,106,315 | 4a4612cb-65ccb20d79562 | 2026-10-01 17:55:59 | pending |
-| 4 | 1,302,570,086 | 4da3a466-65ccb2236ed31 | 2026-10-01 17:56:22 | pending |
-| Toplam | 5,010,828,973 | — | — | pending |
+| 1 | 1,177,434,736 | 462e3a70-65ccb14823788 | 2026-10-01 17:52:32 | 26fbe84600dcbd2600bced76eeff9df097b5de2bc78328160342869827b1dd3b |
+| 2 | 1,284,717,836 | 4c933d0c-65ccb20b27a70 | 2026-10-01 17:55:56 | 1fc49bff4e61ea2ac608d1c08dd45f335463f8b31e828afc60eaa283e8d50692 |
+| 3 | 1,246,106,315 | 4a4612cb-65ccb20d79562 | 2026-10-01 17:55:59 | c829699b0afecb88b5cc1743e620096a21565a5127ea76be9fb9cfa6be69783f |
+| 4 | 1,302,570,086 | 4da3a466-65ccb2236ed31 | 2026-10-01 17:56:22 | 35e86b7e27b52bfba83f6bdf3d39b1b15bc03fa0b52552a590472a4ceed0bf72 |
+| Toplam | 5,010,828,973 | — | — | verified |
 
-ETag, uzunluk ve tarihler birçok yanlış kaynak değişimini yakalar fakat içerik
-özeti değildir. Dört SHA-256 değeri kaydedilip doğrulanana kadar
-`versioned_dataset_manifest` pending kalır. V2 makalesi hâlâ ön baskı v1'dir;
-final Dataverse DOI'sinin hakem değerlendirmesinden sonra geleceğini söyler.
-Arşivleri üreten kesin toolkit commit'i de belirlenmediği için
-`measurement_semantics` pending kalır. İzlenen kaynak envanteri
-`config/swan_sf_v2_sources.json` dosyasındadır.
+ETag, uzunluk ve tarihler, 5,010,828,973 baytın tamamı SHA-256 akışından
+geçirilmeden önce kontrol edildi. Arşiv gövdeleri kaydedilmedi. Dört tam özet
+artık bayt kimliğini sabitliyor; bu nedenle `versioned_dataset_manifest`
+verified durumundadır. V2 makalesi hâlâ ön baskı v1'dir ve final Dataverse
+DOI'sinin hakem değerlendirmesinden sonra geleceğini söyler. Arşivleri üreten
+kesin toolkit commit'i belirlenmediği için `measurement_semantics` pending
+kalır. Doğrulanmış kaynak envanteri `config/swan_sf_v2_sources.verified.json`
+dosyasındadır; önceki bekleyen envanter korunur.
 
 ## Gözlem saati dönüşümü
 
@@ -126,14 +127,14 @@ olmadığını göstermez. Etiketler üretilmeden önce bu eksiksizlik kontrolü
 | quality_policy | verified | Ayrı V2 politikası uygulandı, test edildi ve sınırlı olarak denetlendi |
 | utc_conversion | verified | Açık TAI-UTC dönüşümü uygulandı ve test edildi |
 | label_inclusion_policy | verified | GOES kaynağı, güven, belirsizlik ve yarı açık sınır kuralları sabitlendi |
-| versioned_dataset_manifest | pending | Tam arşiv SHA-256 değerleri yok |
+| versioned_dataset_manifest | verified | Dört sıkıştırılmış arşivin tam SHA-256 kimliği var |
 | development_coverage_audit | pending | 2024 öncesindeki bütün bölümler taranmadı |
 | training_runner_review | pending | Deney 5 V2 eğitim çalıştırıcısı yok |
 
 Buradaki verified, kural ve kanıtın bu proje için sabitlendiği anlamına gelir.
 V2'nin V1'i yeniden ürettiği, üst kaynak üretiminin bütünüyle tekrarlanabilir
 olduğu veya model başarısının bilindiği anlamına gelmez.
-`config/experiment5-v2.json`, yalnız gelecekteki yürütme için özgün tasarımın
+`config/experiment5-v3.json`, yalnız gelecekteki yürütme için önceki tasarımların
 yerini alır ve hâlâ `design_frozen_data_contract_pending` durumundadır.
 
 ## Yeniden üretim
@@ -141,17 +142,17 @@ yerini alır ve hâlâ `design_frozen_data_contract_pending` durumundadır.
 ```sh
 python scripts/audit_v2_contract.py --output artifacts/v2_contract_audit_20261025_r2
 python scripts/check_evaluation_protocol.py \
-  --config config/experiment5-v2.json \
-  --output artifacts/experiment5_v2_preflight_20261025
+  --config config/experiment5-v3.json \
+  --output artifacts/experiment5_v3_preflight_20261025
 python scripts/publish_reports.py \
   --output artifacts/bilingual_reports_v2_contract_20261025
 ```
 
 Denetim mevcut dizinin üzerine yazmayı reddeder. Hazırlık kontrolü kod 2 ile
-çıkmalı ve dört bekleyen koşulu listelemelidir. Ham veri ve üretilen artifact
-dosyaları Git dışında kalır. Sırada tam arşiv özetlerini kaydetmek ve yalnız
-2024 öncesi satırları Parquet tarama sınırında seçen bir okuyucu kurmak,
-ardından model eğitiminden önce geliştirme kapsamını denetlemek vardır.
+çıkmalı ve üç bekleyen koşulu listelemelidir. Ham veri ve üretilen artifact
+dosyaları Git dışında kalır. Sırada yalnız 2024 öncesi satırları Parquet tarama
+sınırında seçen bir okuyucu kurmak, ardından model eğitiminden önce geliştirme
+kapsamını denetlemek vardır.
 
 Kaynaklar: [SWAN-SF-V2 ön baskı v1](https://arxiv.org/html/2610.04591v1),
 [Space Weather Toolkit dilimleyici dokümantasyonu](https://dmlab.cs.gsu.edu/docs/spaceweather_toolkit/slicer.html),

@@ -11,12 +11,23 @@ def manifest():
     return json.loads((ROOT / 'config/swan_sf_v2_sources.json').read_text())
 
 
+def verified_manifest():
+    return json.loads((ROOT / 'config/swan_sf_v2_sources.verified.json').read_text())
+
+
 def test_pending_source_manifest_has_valid_remote_identities():
     spec = manifest()
     assert validate_manifest(spec) == []
     errors = validate_manifest(spec, require_hashes=True)
     assert len(errors) == 4
     assert all('missing SHA-256' in error for error in errors)
+
+
+def test_verified_source_manifest_has_all_content_hashes():
+    spec = verified_manifest()
+    assert spec['status'] == 'verified'
+    assert validate_manifest(spec, require_hashes=True) == []
+    assert sum(item['content_length'] for item in spec['archives']) == 5_010_828_973
 
 
 def test_source_manifest_rejects_wrong_host_partition_and_digest():
