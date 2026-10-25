@@ -17,3 +17,19 @@ def test_partition_scan_retries_an_incomplete_transfer(monkeypatch):
         {'partition': 2}, lambda *args: None, attempts=2)
     assert result['partition'] == 2
     assert calls == [2, 2]
+
+
+def test_partition_scan_retries_a_short_http_body(monkeypatch):
+    calls = []
+
+    def stream(item, handler, *, temporary_root, opener):
+        calls.append(item['partition'])
+        if len(calls) == 1:
+            raise v2_archive.IncompleteArchiveError('Incomplete compressed archive')
+        return {'partition': item['partition'], 'members': 0, 'results': []}
+
+    monkeypatch.setattr(v2_archive, 'stream_verified_archive', stream)
+    result = v2_archive.stream_verified_archive_with_retries(
+        {'partition': 3}, lambda *args: None, attempts=2)
+    assert result['partition'] == 3
+    assert calls == [3, 3]

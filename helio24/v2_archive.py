@@ -10,6 +10,10 @@ CHUNK = 4*1024*1024
 MAX_MEMBER = 2*1024*1024*1024
 
 
+class IncompleteArchiveError(ValueError):
+    """The server closed an otherwise valid immutable transfer too early."""
+
+
 def stream_verified_archive(item, handle_member, *, temporary_root=None, opener=urlopen):
     """Call ``handle_member`` for each Parquet member, then verify full bytes."""
     request = Request(item['url'], headers={'Accept-Encoding': 'identity',
@@ -32,7 +36,7 @@ def stream_verified_archive(item, handle_member, *, temporary_root=None, opener=
                 digest.update(chunk)
                 target.write(chunk)
         if received != item['content_length']:
-            raise ValueError('Incomplete compressed archive')
+            raise IncompleteArchiveError('Incomplete compressed archive')
         if digest.hexdigest() != item['sha256']:
             raise ValueError('Compressed archive SHA-256 mismatch')
         with archive_path.open('rb') as archive_source:
@@ -70,7 +74,8 @@ def stream_verified_archive_with_retries(item, handle_member, *, temporary_root=
         try:
             return stream_verified_archive(item, handle_member,
                                            temporary_root=temporary_root, opener=opener)
-        except (tarfile.ReadError, URLError, TimeoutError, ConnectionError, OSError):
+        except (IncompleteArchiveError, tarfile.ReadError, URLError, TimeoutError,
+                ConnectionError, OSError):
             if attempt == attempts:
                 raise
             print(f'partition {item["partition"]}: transfer attempt {attempt} failed; retrying',
