@@ -29,6 +29,9 @@ def archive_bytes(tmp_path):
     stream = BytesIO()
     with tarfile.open(fileobj=stream, mode='w:gz') as archive:
         archive.add(parquet, arcname='part/sample.parquet')
+        marker = tarfile.TarInfo('part/_SUCCESS')
+        marker.size = 0
+        archive.addfile(marker, BytesIO())
     return stream.getvalue()
 
 

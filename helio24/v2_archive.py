@@ -41,6 +41,8 @@ def stream_verified_archive(item, handle_member, *, temporary_root=None, opener=
                 for member in archive:
                     if member.isdir():
                         continue
+                    if member.isfile() and Path(member.name).name == '_SUCCESS' and member.size == 0:
+                        continue
                     if not member.isfile() or not member.name.endswith('.parquet'):
                         raise ValueError(f'Unexpected archive member: {member.name}')
                     if member.name in names or not 0 < member.size <= MAX_MEMBER:
