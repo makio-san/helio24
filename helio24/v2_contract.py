@@ -158,12 +158,15 @@ def label_windows(windows, attached_events, unassigned_major_events, *, inventor
         raise ValueError('Prediction intervals must have positive duration')
     attached = prepare_events(attached_events)
     unassigned = prepare_unassigned_major_events(unassigned_major_events)
-    starts = result.forecast_time.astype('int64').to_numpy()
-    ends = result.prediction_end.astype('int64').to_numpy()
+    def nanoseconds(values):
+        return pd.DatetimeIndex(values).as_unit('ns').asi8
+
+    starts = nanoseconds(result.forecast_time)
+    ends = nanoseconds(result.prediction_end)
 
     def contains(peaks, positions=None):
         positions = np.arange(len(result)) if positions is None else np.asarray(positions)
-        values = np.sort(pd.Series(peaks).astype('int64').to_numpy())
+        values = np.sort(nanoseconds(peaks))
         if not len(values):
             return positions, np.zeros(len(positions), dtype=bool)
         left = np.searchsorted(values, starts[positions], side='left')

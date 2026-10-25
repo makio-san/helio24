@@ -86,6 +86,18 @@ def test_vectorized_labeling_keeps_positive_priority_across_regions():
         'positive', 'excluded_ambiguous_harp', 'negative']
 
 
+def test_labeling_normalizes_timestamp_resolution_before_interval_search():
+    frame = windows()
+    frame['forecast_time'] = frame.forecast_time.dt.as_unit('ns')
+    frame['prediction_end'] = frame.prediction_end.dt.as_unit('ns')
+    unassigned = pd.DataFrame([
+        dict(event_id='g1', peak_time=pd.Timestamp('2023-01-01T12:00Z'), goes_class='M2.0')])
+    unassigned['peak_time'] = unassigned.peak_time.dt.as_unit('us')
+    result = label_windows(frame, pd.DataFrame(columns=EVENT_COLUMNS), unassigned,
+                           inventory_complete=True)
+    assert result.loc[0, 'label_status'] == 'excluded_unassigned_major_event'
+
+
 def test_event_validation_fails_on_unknown_confidence_and_bad_order():
     frame = pd.DataFrame([event(7, '2023-01-01 12:00:00', confidence='guess')])
     with pytest.raises(ValueError, match='Unknown confidence'):
