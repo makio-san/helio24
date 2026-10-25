@@ -110,5 +110,12 @@
     "source_sha256": "66836b68a25d80f5d43e200382f70c9bfc274fca1659e1035189be5c31a138ac",
     "en": "v2-development-coverage-audit.md",
     "tr": "v2-development-coverage-audit.tr.md"
+  },
+  {
+    "id": "v2-label-inventory-audit",
+    "source_language": "en",
+    "source_sha256": "e874975366bbffc047abfed9a76a9fcf3889cb28147afc78cdf8750f4f60832e",
+    "en": "v2-label-inventory-audit.md",
+    "tr": "v2-label-inventory-audit.tr.md"
   }
 ]

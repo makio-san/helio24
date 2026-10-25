@@ -26,6 +26,7 @@ their historical context; translation does not constitute a new evaluation.
 | V2 veri sözleşmesi denetimi / V2 data contract audit | [Türkçe](v2-data-contract-audit.tr.md) | [English](v2-data-contract-audit.md) |
 | V2 geliştirme yerleşimi denetimi / V2 development layout audit | [Türkçe](v2-development-layout-audit.tr.md) | [English](v2-development-layout-audit.md) |
 | V2 geliştirme kapsamı denetimi / V2 development coverage audit | [Türkçe](v2-development-coverage-audit.tr.md) | [English](v2-development-coverage-audit.md) |
+| V2 etiket envanteri denetimi / V2 label inventory audit | [Türkçe](v2-label-inventory-audit.tr.md) | [English](v2-label-inventory-audit.md) |
 
 ## HTML çıktıları / HTML editions
 
