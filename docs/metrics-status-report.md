@@ -45,9 +45,39 @@ vardır. Pozitif pencerelerin yaklaşık %91'i yakalanır, ancak alarmların yak
 
 Aynı dönemde sürekli negatif tahmin veren yöntem %98,68 accuracy elde eder,
 ancak recall sıfır olur. Bu nedenle başarı hedefi yalnızca accuracy değildir.
-Recall ve precision yüksek; yanlış alarm oranları, Brier ve log loss düşük
-olmalıdır. AP, precision–recall eğrisini özetler; trapez PR-AUC ile aynı hesap
-değildir. Brier tek başına saf kalibrasyon ölçüsü sayılmaz.
+AP, precision–recall eğrisini özetler; trapez PR-AUC ile aynı hesap değildir.
+Brier tek başına saf kalibrasyon ölçüsü sayılmaz.
+
+## Metriklerin genel anlamı ve kriterler
+
+Metriklerin matematiksel aralığı ile kabul kriteri aynı şey değildir. İdeal uç
+değer matematiksel olarak bellidir; fakat precision için örneğin %50'nin her
+problemde “iyi” sayılması gibi evrensel eşikler yoktur. Kabul sınırı olayın taban
+oranına, kaçırmanın ve yanlış alarmın maliyetine, tahmin ufkuna, örnekleme
+birimine ve değerlendirme bölümüne göre önceden belirlenir. Helio24 kriterleri
+bu nedenle yalnız aynı etiket, pencere ve veri bölümü altında uygulanır.
+
+| Metrik | Genel olarak neyi ölçer? | Matematiksel aralık; ideal | Helio24 kabul kuralı |
+| --- | --- | --- | --- |
+| Accuracy | Bütün örnekler içinde doğru sınıflandırılanların oranı: `(TP+TN)/N` | `[0,1]`; `1` | Sabit hedef yok; sürekli-negatif taban çizgisiyle birlikte raporlanır |
+| Recall / TPR / POD | Gerçek pozitiflerin yakalanan oranı: `TP/(TP+FN)` | `[0,1]`; `1` | Birincil hedef `>=0.95` |
+| Precision | Verilen pozitif alarmların doğru olan oranı: `TP/(TP+FP)` | `[0,1]`; `1` | Tek başına eşik yok; recall `>=0.95` iken FP azaltılır |
+| F1 | Precision ile recall'un harmonik ortalaması | `[0,1]`; `1` | İkincil raporlama; dondurulmuş eşik yok |
+| Balanced accuracy | Pozitif recall ile negatif recall'un ortalaması | `[0,1]`; `1`; dengeli becerisiz referans yaklaşık `0.5` | İkincil raporlama; dondurulmuş eşik yok |
+| FPR | Gerçek negatiflerin yanlış alarm verilen oranı: `FP/(FP+TN)` | `[0,1]`; `0` | Recall `>=0.95` koşulunda azaltılır |
+| FAR | Bütün alarmların yanlış olan oranı: `FP/(TP+FP)`; `1-precision` | `[0,1]`; `0` | İkincil alarm yükü; ayrı eşik yok |
+| TSS | Pozitif yakalama ile yanlış pozitif oranı farkı: `recall-FPR` | `[-1,1]`; `1`; `0` beceri yok | İkincil ayrım ölçüsü; dondurulmuş eşik yok |
+| AP | Tüm eşikler boyunca precision–recall sıralama kalitesi | `[0,1]`; `1`; rastgele taban yaklaşık pozitif prevalansı | Yeni aday kontrolün `0.471980` değerinden düşük olmamalı |
+| Brier | Tahmin olasılığı ile ikili sonuç arasındaki ortalama karesel hata | `[0,1]`; `0` | Yeni aday `0.014832` değerinden yüksek olmamalı |
+| Log loss | Gerçek sınıfa verilen olasılığın logaritmik kaybı; aşırı emin hataları sert cezalandırır | `[0,+∞)`; `0` | Yeni aday `0.052204` değerinden yüksek olmamalı |
+| Alarm eşiği | Olasılığın hangi noktadan sonra alarma çevrileceği | `[0,1]`; ideal uç yok | Doğrulamada seçilir ve sonraki değerlendirme için sabitlenir |
+
+Recall öncelikli deneyde ayrıca yanlış pozitif sayısının 5.183'ten az olması,
+güçlü iyileştirme hedefinde en az %10 azalarak 4.664 veya altına inmesi gerekir.
+Bu sayılar genel bilimsel standart değildir; Helio24'ün önceden dondurulmuş
+operasyonel karşılaştırma kurallarıdır. Brier ve log loss hem kalibrasyon hem
+ayırt etme gücü ve veri belirsizliğinden etkilenir; kalibrasyon ayrıca güvenilirlik
+kutuları ile incelenir.
 
 ## Belirsizlik ve alarm eşiği
 
@@ -112,3 +142,7 @@ ve testler sürüm kontrolündedir. Önceki deneylerin dosyaları korunur.
 
 Kaldığımız nokta: [üç olayın kaynak incelemesi](event-source-review.md).
 Sonraki aşama: [yeni dönem değerlendirme hazırlığı](next-evaluation-plan.md).
+
+Tanımlar: [scikit-learn model evaluation](https://scikit-learn.org/stable/modules/model_evaluation.html),
+[scikit-learn probability calibration](https://scikit-learn.org/stable/modules/calibration.html),
+[solar-flare forecasting evaluation framework](https://academic.oup.com/mnras/article/495/3/3332/5835694).

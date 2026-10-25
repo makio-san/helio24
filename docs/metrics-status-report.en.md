@@ -44,10 +44,40 @@ period. It catches approximately 91% of positive windows, but about 81% of
 alarms are false. False-alarm burden is the main limitation.
 
 Always predicting negative achieves 98.68% accuracy on that period but zero
-recall. Accuracy alone is therefore not the objective. Recall and precision
-should be high; false-alarm rates, Brier and log loss should be low.
-AP summarizes precision–recall performance; it is not trapezoidal PR-AUC.
-Brier alone is not a pure calibration measure.
+recall. Accuracy alone is therefore not the objective. AP summarizes
+precision–recall performance; it is not trapezoidal PR-AUC. Brier alone is not
+a pure calibration measure.
+
+## General meaning of the metrics and criteria
+
+A metric's mathematical range is different from an acceptance criterion. The
+ideal endpoint is mathematically defined, but there is no universal rule such
+as precision above 50% being “good” for every problem. Acceptance limits must
+be set in advance from event prevalence, the cost of misses and false alarms,
+forecast horizon, sampling unit and evaluation split. Helio24 criteria therefore
+apply only under the same label, window and data split.
+
+| Metric | What does it generally measure? | Mathematical range; ideal | Helio24 acceptance rule |
+| --- | --- | --- | --- |
+| Accuracy | Fraction of all examples classified correctly: `(TP+TN)/N` | `[0,1]`; `1` | No fixed target; reported with the always-negative baseline |
+| Recall / TPR / POD | Fraction of actual positives detected: `TP/(TP+FN)` | `[0,1]`; `1` | Primary target `>=0.95` |
+| Precision | Fraction of issued positive alarms that are correct: `TP/(TP+FP)` | `[0,1]`; `1` | No standalone threshold; reduce FP while recall is `>=0.95` |
+| F1 | Harmonic mean of precision and recall | `[0,1]`; `1` | Secondary reporting; no frozen threshold |
+| Balanced accuracy | Mean of positive recall and negative recall | `[0,1]`; `1`; balanced no-skill reference about `0.5` | Secondary reporting; no frozen threshold |
+| FPR | Fraction of actual negatives receiving a false alarm: `FP/(FP+TN)` | `[0,1]`; `0` | Minimize subject to recall `>=0.95` |
+| FAR | Fraction of all issued alarms that are false: `FP/(TP+FP)`; `1-precision` | `[0,1]`; `0` | Secondary alarm burden; no separate threshold |
+| TSS | Difference between positive detection and false-positive rates: `recall-FPR` | `[-1,1]`; `1`; `0` means no skill | Secondary discrimination measure; no frozen threshold |
+| AP | Precision–recall ranking quality across all thresholds | `[0,1]`; `1`; random baseline approximately positive prevalence | A new candidate must not fall below the control's `0.471980` |
+| Brier | Mean squared error between forecast probability and binary outcome | `[0,1]`; `0` | A new candidate must not exceed `0.014832` |
+| Log loss | Logarithmic loss of probability assigned to the true class; heavily penalizes confident errors | `[0,+∞)`; `0` | A new candidate must not exceed `0.052204` |
+| Alarm threshold | Probability cutoff used to turn a probability into an alarm | `[0,1]`; no ideal endpoint | Selected on validation and frozen for later evaluation |
+
+The recall-first experiment additionally requires fewer than 5,183 false
+positives; the stronger improvement target is at least a 10% reduction to
+4,664 or fewer. These values are not universal scientific standards. They are
+Helio24's frozen operational comparison rules. Brier and log loss reflect
+calibration, discrimination and data uncertainty together; reliability bins
+are inspected separately for calibration.
 
 ## Uncertainty and thresholds
 
@@ -113,3 +143,7 @@ code and tests are version controlled. Previous experiment files are preserved.
 
 Status at the time of this report: [three-event source review](event-source-review.md).
 Next stage: [preparation for a later-period evaluation](next-evaluation-plan.md).
+
+Definitions: [scikit-learn model evaluation](https://scikit-learn.org/stable/modules/model_evaluation.html),
+[scikit-learn probability calibration](https://scikit-learn.org/stable/modules/calibration.html),
+[solar-flare forecasting evaluation framework](https://academic.oup.com/mnras/article/495/3/3332/5835694).
