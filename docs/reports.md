@@ -24,6 +24,7 @@ their historical context; translation does not constitute a new evaluation.
 | Olayların uzamsal incelemesi / Spatial event review | [Türkçe](spatial-event-review.tr.md) | [English](spatial-event-review.md) |
 | Sonraki dönem protokolü / Later-period protocol | [Türkçe](fifth-experiment-protocol.tr.md) | [English](fifth-experiment-protocol.md) |
 | V2 veri sözleşmesi denetimi / V2 data contract audit | [Türkçe](v2-data-contract-audit.tr.md) | [English](v2-data-contract-audit.md) |
+| V2 geliştirme yerleşimi denetimi / V2 development layout audit | [Türkçe](v2-development-layout-audit.tr.md) | [English](v2-development-layout-audit.md) |
 
 ## HTML çıktıları / HTML editions
 

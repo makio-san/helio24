@@ -96,5 +96,12 @@
     "source_sha256": "5d39193327f592b5955bbba79ba1c83a699019b96cc5b71bed86549e7658ae9c",
     "en": "v2-data-contract-audit.md",
     "tr": "v2-data-contract-audit.tr.md"
+  },
+  {
+    "id": "v2-development-layout-audit",
+    "source_language": "en",
+    "source_sha256": "26466d6d9412d05ae774453e9ae457d73eb840517defd567b345d77ffa7f00ab",
+    "en": "v2-development-layout-audit.md",
+    "tr": "v2-development-layout-audit.tr.md"
   }
 ]
