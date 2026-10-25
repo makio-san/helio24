@@ -67,6 +67,25 @@ def test_ambiguous_and_unassigned_major_events_block_negative_labels():
         prepare_unassigned_major_events(bad)
 
 
+def test_vectorized_labeling_keeps_positive_priority_across_regions():
+    frame = pd.DataFrame([
+        dict(harp=7, forecast_time=pd.Timestamp('2023-01-01T00:00Z'),
+             prediction_end=pd.Timestamp('2023-01-02T00:00Z')),
+        dict(harp=8, forecast_time=pd.Timestamp('2023-01-01T00:00Z'),
+             prediction_end=pd.Timestamp('2023-01-02T00:00Z')),
+        dict(harp=8, forecast_time=pd.Timestamp('2023-01-02T00:00Z'),
+             prediction_end=pd.Timestamp('2023-01-03T00:00Z')),
+    ])
+    attached = pd.DataFrame([event(7, '2023-01-01 12:00:00'),
+                             event(8, '2023-01-01 12:00:00', confidence='very_low')])
+    unassigned = pd.DataFrame([
+        dict(event_id='g1', peak_time=pd.Timestamp('2023-01-01T13:00Z'), goes_class='M2.0')])
+    result = label_windows(frame, attached, unassigned, inventory_complete=True)
+    assert result.target.tolist() == [1, 0, 0]
+    assert result.label_status.tolist() == [
+        'positive', 'excluded_ambiguous_harp', 'negative']
+
+
 def test_event_validation_fails_on_unknown_confidence_and_bad_order():
     frame = pd.DataFrame([event(7, '2023-01-01 12:00:00', confidence='guess')])
     with pytest.raises(ValueError, match='Unknown confidence'):

@@ -158,30 +158,42 @@ def label_windows(windows, attached_events, unassigned_major_events, *, inventor
         raise ValueError('Prediction intervals must have positive duration')
     attached = prepare_events(attached_events)
     unassigned = prepare_unassigned_major_events(unassigned_major_events)
-    result['target'] = 0
-    result['label_status'] = 'negative'
-    for index, window in result.iterrows():
-        in_window = attached[
-            attached.harp_number.eq(window.harp)
-            & attached.peak_time_utc.ge(window.forecast_time)
-            & attached.peak_time_utc.lt(window.prediction_end)
-            & attached.has_goes
-        ].copy()
-        in_window['strong'] = [parse_flare_class(value)[0] in {'M', 'X'}
-                               for value in in_window.goes_class]
-        accepted = in_window[in_window.strong & in_window.confidence.isin(ACCEPTED_CONFIDENCE)]
-        ambiguous = in_window[in_window.strong & in_window.confidence.isin(AMBIGUOUS_CONFIDENCE)]
-        unknown_region = unassigned[
-            unassigned.peak_time_utc.ge(window.forecast_time)
-            & unassigned.peak_time_utc.lt(window.prediction_end)
-        ]
-        if not accepted.empty:
-            result.at[index, 'target'] = 1
-            result.at[index, 'label_status'] = 'positive'
-        elif not ambiguous.empty:
-            result.at[index, 'label_status'] = 'excluded_ambiguous_harp'
-        elif not unknown_region.empty:
-            result.at[index, 'label_status'] = 'excluded_unassigned_major_event'
+    starts = result.forecast_time.astype('int64').to_numpy()
+    ends = result.prediction_end.astype('int64').to_numpy()
+
+    def contains(peaks, positions=None):
+        positions = np.arange(len(result)) if positions is None else np.asarray(positions)
+        values = np.sort(pd.Series(peaks).astype('int64').to_numpy())
+        if not len(values):
+            return positions, np.zeros(len(positions), dtype=bool)
+        left = np.searchsorted(values, starts[positions], side='left')
+        right = np.searchsorted(values, ends[positions], side='left')
+        return positions, right > left
+
+    strong = (attached.has_goes.to_numpy(dtype=bool)
+              & np.array([parse_flare_class(value)[0] in {'M', 'X'}
+                          for value in attached.goes_class], dtype=bool))
+    accepted = np.zeros(len(result), dtype=bool)
+    ambiguous = np.zeros(len(result), dtype=bool)
+    result['_position'] = np.arange(len(result))
+    for harp, group in result.groupby('harp', sort=False):
+        positions = group._position.to_numpy()
+        harp_events = attached[attached.harp_number.eq(harp) & strong]
+        selected, flags = contains(
+            harp_events.loc[harp_events.confidence.isin(ACCEPTED_CONFIDENCE), 'peak_time_utc'],
+            positions)
+        accepted[selected] = flags
+        selected, flags = contains(
+            harp_events.loc[harp_events.confidence.isin(AMBIGUOUS_CONFIDENCE), 'peak_time_utc'],
+            positions)
+        ambiguous[selected] = flags
+    _, unknown_region = contains(unassigned.peak_time_utc)
+    result = result.drop(columns='_position')
+    result['target'] = accepted.astype(int)
+    result['label_status'] = np.select(
+        [accepted, ambiguous, unknown_region],
+        ['positive', 'excluded_ambiguous_harp', 'excluded_unassigned_major_event'],
+        default='negative')
     return result
 
 
