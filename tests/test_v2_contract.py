@@ -5,6 +5,7 @@ from helio24.data import FEATURE_COLUMNS, MAGNETIC_COLUMNS
 from helio24.v2_contract import (
     EVENT_COLUMNS, extract_window, label_windows, prepare_events,
     prepare_unassigned_major_events, tai_to_utc,
+    utc_to_tai,
 )
 
 
@@ -31,6 +32,8 @@ def test_tai_to_utc_uses_historical_offsets_and_rejects_invalid_inputs():
     assert tai_to_utc('2013-01-01 00:00:00') == pd.Timestamp('2012-12-31 23:59:25Z')
     assert tai_to_utc('2016-01-01 00:00:00') == pd.Timestamp('2015-12-31 23:59:24Z')
     assert tai_to_utc('2023-01-01 00:00:00') == pd.Timestamp('2022-12-31 23:59:23Z')
+    assert utc_to_tai('2023-01-01T00:00Z') == pd.Timestamp('2023-01-01 00:00:37')
+    assert tai_to_utc(utc_to_tai('2023-01-01T00:00Z')) == pd.Timestamp('2023-01-01T00:00Z')
     with pytest.raises(ValueError, match='timezone-naive'):
         tai_to_utc('2023-01-01T00:00Z')
     with pytest.raises(ValueError, match='leap-second'):

@@ -48,6 +48,25 @@ def tai_to_utc(value):
     return (stamp-pd.Timedelta(seconds=tai_utc_offset(stamp))).tz_localize('UTC')
 
 
+def utc_to_tai(value):
+    """Convert explicit UTC to the archive's timezone-naive TAI clock."""
+    stamp = pd.Timestamp(value)
+    if stamp.tzinfo is None:
+        raise ValueError('UTC input must have an explicit time zone')
+    stamp = stamp.tz_convert('UTC')
+    if not pd.Timestamp('2010-01-01T00:00Z') <= stamp < pd.Timestamp('2026-01-01T00:00Z'):
+        raise ValueError('UTC clock is outside the frozen dataset period')
+    offset = 34
+    for effective_utc, candidate in [
+        (pd.Timestamp('2012-07-01T00:00Z'), 35),
+        (pd.Timestamp('2015-07-01T00:00Z'), 36),
+        (pd.Timestamp('2017-01-01T00:00Z'), 37),
+    ]:
+        if stamp >= effective_utc:
+            offset = candidate
+    return (stamp.tz_localize(None)+pd.Timedelta(seconds=offset))
+
+
 def parse_flare_class(value):
     match = FLARE_PATTERN.fullmatch(str(value).strip().upper())
     if not match:
