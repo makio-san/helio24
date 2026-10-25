@@ -29,7 +29,15 @@ def inspect_member(path, name, size, cutoff_tai, roles):
     observations = joined[['harp_number', 'obs_start', *V2_MEASUREMENTS.values()]].drop_duplicates()
     if observations.duplicated(['harp_number', 'obs_start']).any():
         raise ValueError('Conflicting measurements at one HARP/time key')
-    events = prepare_events(joined[EVENT_COLUMNS])
+    raw_events = joined[EVENT_COLUMNS].dropna(subset=['peak_time', 'goes_class']).drop_duplicates()
+    valid_events, event_errors = [], Counter()
+    for index in range(len(raw_events)):
+        try:
+            valid_events.append(prepare_events(raw_events.iloc[[index]]))
+        except ValueError as error:
+            event_errors[str(error)] += 1
+    events = (pd.concat(valid_events, ignore_index=True) if valid_events
+              else prepare_events(pd.DataFrame(columns=EVENT_COLUMNS)))
     audits = {}
     for harp, group in observations.groupby('harp_number'):
         harp_events = events[events.harp_number.eq(harp)]
@@ -38,6 +46,7 @@ def inspect_member(path, name, size, cutoff_tai, roles):
         'member': name, 'member_bytes': size, 'joined_rows': len(joined),
         'observation_rows': len(observations), 'harps': audits,
         'events': events[EVENT_COLUMNS].to_dict('records'),
+        'event_errors': dict(event_errors),
     }
 
 
@@ -68,13 +77,14 @@ def run(output, workers=4):
             partitions.append(result)
             print(f'partition {result["partition"]}: {result["members"]} members verified', flush=True)
 
-    locations, audits, event_rows = {}, {}, []
+    locations, audits, event_rows, event_errors = {}, {}, [], Counter()
     joined_rows = observation_rows = 0
     for partition in partitions:
         for member in partition['results']:
             joined_rows += member['joined_rows']
             observation_rows += member['observation_rows']
             event_rows.extend(member['events'])
+            event_errors.update(member['event_errors'])
             for harp, audit in member['harps'].items():
                 if harp in audits:
                     raise ValueError(f'HARP {harp} spans archive members')
@@ -136,6 +146,8 @@ def run(output, workers=4):
         'leap_crossing_windows_removed': leap_removed,
         'cadence_windows_removed': cadence_removed,
         'attached_events': len(events),
+        'invalid_attached_event_rows_excluded': sum(event_errors.values()),
+        'invalid_attached_event_reasons': dict(event_errors),
         'attached_goes_major_events': int(strong_goes.sum()),
         'attached_goes_major_class_confidence': confidence_counts,
         'label_state': 'Known attached positives counted; nonpositive windows unresolved until a complete independent GOES M/X inventory is frozen',
