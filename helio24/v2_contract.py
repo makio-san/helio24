@@ -1,4 +1,5 @@
 """Fail-closed SWAN-SF-V2 observation and label contract."""
+from collections import Counter
 import re
 
 import numpy as np
@@ -105,6 +106,20 @@ def prepare_events(frame):
     if (events.start_time_utc > events.peak_time_utc).any() or (events.peak_time_utc > events.end_time_utc).any():
         raise ValueError('Flare start/peak/end order is invalid')
     return events.drop_duplicates().sort_values(['peak_time_utc', 'harp_number']).reset_index(drop=True)
+
+
+def audit_event_rows(frame):
+    """Validate attached events individually and quarantine malformed rows."""
+    raw = frame[EVENT_COLUMNS].dropna(subset=['peak_time', 'goes_class']).drop_duplicates()
+    valid, errors = [], Counter()
+    for index in range(len(raw)):
+        try:
+            valid.append(prepare_events(raw.iloc[[index]]))
+        except ValueError as error:
+            errors[str(error)] += 1
+    events = (pd.concat(valid, ignore_index=True) if valid
+              else prepare_events(pd.DataFrame(columns=EVENT_COLUMNS)))
+    return events, dict(errors)
 
 
 def prepare_unassigned_major_events(frame):

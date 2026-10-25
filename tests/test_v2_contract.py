@@ -3,7 +3,7 @@ import pytest
 
 from helio24.data import FEATURE_COLUMNS, MAGNETIC_COLUMNS
 from helio24.v2_contract import (
-    EVENT_COLUMNS, extract_window, label_windows, prepare_events,
+    EVENT_COLUMNS, audit_event_rows, extract_window, label_windows, prepare_events,
     prepare_unassigned_major_events, tai_to_utc,
     utc_to_tai,
 )
@@ -75,6 +75,15 @@ def test_event_validation_fails_on_unknown_confidence_and_bad_order():
     frame.loc[0, 'start_time'] = pd.Timestamp('2023-01-01 13:00:00')
     with pytest.raises(ValueError, match='order'):
         prepare_events(frame)
+
+
+def test_event_audit_quarantines_only_the_invalid_row():
+    good = event(7, '2023-01-01 12:00:00')
+    bad = event(8, '2023-01-02 12:00:00')
+    bad['start_time'] = pd.Timestamp('2023-01-02 13:00:00')
+    events, errors = audit_event_rows(pd.DataFrame([good, bad]))
+    assert events.harp_number.tolist() == [7]
+    assert errors == {'Flare start/peak/end order is invalid': 1}
 
 
 def test_window_requires_exact_cadence_and_applies_finite_quality_policy():

@@ -14,7 +14,9 @@ import pandas as pd
 from helio24.data import ROOT
 from helio24.full_data import sha256
 from helio24.v2_archive import stream_verified_archive_with_retries
-from helio24.v2_contract import EVENT_COLUMNS, V2_MEASUREMENTS, prepare_events, utc_to_tai
+from helio24.v2_contract import (
+    EVENT_COLUMNS, V2_MEASUREMENTS, audit_event_rows, prepare_events, utc_to_tai,
+)
 from helio24.v2_coverage import ROLE_ORDER, audit_harp
 from helio24.v2_sources import validate_manifest
 
@@ -29,15 +31,7 @@ def inspect_member(path, name, size, cutoff_tai, roles):
     observations = joined[['harp_number', 'obs_start', *V2_MEASUREMENTS.values()]].drop_duplicates()
     if observations.duplicated(['harp_number', 'obs_start']).any():
         raise ValueError('Conflicting measurements at one HARP/time key')
-    raw_events = joined[EVENT_COLUMNS].dropna(subset=['peak_time', 'goes_class']).drop_duplicates()
-    valid_events, event_errors = [], Counter()
-    for index in range(len(raw_events)):
-        try:
-            valid_events.append(prepare_events(raw_events.iloc[[index]]))
-        except ValueError as error:
-            event_errors[str(error)] += 1
-    events = (pd.concat(valid_events, ignore_index=True) if valid_events
-              else prepare_events(pd.DataFrame(columns=EVENT_COLUMNS)))
+    events, event_errors = audit_event_rows(joined[EVENT_COLUMNS])
     audits = {}
     for harp, group in observations.groupby('harp_number'):
         harp_events = events[events.harp_number.eq(harp)]
