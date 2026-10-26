@@ -66,3 +66,11 @@ def test_exact_end_boundary_allowed_and_empty_roles_reported():
     groups, audit = development_split(pd.DataFrame([row(1, '2021-12-31T00:00Z')]), protocol())
     assert len(groups['train']) == 1
     assert audit['empty_roles'] == ['calibration', 'validation']
+
+
+def test_frozen_v6_contract_is_ready_for_development_training_only():
+    path = Path(__file__).resolve().parents[1] / 'config/experiment5-v6.json'
+    state = preflight(json.loads(path.read_text()))
+    assert state['ready_for_training'] is True
+    assert state['pending_gates'] == []
+    assert state['final_test_allowed'] is False

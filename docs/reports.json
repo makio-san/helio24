@@ -117,5 +117,12 @@
     "source_sha256": "e874975366bbffc047abfed9a76a9fcf3889cb28147afc78cdf8750f4f60832e",
     "en": "v2-label-inventory-audit.md",
     "tr": "v2-label-inventory-audit.tr.md"
+  },
+  {
+    "id": "v2-measurement-semantics-audit",
+    "source_language": "en",
+    "source_sha256": "b223b83e2c36acc9b298ef8f331486b59a99f5ffb81d7b7c31abda08ad6e5b99",
+    "en": "v2-measurement-semantics-audit.md",
+    "tr": "v2-measurement-semantics-audit.tr.md"
   }
 ]

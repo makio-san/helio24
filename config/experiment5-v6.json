@@ -1,0 +1,88 @@
+{
+  "id": "experiment5",
+  "version": 6,
+  "status": "execution_contract_frozen",
+  "supersedes": "config/experiment5-v5.json",
+  "revision_reason": "Freeze dataset-native measurement semantics, the reviewed development runner and precision-first selection under the recall constraint.",
+  "data_contract": "swan-sf-v2-contract-v1",
+  "source_manifest": "config/swan_sf_v2_sources.verified.json",
+  "development_data": {
+    "artifact": "artifacts/v2_development_features_20261025_r2",
+    "report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "features": 96,
+    "reserved_test_rows": false
+  },
+  "measurement_contract": {
+    "mode": "dataset_native",
+    "fields": "24 unweighted magnetic measurements",
+    "summaries": ["mean", "population_std", "last", "delta"],
+    "conversions": "none",
+    "upstream_reproduction_claim": false
+  },
+  "label_inventory": {
+    "provider": "HEK/SWPC",
+    "scope": "GOES M/X peak in [2010-05-01, 2024-01-01)",
+    "frozen_artifact": "artifacts/hek_major_inventory_20261025_r2",
+    "events_sha256": "f0431c27d11abf7b2908f588634eccd61d960d5c1e67b1b4ffcfd2a5416afb0f",
+    "unassigned_events_sha256": "e584b58fbea9f1e03f025df75edae9312303f0dafd82db04347a5ba7fc71be8f"
+  },
+  "question": "M or X GOES flare peak in [forecast_time, forecast_time + 24h)",
+  "observation_hours": 12,
+  "prediction_hours": 24,
+  "time_scale": "UTC",
+  "roles": {
+    "train": ["2010-05-01T00:00:00Z", "2022-01-01T00:00:00Z"],
+    "calibration": ["2022-01-01T00:00:00Z", "2023-01-01T00:00:00Z"],
+    "validation": ["2023-01-01T00:00:00Z", "2024-01-01T00:00:00Z"],
+    "test": ["2024-01-01T00:00:00Z", "2026-01-01T00:00:00Z"]
+  },
+  "primary_recall": 0.95,
+  "sensitivity_recall": [0.9, 0.99],
+  "threshold_selection": {
+    "eligible": "recall >= 0.95",
+    "primary": "maximum precision",
+    "tie_breaker": "minimum false positives"
+  },
+  "bootstrap": {"draws": 1000, "seed": 24, "unit": "HARP"},
+  "candidates": {
+    "baseline": {"method": "training_prevalence"},
+    "logistic": {"C": 1.0, "solver": "lbfgs", "max_iter": 2000, "class_weight": null, "random_state": 24},
+    "xgboost": {"n_estimators": 200, "max_depth": 3, "learning_rate": 0.04, "min_child_weight": 5, "reg_lambda": 5, "gamma": 0, "scale_pos_weight": 1, "subsample": 1, "colsample_bytree": 1, "tree_method": "hist", "eval_metric": "logloss", "n_jobs": 2, "random_state": 24}
+  },
+  "label_policy": {
+    "accepted_harp_confidence": ["very_high", "high", "moderate", "low"],
+    "ambiguous_harp_confidence": ["very_low"],
+    "unassigned_major_event_action": "exclude overlapping forecast windows",
+    "ambiguous_major_event_action": "exclude overlapping forecast windows"
+  },
+  "gates": {
+    "measurement_semantics": "verified",
+    "quality_policy": "verified",
+    "utc_conversion": "verified",
+    "label_inclusion_policy": "verified",
+    "versioned_dataset_manifest": "verified",
+    "development_coverage_audit": "verified",
+    "training_runner_review": "verified"
+  },
+  "gate_details": {
+    "measurement_semantics": "verified_for_dataset_native_predictive_use_without_upstream_reproduction_claim",
+    "development_coverage_audit": "verified_with_frozen_hek_inventory_and_fail_closed_exclusions",
+    "training_runner_review": "development_roles_only_with_frozen_candidates_and_validation_selection"
+  },
+  "evidence_files": [
+    "config/swan_sf_v2_sources.verified.json",
+    "docs/v2-data-contract-audit.md",
+    "docs/v2-data-contract-audit.tr.md",
+    "docs/v2-development-coverage-audit.md",
+    "docs/v2-development-coverage-audit.tr.md",
+    "docs/v2-label-inventory-audit.md",
+    "docs/v2-label-inventory-audit.tr.md",
+    "docs/v2-measurement-semantics-audit.md",
+    "docs/v2-measurement-semantics-audit.tr.md",
+    "helio24/v2_contract.py",
+    "helio24/v2_features.py",
+    "helio24/v2_training.py",
+    "scripts/materialize_v2_development.py",
+    "scripts/run_v2_development.py"
+  ]
+}
