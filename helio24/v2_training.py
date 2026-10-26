@@ -108,6 +108,16 @@ def fit_development(groups, protocol, output):
         fitted[name], calibrators[name] = model, calibrator
         print(f'{name}: fitted and calibrated', flush=True)
 
+    if 'ensemble' in protocol:
+        logistic_weight = float(protocol['ensemble']['logistic_weight'])
+        if not 0 <= logistic_weight <= 1:
+            raise ValueError('Ensemble weight must be in [0, 1]')
+        probabilities['ensemble'] = {
+            split: (logistic_weight*probabilities['logistic'][split]
+                    +(1-logistic_weight)*probabilities['xgboost'][split])
+            for split in ['calibration', 'validation']
+        }
+
     results, thresholds, reliability, prediction_frames = [], {}, [], []
     required_recall = protocol['primary_recall']
     for name, split_probabilities in probabilities.items():
@@ -152,6 +162,17 @@ def fit_development(groups, protocol, output):
         joblib.dump({'model': model, 'calibrator': calibrators[name],
                      'features': FEATURE_COLUMNS, 'threshold': thresholds[name]},
                     output / f'{name}.joblib')
+    if 'ensemble' in probabilities:
+        joblib.dump({'models': fitted, 'calibrators': calibrators,
+                     'features': FEATURE_COLUMNS,
+                     'logistic_weight': protocol['ensemble']['logistic_weight'],
+                     'threshold': thresholds['ensemble']},
+                    output / 'ensemble.joblib')
+    artifact_names = ['selection.json', 'metrics.csv', 'reliability.csv',
+                      'validation_predictions.parquet', 'logistic.joblib',
+                      'xgboost.joblib']
+    if 'ensemble' in probabilities:
+        artifact_names.append('ensemble.joblib')
     return {
         'selection': selection,
         'training_prevalence': prevalence,
@@ -163,9 +184,6 @@ def fit_development(groups, protocol, output):
                   for name, group in groups.items()},
         'versions': {'python': platform.python_version(), 'numpy': np.__version__,
                      'pandas': pd.__version__, 'sklearn': sklearn.__version__},
-        'artifact_hashes': {name: sha256(output / name) for name in
-                            ['selection.json', 'metrics.csv', 'reliability.csv',
-                             'validation_predictions.parquet', 'logistic.joblib',
-                             'xgboost.joblib']},
+        'artifact_hashes': {name: sha256(output / name) for name in artifact_names},
         'reserved_test_accessed': False,
     }

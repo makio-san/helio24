@@ -74,3 +74,10 @@ def test_frozen_v6_contract_is_ready_for_development_training_only():
     assert state['ready_for_training'] is True
     assert state['pending_gates'] == []
     assert state['final_test_allowed'] is False
+
+
+def test_frozen_v7_blend_contract_is_ready_for_development_training_only():
+    path = Path(__file__).resolve().parents[1] / 'config/experiment5-v7.json'
+    state = preflight(json.loads(path.read_text()))
+    assert state['ready_for_training'] is True
+    assert state['final_test_allowed'] is False

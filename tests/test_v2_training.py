@@ -45,3 +45,15 @@ def test_fixed_development_runner_preserves_test_boundary(tmp_path):
     assert {row['model'] for row in report['metrics']} == {
         'baseline', 'logistic', 'xgboost'}
     assert (tmp_path / 'experiment' / 'selection.json').exists()
+
+
+def test_frozen_ensemble_is_reported_as_a_candidate(tmp_path):
+    groups = {name: group(name, offset) for offset, name in
+              enumerate(['train', 'calibration', 'validation'])}
+    spec = protocol()
+    spec['ensemble'] = {'logistic_weight': 0.45, 'xgboost_weight': 0.55,
+                        'weight_selection': 'frozen'}
+    report = fit_development(groups, spec, tmp_path / 'ensemble')
+    assert {row['model'] for row in report['metrics']} == {
+        'baseline', 'logistic', 'xgboost', 'ensemble'}
+    assert (tmp_path / 'ensemble' / 'ensemble.joblib').exists()
