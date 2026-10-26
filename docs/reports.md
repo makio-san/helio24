@@ -28,6 +28,7 @@ their historical context; translation does not constitute a new evaluation.
 | V2 geliştirme kapsamı denetimi / V2 development coverage audit | [Türkçe](v2-development-coverage-audit.tr.md) | [English](v2-development-coverage-audit.md) |
 | V2 etiket envanteri denetimi / V2 label inventory audit | [Türkçe](v2-label-inventory-audit.tr.md) | [English](v2-label-inventory-audit.md) |
 | V2 ölçüm semantiği denetimi / V2 measurement semantics audit | [Türkçe](v2-measurement-semantics-audit.tr.md) | [English](v2-measurement-semantics-audit.md) |
+| V2 precision geliştirme sonuçları / V2 precision development results | [Türkçe](v2-precision-development-results.tr.md) | [English](v2-precision-development-results.md) |
 
 ## HTML çıktıları / HTML editions
 

@@ -124,5 +124,12 @@
     "source_sha256": "b223b83e2c36acc9b298ef8f331486b59a99f5ffb81d7b7c31abda08ad6e5b99",
     "en": "v2-measurement-semantics-audit.md",
     "tr": "v2-measurement-semantics-audit.tr.md"
+  },
+  {
+    "id": "v2-precision-development-results",
+    "source_language": "en",
+    "source_sha256": "cdaf3323c148dbc6a11b9a5c902ad98280661af0d07dfd1083260e7bced1fa69",
+    "en": "v2-precision-development-results.md",
+    "tr": "v2-precision-development-results.tr.md"
   }
 ]
