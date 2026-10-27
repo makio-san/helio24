@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import joblib
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
@@ -49,12 +50,21 @@ def run(args):
         return enrich(metrics(y[role], probability, threshold))
     candidates = [{'candidate': 'incumbent', **score('calibration', incumbent['calibration'])}]
     models, calibrators, probabilities = {}, {}, {}
-    for C in protocol['regularization_C']:
-        key = f'signed_log_C{C:g}'
-        model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
-                              SignedLogScaler(), StandardScaler(),
-                              LogisticRegression(C=C, max_iter=2000, random_state=24))
-        model.fit(X['train'], y['train'])
+    specifications = [{'id': f'signed_log_C{C:g}', 'C': C}
+                      for C in protocol['regularization_C']] + protocol.get('hist_candidates', [])
+    for specification in specifications:
+        key = specification['id']
+        if 'C' in specification:
+            model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
+                                  SignedLogScaler(), StandardScaler(),
+                                  LogisticRegression(C=specification['C'], max_iter=2000, random_state=24))
+        else:
+            model = HistGradientBoostingClassifier(**specification['parameters'],
+                                                   early_stopping=False, random_state=24)
+        mask = np.ones(len(y['train']), dtype=bool)
+        if 'train_start' in specification:
+            mask = (groups['train'].forecast_time >= pd.Timestamp(specification['train_start'])).to_numpy()
+        model.fit(X['train'][mask], y['train'][mask])
         raw = model.predict_proba(X['calibration'])[:, 1]
         calibrator = SigmoidCalibration().fit(raw, y['calibration'])
         p = calibrator.transform(raw)

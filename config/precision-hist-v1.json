@@ -1,0 +1,55 @@
+{
+  "id": "precision-hist-v1",
+  "status": "development_search_frozen_before_execution",
+  "materialization_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+  "incumbent_report_sha256": "b57ce8e12de3d18740872b1504f97ff6a9dee22b272143836bb1a739d155ef03",
+  "regularization_C": [],
+  "new_model_weights": [
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "required_recall": 0.95,
+  "selection_role": "calibration",
+  "selection_rule": "Maximum precision at required recall, then maximum AP, then candidate ID",
+  "promotion_rule": "Validation precision improves at recall >= 0.95; AP does not decrease and Brier and log loss do not increase",
+  "bootstrap": {
+    "draws": 1000,
+    "seed": 24
+  },
+  "reserved_test_accessed": false,
+  "hist_candidates": [
+    {
+      "id": "hist15",
+      "parameters": {
+        "max_iter": 200,
+        "max_leaf_nodes": 15,
+        "learning_rate": 0.05,
+        "min_samples_leaf": 100,
+        "l2_regularization": 10
+      }
+    },
+    {
+      "id": "hist31",
+      "parameters": {
+        "max_iter": 200,
+        "max_leaf_nodes": 31,
+        "learning_rate": 0.05,
+        "min_samples_leaf": 100,
+        "l2_regularization": 10
+      }
+    },
+    {
+      "id": "hist15_recent",
+      "parameters": {
+        "max_iter": 200,
+        "max_leaf_nodes": 15,
+        "learning_rate": 0.05,
+        "min_samples_leaf": 100,
+        "l2_regularization": 10
+      },
+      "train_start": "2018-01-01T00:00:00Z"
+    }
+  ]
+}
