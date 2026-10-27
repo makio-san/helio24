@@ -1,4 +1,5 @@
 """Verified streaming access to V2 tar archives without path extraction."""
+import errno
 import hashlib
 from pathlib import Path
 import tarfile
@@ -75,7 +76,9 @@ def stream_verified_archive_with_retries(item, handle_member, *, temporary_root=
             return stream_verified_archive(item, handle_member,
                                            temporary_root=temporary_root, opener=opener)
         except (IncompleteArchiveError, tarfile.ReadError, URLError, TimeoutError,
-                ConnectionError, OSError):
+                ConnectionError, OSError) as error:
+            if isinstance(error, OSError) and error.errno == errno.ENOSPC:
+                raise
             if attempt == attempts:
                 raise
             print(f'partition {item["partition"]}: transfer attempt {attempt} failed; retrying',

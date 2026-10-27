@@ -3,6 +3,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
+import shutil
 from pathlib import Path
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -14,7 +15,10 @@ from helio24.v2_archive import stream_verified_archive_with_retries
 from helio24.v2_contract import V2_MEASUREMENTS,utc_to_tai
 
 
-def run(output):
+def run(output, workers=1):
+    required_bytes = (5 if workers == 1 else 8)*1024**3
+    if shutil.disk_usage(output.parent).free < required_bytes:
+        raise RuntimeError(f"Need at least {required_bytes//1024**3} GiB free for archive verification and history shards")
     base=ROOT/'artifacts/v2_development_features_20261025_r2'
     expected='62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82'
     if sha256(base/'report.json')!=expected:raise ValueError('Base report changed')
@@ -52,7 +56,7 @@ def run(output):
                     'availability':{role:{f'{h}h':int(g[f'history_{h}h_available'].sum()) for h in [24,48]}
                                     for role,g in coverage.groupby('role')}}
         return stream_verified_archive_with_retries(item,member,temporary_root=ROOT/'data/cache')
-    with ThreadPoolExecutor(max_workers=2) as pool:records=list(pool.map(scan,manifest['archives']))
+    with ThreadPoolExecutor(max_workers=workers) as pool:records=list(pool.map(scan,manifest['archives']))
     shards=[r for p in records for r in p['results'] if r['rows']]
     actual=pd.concat([pd.read_parquet(output/'shards'/r['file'],columns=['harp','forecast_time']) for r in shards])
     if actual.duplicated(['harp','forecast_time']).any():raise ValueError('Duplicate history keys')
@@ -70,4 +74,5 @@ def run(output):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True)
-    run(parser.parse_args().output.resolve())
+    parser.add_argument('--workers',type=int,choices=[1,2],default=1)
+    args=parser.parse_args();run(args.output.resolve(),args.workers)

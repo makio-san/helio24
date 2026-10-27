@@ -54,3 +54,17 @@ def test_verified_archive_uses_fixed_temporary_path_and_checks_full_hash(tmp_pat
         stream_verified_archive(bad, lambda *args: bad_seen.append(args), temporary_root=tmp_path,
                                 opener=lambda request, timeout: Response(payload, 'frozen'))
     assert bad_seen == []
+
+
+def test_disk_full_is_not_retried(monkeypatch):
+    import errno
+    import helio24.v2_archive as module
+    calls=[]
+    def fail(*args, **kwargs):
+        calls.append(1)
+        raise OSError(errno.ENOSPC, 'No space left on device')
+    monkeypatch.setattr(module, 'stream_verified_archive', fail)
+    with pytest.raises(OSError) as caught:
+        module.stream_verified_archive_with_retries({'partition': 1}, lambda *args: None)
+    assert caught.value.errno == errno.ENOSPC
+    assert len(calls) == 1
