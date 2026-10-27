@@ -131,5 +131,12 @@
     "source_sha256": "cdaf3323c148dbc6a11b9a5c902ad98280661af0d07dfd1083260e7bced1fa69",
     "en": "v2-precision-development-results.md",
     "tr": "v2-precision-development-results.tr.md"
+  },
+  {
+    "id": "precision-followup-20261027",
+    "source_language": "en",
+    "source_sha256": "7580f00e897f567bfc33c17ff2e634990acf53a6c5c19523c5d2dcdc18273631",
+    "en": "precision-followup-20261027.md",
+    "tr": "precision-followup-20261027.tr.md"
   }
 ]
