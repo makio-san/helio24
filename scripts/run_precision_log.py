@@ -21,7 +21,7 @@ from helio24.full_data import sha256
 from helio24.metric_summary import enrich
 from helio24.modeling import metrics
 from helio24.signed_log import SignedLogScaler
-from helio24.magnetic_interactions import MagneticInteractions, RelativeEvolution
+from helio24.magnetic_interactions import MagneticInteractions, RelativeEvolution, MagneticSplines
 from helio24.v2_training import load_development, METADATA
 
 
@@ -55,7 +55,12 @@ def run(args):
                       for C in protocol['regularization_C']] + protocol.get('hist_candidates', []) + protocol.get('feature_candidates', [])
     for specification in specifications:
         key = specification['id']
-        if specification.get('kind') == 'weighted_logistic':
+        if specification.get('kind') == 'splines':
+            model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
+                                  SignedLogScaler(), StandardScaler(), MagneticSplines(),
+                                  StandardScaler(), LogisticRegression(C=specification['C'],
+                                                                      max_iter=2000, random_state=24))
+        elif specification.get('kind') == 'weighted_logistic':
             steps = [SimpleImputer(strategy='median', add_indicator=True)]
             if specification.get('signed_log'):
                 steps.append(SignedLogScaler())

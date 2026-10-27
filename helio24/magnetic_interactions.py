@@ -45,3 +45,23 @@ class RelativeEvolution(TransformerMixin, BaseEstimator):
         denominator = np.where(denominator > 0, denominator, np.nan)
         derived = [std/denominator, delta/denominator, (last-means)/denominator]
         return np.column_stack([values, *[np.clip(v, -100, 100) for v in derived]])
+
+
+class MagneticSplines(TransformerMixin, BaseEstimator):
+    """Training-quantile spline bases for each mean magnetic measurement."""
+    def fit(self, X, y=None):
+        from sklearn.preprocessing import SplineTransformer
+        values = check_array(X)
+        self.n_features_in_ = values.shape[1]
+        self.indices_ = list(range(0, len(FEATURE_COLUMNS), 4))
+        self.spline_ = SplineTransformer(n_knots=4, degree=2, knots='quantile',
+                                         extrapolation='constant', include_bias=False)
+        self.spline_.fit(values[:, self.indices_])
+        return self
+
+    def transform(self, X):
+        check_is_fitted(self, 'spline_')
+        values = check_array(X)
+        if values.shape[1] != self.n_features_in_:
+            raise ValueError('Feature count changed')
+        return np.column_stack([values, self.spline_.transform(values[:, self.indices_])])

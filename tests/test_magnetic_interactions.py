@@ -24,3 +24,16 @@ def test_interactions_use_expected_magnetic_fields():
     assert result[0, 96] == 4
     assert result[0, 97] == -6
     np.testing.assert_array_equal(result[:, :96], X)
+
+
+def test_splines_keep_fitted_knots_when_future_extremes_change():
+    from helio24.magnetic_interactions import MagneticSplines
+    rng = np.random.default_rng(24)
+    X = rng.normal(size=(100, 96))
+    model = MagneticSplines().fit(X)
+    knots = [spline.t.copy() for spline in model.spline_.bsplines_]
+    result = model.transform(np.full((2, 96), 1e6))
+    assert np.isfinite(result).all()
+    assert result.shape[1] > 96
+    for before, after in zip(knots, model.spline_.bsplines_):
+        np.testing.assert_array_equal(before, after.t)
