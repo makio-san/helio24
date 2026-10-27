@@ -145,5 +145,12 @@
     "source_sha256": "bbd985dffeb18fefea942a9dfb6f9d912ca0f9de6497f65c17ba931a68fdd8d1",
     "en": "precision-features-20261027.md",
     "tr": "precision-features-20261027.tr.md"
+  },
+  {
+    "id": "precision-extra-trees-20261027",
+    "source_language": "en",
+    "source_sha256": "87e1605297b2f45a3738fd341e51fc68706e60025e0cf94da537a29866d6460a",
+    "en": "precision-extra-trees-20261027.md",
+    "tr": "precision-extra-trees-20261027.tr.md"
   }
 ]
