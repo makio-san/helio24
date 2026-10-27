@@ -23,6 +23,7 @@ from helio24.modeling import metrics
 from helio24.signed_log import SignedLogScaler
 from helio24.magnetic_interactions import MagneticInteractions, RelativeEvolution, MagneticSplines
 from helio24.v2_training import load_development, METADATA
+from helio24.long_history import HISTORY_COLUMNS
 
 
 def run(args):
@@ -46,6 +47,33 @@ def run(args):
             artifact = joblib.load(args.incumbent / f'{name}.joblib')
             p.append(artifact['calibrator'].transform(artifact['model'].predict_proba(X[role])[:, 1]))
         incumbent[role] = .45*p[0]+.55*p[1]
+    feature_columns = FEATURE_COLUMNS
+    if 'history' in protocol:
+        history_dir = ROOT / protocol['history']['artifact']
+        if sha256(history_dir / 'report.json') != protocol['history']['report_sha256']:
+            raise ValueError('History report changed')
+        history_report = json.loads((history_dir / 'report.json').read_text())
+        if history_report['base_report_sha256'] != protocol['materialization_report_sha256']:
+            raise ValueError('History population source mismatch')
+        frames = []
+        for shard in history_report['shards']:
+            path = history_dir / 'shards' / shard['file']
+            if sha256(path) != shard['sha256']:
+                raise ValueError('History shard changed')
+            frames.append(pd.read_parquet(path))
+        history = pd.concat(frames, ignore_index=True)
+        if list(history.columns) != ['harp', 'forecast_time', *HISTORY_COLUMNS]:
+            raise ValueError('Unexpected history schema')
+        if history.duplicated(['harp', 'forecast_time']).any():
+            raise ValueError('Duplicate history key')
+        feature_columns = [*FEATURE_COLUMNS, *HISTORY_COLUMNS]
+        for role, group in groups.items():
+            joined = group.merge(history, on=['harp', 'forecast_time'], how='left',
+                                 indicator=True, validate='one_to_one', sort=False)
+            if not joined._merge.eq('both').all() or not np.array_equal(joined.target, y[role]):
+                raise ValueError('History join changed forecasts or labels')
+            X[role] = joined[feature_columns].to_numpy(dtype=np.float32)
+        del history, frames, joined
     def score(role, probability):
         threshold = recall_threshold(y[role], probability, protocol['required_recall'])
         return enrich(metrics(y[role], probability, threshold))
@@ -55,7 +83,11 @@ def run(args):
                       for C in protocol['regularization_C']] + protocol.get('hist_candidates', []) + protocol.get('feature_candidates', [])
     for specification in specifications:
         key = specification['id']
-        if specification.get('kind') == 'extra_trees':
+        if specification.get('kind') == 'xgboost':
+            from xgboost import XGBClassifier
+            model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
+                                  XGBClassifier(**specification['parameters']))
+        elif specification.get('kind') == 'extra_trees':
             steps = [SimpleImputer(strategy='median', add_indicator=True)]
             if specification.get('signed_log'):
                 steps.append(SignedLogScaler())
@@ -115,7 +147,8 @@ def run(args):
         key, weight = winner['model'], winner['weight']
         selected = weight*calibrators[key].transform(models[key].predict_proba(X['validation'])[:, 1])+(1-weight)*incumbent['validation']
         joblib.dump({'model': models[key], 'calibrator': calibrators[key],
-                     'new_model_weight': weight, 'incumbent': str(args.incumbent)},
+                     'new_model_weight': weight, 'incumbent': str(args.incumbent),
+                     'features': feature_columns, 'history': protocol.get('history')},
                     args.output / 'candidate.joblib')
     results, intervals = {}, {}
     for name, p in [('incumbent', incumbent['validation']), ('selected', selected)]:
@@ -138,7 +171,7 @@ def run(args):
               'code_hashes': {name: sha256(ROOT / name) for name in
                              ['scripts/run_precision_log.py', 'helio24/signed_log.py',
                               'helio24/v2_training.py', 'helio24/calibration.py',
-                              'helio24/magnetic_interactions.py']}}
+                              'helio24/magnetic_interactions.py', 'helio24/long_history.py']}}
     (args.output / 'report.json').write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(report, indent=2))
 
