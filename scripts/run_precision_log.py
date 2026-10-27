@@ -55,7 +55,16 @@ def run(args):
                       for C in protocol['regularization_C']] + protocol.get('hist_candidates', []) + protocol.get('feature_candidates', [])
     for specification in specifications:
         key = specification['id']
-        if specification.get('kind') == 'interactions':
+        if specification.get('kind') == 'weighted_logistic':
+            steps = [SimpleImputer(strategy='median', add_indicator=True)]
+            if specification.get('signed_log'):
+                steps.append(SignedLogScaler())
+            weight = specification['positive_weight']
+            class_weight = 'balanced' if weight == 'balanced' else {0: 1., 1: float(weight)}
+            model = make_pipeline(*steps, StandardScaler(),
+                                  LogisticRegression(C=1., class_weight=class_weight,
+                                                     max_iter=2000, random_state=24))
+        elif specification.get('kind') == 'interactions':
             model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
                                   SignedLogScaler(), StandardScaler(), MagneticInteractions(),
                                   StandardScaler(), LogisticRegression(C=specification['C'],
