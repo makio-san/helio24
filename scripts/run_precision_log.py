@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.ensemble import ExtraTreesClassifier, HistGradientBoostingClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
@@ -55,7 +55,12 @@ def run(args):
                       for C in protocol['regularization_C']] + protocol.get('hist_candidates', []) + protocol.get('feature_candidates', [])
     for specification in specifications:
         key = specification['id']
-        if specification.get('kind') == 'splines':
+        if specification.get('kind') == 'extra_trees':
+            steps = [SimpleImputer(strategy='median', add_indicator=True)]
+            if specification.get('signed_log'):
+                steps.append(SignedLogScaler())
+            model = make_pipeline(*steps, ExtraTreesClassifier(**specification['parameters']))
+        elif specification.get('kind') == 'splines':
             model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
                                   SignedLogScaler(), StandardScaler(), MagneticSplines(),
                                   StandardScaler(), LogisticRegression(C=specification['C'],
