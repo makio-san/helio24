@@ -159,5 +159,12 @@
     "source_sha256": "92450c3765c067f8732e7381fa11de9d2143fc9e6aa5169afefe09fa6ced0065",
     "en": "missed-regions-audit-20261027.md",
     "tr": "missed-regions-audit-20261027.tr.md"
+  },
+  {
+    "id": "long-history-preparation-20261028",
+    "source_language": "en",
+    "source_sha256": "0929ec5651ae5bdb0a8486336c8f69cc2c199658f3895cdc836c907b47fabbd0",
+    "en": "long-history-preparation-20261028.md",
+    "tr": "long-history-preparation-20261028.tr.md"
   }
 ]

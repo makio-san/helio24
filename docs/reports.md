@@ -34,6 +34,8 @@ their historical context; translation does not constitute a new evaluation.
 | Extra Trees precision deneyi / Extra Trees precision experiment | [Türkçe](precision-extra-trees-20261027.tr.md) | [English](precision-extra-trees-20261027.md) |
 | Kaçırılan pencerelerin bölge denetimi / Missed-window region audit | [Türkçe](missed-regions-audit-20261027.tr.md) | [English](missed-regions-audit-20261027.md) |
 
+| Uzun geçmiş deneyi hazırlığı / Long-history experiment preparation | [Türkçe](long-history-preparation-20261028.tr.md) | [English](long-history-preparation-20261028.md) |
+
 ## HTML çıktıları / HTML editions
 
 ```sh
