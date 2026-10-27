@@ -138,5 +138,12 @@
     "source_sha256": "7580f00e897f567bfc33c17ff2e634990acf53a6c5c19523c5d2dcdc18273631",
     "en": "precision-followup-20261027.md",
     "tr": "precision-followup-20261027.tr.md"
+  },
+  {
+    "id": "precision-features-20261027",
+    "source_language": "en",
+    "source_sha256": "bbd985dffeb18fefea942a9dfb6f9d912ca0f9de6497f65c17ba931a68fdd8d1",
+    "en": "precision-features-20261027.md",
+    "tr": "precision-features-20261027.tr.md"
   }
 ]

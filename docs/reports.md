@@ -30,6 +30,7 @@ their historical context; translation does not constitute a new evaluation.
 | V2 ölçüm semantiği denetimi / V2 measurement semantics audit | [Türkçe](v2-measurement-semantics-audit.tr.md) | [English](v2-measurement-semantics-audit.md) |
 | V2 precision geliştirme sonuçları / V2 precision development results | [Türkçe](v2-precision-development-results.tr.md) | [English](v2-precision-development-results.md) |
 | Precision takip deneyi / Precision follow-up | [Türkçe](precision-followup-20261027.tr.md) | [English](precision-followup-20261027.md) |
+| Precision özellik deneyleri / Precision feature experiments | [Türkçe](precision-features-20261027.tr.md) | [English](precision-features-20261027.md) |
 
 ## HTML çıktıları / HTML editions
 
