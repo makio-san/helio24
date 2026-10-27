@@ -152,5 +152,12 @@
     "source_sha256": "87e1605297b2f45a3738fd341e51fc68706e60025e0cf94da537a29866d6460a",
     "en": "precision-extra-trees-20261027.md",
     "tr": "precision-extra-trees-20261027.tr.md"
+  },
+  {
+    "id": "missed-regions-audit-20261027",
+    "source_language": "en",
+    "source_sha256": "92450c3765c067f8732e7381fa11de9d2143fc9e6aa5169afefe09fa6ced0065",
+    "en": "missed-regions-audit-20261027.md",
+    "tr": "missed-regions-audit-20261027.tr.md"
   }
 ]

@@ -32,6 +32,7 @@ their historical context; translation does not constitute a new evaluation.
 | Precision takip deneyi / Precision follow-up | [Türkçe](precision-followup-20261027.tr.md) | [English](precision-followup-20261027.md) |
 | Precision özellik deneyleri / Precision feature experiments | [Türkçe](precision-features-20261027.tr.md) | [English](precision-features-20261027.md) |
 | Extra Trees precision deneyi / Extra Trees precision experiment | [Türkçe](precision-extra-trees-20261027.tr.md) | [English](precision-extra-trees-20261027.md) |
+| Kaçırılan pencerelerin bölge denetimi / Missed-window region audit | [Türkçe](missed-regions-audit-20261027.tr.md) | [English](missed-regions-audit-20261027.md) |
 
 ## HTML çıktıları / HTML editions
 

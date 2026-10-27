@@ -28,7 +28,7 @@ def run():
         for stage,t in [('first_positive_forecast',positives.forecast_time.min()),('first_alarm',positives[positives.alarm].forecast_time.min())]:
             row=o[o.utc<t].iloc[-1]
             flux.append({'harp':h,'stage':stage,'forecast_utc':t.isoformat(),'last_observation_utc':row.utc.isoformat(),
-                         'USFLUX':float(row.usflux),'TOTUSJH':float(row.totusjh)})
+                         'USFLUX':f'{float(row.usflux):.8e}','TOTUSJH':float(row.totusjh)})
     growth=table(pd.DataFrame(flux))
     evidence=table(pd.DataFrame([{'source':'artifacts/missed_regions_20261027_r2/report.json','SHA-256':sha256(source/'report.json')},
                                  *[{'source':k,'SHA-256':v} for k,v in report['source_hashes'].items()]]))
