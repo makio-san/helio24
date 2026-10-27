@@ -1,0 +1,59 @@
+{
+  "id": "precision-features-v1",
+  "status": "development_search_frozen_before_execution",
+  "materialization_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+  "incumbent_report_sha256": "b57ce8e12de3d18740872b1504f97ff6a9dee22b272143836bb1a739d155ef03",
+  "regularization_C": [],
+  "new_model_weights": [
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "required_recall": 0.95,
+  "selection_role": "calibration",
+  "selection_rule": "Maximum precision at required recall, then maximum AP, then candidate ID",
+  "promotion_rule": "Validation precision improves at recall >= 0.95; AP does not decrease and Brier and log loss do not increase",
+  "bootstrap": {
+    "draws": 1000,
+    "seed": 24
+  },
+  "reserved_test_accessed": false,
+  "feature_candidates": [
+    {
+      "id": "interactions_C0.01",
+      "kind": "interactions",
+      "C": 0.01
+    },
+    {
+      "id": "interactions_C0.1",
+      "kind": "interactions",
+      "C": 0.1
+    },
+    {
+      "id": "interactions_C1",
+      "kind": "interactions",
+      "C": 1.0
+    },
+    {
+      "id": "relative_xgb",
+      "kind": "relative_xgb",
+      "parameters": {
+        "n_estimators": 200,
+        "max_depth": 3,
+        "learning_rate": 0.04,
+        "min_child_weight": 5,
+        "reg_lambda": 5,
+        "gamma": 0,
+        "scale_pos_weight": 1,
+        "subsample": 1,
+        "colsample_bytree": 1,
+        "tree_method": "hist",
+        "eval_metric": "logloss",
+        "n_jobs": 2,
+        "random_state": 24
+      }
+    }
+  ],
+  "history_provenance": "Catalog publication/association availability unverified; event-history inputs excluded."
+}

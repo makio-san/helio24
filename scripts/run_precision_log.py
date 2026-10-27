@@ -21,6 +21,7 @@ from helio24.full_data import sha256
 from helio24.metric_summary import enrich
 from helio24.modeling import metrics
 from helio24.signed_log import SignedLogScaler
+from helio24.magnetic_interactions import MagneticInteractions, RelativeEvolution
 from helio24.v2_training import load_development, METADATA
 
 
@@ -51,10 +52,20 @@ def run(args):
     candidates = [{'candidate': 'incumbent', **score('calibration', incumbent['calibration'])}]
     models, calibrators, probabilities = {}, {}, {}
     specifications = [{'id': f'signed_log_C{C:g}', 'C': C}
-                      for C in protocol['regularization_C']] + protocol.get('hist_candidates', [])
+                      for C in protocol['regularization_C']] + protocol.get('hist_candidates', []) + protocol.get('feature_candidates', [])
     for specification in specifications:
         key = specification['id']
-        if 'C' in specification:
+        if specification.get('kind') == 'interactions':
+            model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
+                                  SignedLogScaler(), StandardScaler(), MagneticInteractions(),
+                                  StandardScaler(), LogisticRegression(C=specification['C'],
+                                                                      max_iter=2000, random_state=24))
+        elif specification.get('kind') == 'relative_xgb':
+            from xgboost import XGBClassifier
+            model = make_pipeline(RelativeEvolution(),
+                                  SimpleImputer(strategy='median', add_indicator=True),
+                                  XGBClassifier(**specification['parameters']))
+        elif 'C' in specification:
             model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True),
                                   SignedLogScaler(), StandardScaler(),
                                   LogisticRegression(C=specification['C'], max_iter=2000, random_state=24))
@@ -107,7 +118,8 @@ def run(args):
               'protocol': protocol, 'protocol_sha256': sha256(args.protocol),
               'code_hashes': {name: sha256(ROOT / name) for name in
                              ['scripts/run_precision_log.py', 'helio24/signed_log.py',
-                              'helio24/v2_training.py', 'helio24/calibration.py']}}
+                              'helio24/v2_training.py', 'helio24/calibration.py',
+                              'helio24/magnetic_interactions.py']}}
     (args.output / 'report.json').write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(report, indent=2))
 
