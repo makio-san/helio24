@@ -26,6 +26,11 @@ from helio24.v2_training import load_development, METADATA
 from helio24.long_history import HISTORY_COLUMNS
 
 
+def operating_metrics(target, probability, threshold):
+    """Evaluate a previously frozen threshold without tuning on these labels."""
+    return enrich(metrics(target, probability, threshold))
+
+
 def run(args):
     protocol = json.loads(args.protocol.read_text())
     if args.output.exists():
@@ -138,6 +143,8 @@ def run(args):
                                **score('calibration', blend)})
         print(f'{key}: trained; calibration search complete', flush=True)
     winner = sorted(candidates, key=lambda r: (-r['precision'], -r['average_precision'], r['candidate']))[0]
+    frozen_thresholds = {'incumbent': candidates[0]['threshold'], 'selected': winner['threshold']}
+    (args.output / 'operating_thresholds.json').write_text(json.dumps(frozen_thresholds, indent=2)+'\n')
     (args.output / 'calibration_selection.json').write_text(json.dumps(winner, indent=2)+'\n')
     pd.DataFrame(candidates).to_csv(args.output / 'calibration_candidates.csv', index=False)
     # Validation predictions for the selected new candidate only, after selection is recorded.
@@ -150,12 +157,15 @@ def run(args):
                      'new_model_weight': weight, 'incumbent': str(args.incumbent),
                      'features': feature_columns, 'history': protocol.get('history')},
                     args.output / 'candidate.joblib')
-    results, intervals = {}, {}
+    results, intervals, transferred, transferred_intervals = {}, {}, {}, {}
     for name, p in [('incumbent', incumbent['validation']), ('selected', selected)]:
         results[name] = score('validation', p)
         intervals[name] = cluster_intervals(y['validation'], p, groups['validation'].harp,
                                            results[name]['threshold'], **protocol['bootstrap'])
         probabilities[name] = p
+        transferred[name] = operating_metrics(y['validation'], p, frozen_thresholds[name])
+        transferred_intervals[name] = cluster_intervals(
+            y['validation'], p, groups['validation'].harp, frozen_thresholds[name], **protocol['bootstrap'])
     old, new = results['incumbent'], results['selected']
     promote = (new['recall'] >= protocol['required_recall'] and new['precision'] > old['precision']
                and new['average_precision'] >= old['average_precision']
@@ -166,6 +176,9 @@ def run(args):
     prediction.to_parquet(args.output / 'validation_predictions.parquet', index=False)
     report = {'completed_utc': datetime.now(timezone.utc).isoformat(), 'winner': winner,
               'metrics': results, 'conditional_cluster_intervals': intervals,
+              'metrics_scope': 'Development diagnostic: threshold reselected on validation at required recall',
+              'calibration_threshold_validation_metrics': transferred,
+              'calibration_threshold_cluster_intervals': transferred_intervals,
               'promote': bool(promote), 'reserved_test_accessed': False,
               'protocol': protocol, 'protocol_sha256': sha256(args.protocol),
               'code_hashes': {name: sha256(ROOT / name) for name in
