@@ -173,5 +173,12 @@
     "source_sha256": "1650721dcd27b1aecdfdf09ea220cc3a7c9fe014aad3fd12e1cd5d1ff4639cf6",
     "en": "precision-long-history-20261028.md",
     "tr": "precision-long-history-20261028.tr.md"
+  },
+  {
+    "id": "walk-forward-20261028",
+    "source_language": "en",
+    "source_sha256": "41655c24644a300936f2e5170bf0109f0c91f8328caf2de5f0143da2e71122d8",
+    "en": "walk-forward-20261028.md",
+    "tr": "walk-forward-20261028.tr.md"
   }
 ]
