@@ -1,0 +1,72 @@
+{
+  "id": "precision-long-history-v2",
+  "status": "execution_contract_frozen",
+  "materialization_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+  "incumbent_report_sha256": "b57ce8e12de3d18740872b1504f97ff6a9dee22b272143836bb1a739d155ef03",
+  "regularization_C": [],
+  "new_model_weights": [
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "required_recall": 0.95,
+  "selection_role": "calibration",
+  "selection_rule": "Maximum precision at required recall, then maximum AP, then candidate ID",
+  "promotion_rule": "Validation precision improves at recall >= 0.95; AP does not decrease and Brier and log loss do not increase",
+  "bootstrap": {
+    "draws": 1000,
+    "seed": 24
+  },
+  "reserved_test_accessed": false,
+  "history": {
+    "artifact": "artifacts/long_history_20261028_r2",
+    "report_sha256": "5764eabdc9463a507b27759481982622fc406b6cabcadd64baf10d4236e51fee",
+    "hours": [
+      24,
+      48
+    ],
+    "additional_features": 196,
+    "keep_incomplete_history_rows": true
+  },
+  "feature_candidates": [
+    {
+      "id": "history_logistic",
+      "C": 1
+    },
+    {
+      "id": "history_xgboost",
+      "kind": "xgboost",
+      "parameters": {
+        "n_estimators": 200,
+        "max_depth": 3,
+        "learning_rate": 0.04,
+        "min_child_weight": 5,
+        "reg_lambda": 5,
+        "gamma": 0,
+        "scale_pos_weight": 1,
+        "subsample": 1,
+        "colsample_bytree": 1,
+        "tree_method": "hist",
+        "eval_metric": "logloss",
+        "n_jobs": 2,
+        "random_state": 24
+      }
+    },
+    {
+      "id": "history_hist",
+      "parameters": {
+        "max_iter": 200,
+        "max_leaf_nodes": 15,
+        "learning_rate": 0.05,
+        "min_samples_leaf": 100,
+        "l2_regularization": 10
+      }
+    }
+  ],
+  "supersedes": "config/precision-long-history-v1.json",
+  "evaluation_scopes": {
+    "matched_recall": "Development diagnostic with validation-reselected threshold; comparable to previous reports",
+    "transferred_threshold": "Validation evaluation at calibration-selected thresholds frozen before validation; no retuning"
+  }
+}
