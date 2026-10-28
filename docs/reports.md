@@ -36,6 +36,8 @@ their historical context; translation does not constitute a new evaluation.
 
 | Uzun geçmiş deneyi hazırlığı / Long-history experiment preparation | [Türkçe](long-history-preparation-20261028.tr.md) | [English](long-history-preparation-20261028.md) |
 
+| Uzun geçmiş precision sonuçları / Long-history precision results | [Türkçe](precision-long-history-20261028.tr.md) | [English](precision-long-history-20261028.md) |
+
 ## HTML çıktıları / HTML editions
 
 ```sh

@@ -166,5 +166,12 @@
     "source_sha256": "0929ec5651ae5bdb0a8486336c8f69cc2c199658f3895cdc836c907b47fabbd0",
     "en": "long-history-preparation-20261028.md",
     "tr": "long-history-preparation-20261028.tr.md"
+  },
+  {
+    "id": "precision-long-history-20261028",
+    "source_language": "en",
+    "source_sha256": "1650721dcd27b1aecdfdf09ea220cc3a7c9fe014aad3fd12e1cd5d1ff4639cf6",
+    "en": "precision-long-history-20261028.md",
+    "tr": "precision-long-history-20261028.tr.md"
   }
 ]

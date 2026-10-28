@@ -53,6 +53,10 @@ def run(source, report_name):
     winner = result['winner']['candidate']
     old, new = result['metrics']['incumbent'], result['metrics']['selected']
     difference = (new['precision'] - old['precision'])*100
+    candidate_rows = pd.read_csv(source / 'calibration_candidates.csv')
+    best_new = candidate_rows[candidate_rows.candidate.ne('incumbent')].sort_values(
+        ['precision', 'average_precision', 'candidate'], ascending=[False, False, True]).iloc[0]
+    baseline_cal = candidate_rows[candidate_rows.candidate.eq('incumbent')].iloc[0]
     protocol_id = result['protocol']['id']
     history_dir = history_path.parent.relative_to(ROOT)
     source_dir = source.relative_to(ROOT)
@@ -114,6 +118,22 @@ These thresholds are reselected using validation labels to compare precision at
 recall >=0.95. They are not thresholds transferred from calibration. Diagnostic promotion
 requires higher precision, AP no lower, and Brier/log loss no higher, with recall >=0.95.
 Passing this comparison alone does not establish a deployable 95% recall operating point.
+
+## Interpretation and next development step
+
+The strongest new calibration candidate was `{best_new['candidate']}`: precision
+{best_new['precision']:.6f} versus {baseline_cal['precision']:.6f} for the incumbent,
+with {int(best_new['fp'])} versus {int(baseline_cal['fp'])} false-positive windows.
+Its AP was {best_new['average_precision']:.6f} versus {baseline_cal['average_precision']:.6f}.
+Improved overall ranking therefore did not translate into better precision at the
+required high-recall operating point in calibration. This does not prove that longer
+history is intrinsically unhelpful; it rejects these specific candidates and summaries.
+
+The next research step is additional chronological development folds, with alarm
+thresholds fitted on each earlier calibration period and transferred unchanged to the
+following period. This should measure the stability of both precision and recall before
+another broad parameter search. Any new search needs a frozen budget and must retain
+the reserved test. This step has not been executed in this experiment.
 
 ## Frozen calibration thresholds on validation
 
@@ -195,6 +215,22 @@ yeniden seçilir. Kalibrasyondan aktarılmış eşikler değildir. Tanısal mode
 kontrolü, recall >=0.95 koşulunda daha yüksek precision, daha düşük olmayan AP ve daha
 yüksek olmayan Brier/log loss gerektirir. Yalnızca bu karşılaştırmayı geçmek, uygulamada
 %95 recall sağlayan bir alarm eşiğini kanıtlamaz.
+
+## Yorum ve sonraki geliştirme adımı
+
+Kalibrasyondaki en güçlü yeni aday `{best_new['candidate']}` oldu: precision değeri
+{best_new['precision']:.6f}, mevcut modelinki {baseline_cal['precision']:.6f}; yanlış
+pozitif pencere sayıları sırasıyla {int(best_new['fp'])} ve {int(baseline_cal['fp'])}.
+AP değerleri {best_new['average_precision']:.6f} ve {baseline_cal['average_precision']:.6f} oldu.
+Dolayısıyla genel sıralamadaki iyileşme, kalibrasyonda hedeflenen yüksek recall çalışma
+noktasında daha iyi precision sağlamadı. Bu, uzun geçmişin özünde yararsız olduğunu
+kanıtlamaz; denenen belirli adayları ve özetleri eler.
+
+Sonraki araştırma adımı, ek kronolojik geliştirme bölümleridir: alarm eşikleri her erken
+kalibrasyon döneminde belirlenip sonraki döneme değiştirilmeden aktarılmalıdır. Yeni ve
+geniş bir parametre aramasından önce hem precision hem recall kararlılığı ölçülmelidir.
+Her yeni aramanın bütçesi önceden sabitlenmeli ve ayrılmış test korunmalıdır. Bu adım,
+bu deney kapsamında yürütülmedi.
 
 ## Sabit kalibrasyon eşiklerinin doğrulama sonuçları
 
