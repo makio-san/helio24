@@ -1,0 +1,59 @@
+{
+  "id": "walk-forward-v1",
+  "status": "execution_contract_frozen",
+  "source": "artifacts/v2_development_features_20261025_r2",
+  "source_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+  "evaluation_years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "calibration_years": 1,
+  "required_recall": 0.95,
+  "features": 96,
+  "candidates": {
+    "baseline": {
+      "method": "training_prevalence"
+    },
+    "logistic": {
+      "C": 1.0,
+      "solver": "lbfgs",
+      "max_iter": 2000,
+      "class_weight": null,
+      "random_state": 24
+    },
+    "xgboost": {
+      "n_estimators": 200,
+      "max_depth": 3,
+      "learning_rate": 0.04,
+      "min_child_weight": 5,
+      "reg_lambda": 5,
+      "gamma": 0,
+      "scale_pos_weight": 1,
+      "subsample": 1,
+      "colsample_bytree": 1,
+      "tree_method": "hist",
+      "eval_metric": "logloss",
+      "n_jobs": 2,
+      "random_state": 24
+    }
+  },
+  "ensemble": {
+    "logistic_weight": 0.45,
+    "xgboost_weight": 0.55
+  },
+  "bootstrap": {
+    "draws": 1000,
+    "seed": 24
+  },
+  "policy": "Expanding training, previous calendar year calibration, next year evaluation. Purge boundary-crossing windows and remove HARPs shared with earlier roles. Skip folds lacking both calibration or training classes; retain zero-positive evaluation years with undefined recall. No model selection or threshold retuning on evaluation.",
+  "scope": "Retrospective temporal stability audit of fixed existing model recipes, not independent testing or a long-history rerun. Prior development informed recipes.",
+  "reserved_test_accessed": false
+}
