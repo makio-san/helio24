@@ -40,6 +40,8 @@ their historical context; translation does not constitute a new evaluation.
 
 | Yıllık tahmin kararlılığı / Annual forecast stability | [Türkçe](walk-forward-20261028.tr.md) | [English](walk-forward-20261028.md) |
 
+| Yanlış alarm denetimi ve model seçimi / False-alarm audit and model selection | [Türkçe](false-alarm-audit-20261029.tr.md) | [English](false-alarm-audit-20261029.md) |
+
 ## HTML çıktıları / HTML editions
 
 ```sh
