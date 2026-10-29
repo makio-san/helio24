@@ -1,0 +1,63 @@
+{
+  "id": "hard-negative-v1",
+  "status": "design_frozen_not_executed",
+  "evidence": "artifacts/false_alarm_audit_20261029_r1/report.json",
+  "evidence_sha256": "2da6a2804b33e7c7d0f26d7c43fccd9d00c79e4550221560fc162409d108bb23",
+  "base_protocol": "config/walk-forward-v1.json",
+  "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+  "evaluation_years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "features": "Unchanged 96 baseline magnetic summaries; no HARP IDs, years or evaluation errors as features",
+  "teacher": {
+    "model": "XGBoost with unchanged walk-forward-v1 parameters",
+    "fit_end": "January 1 of evaluation_year - 3",
+    "mining_period": "Final two calendar years of the outer training period, ending before outer calibration year",
+    "purging": "Teacher prediction_end <= mining_start; mining observation_start >= mining_start; remove mining HARPs present in teacher fit",
+    "scores": "Raw teacher probability; teacher trained exclusively before mining observations",
+    "eligibility": "Known negative outer-training windows in the mining period",
+    "selection": "Sort eligible negatives by score descending, then forecast_time ascending, then HARP ascending; take ceil(0.10 * eligible_count)",
+    "fraction": 0.1
+  },
+  "student": {
+    "model": "XGBoost with unchanged walk-forward-v1 parameters",
+    "training": "All original outer-training rows retained",
+    "hard_negative_weight": 3.0,
+    "other_weight": 1.0,
+    "ensemble": "Replace only XGBoost in the fixed 0.45 logistic / 0.55 XGBoost blend; logistic arm unchanged"
+  },
+  "arms": [
+    "baseline_unweighted",
+    "hard_negative_weighted",
+    "uniform_negative_matched_weight"
+  ],
+  "uniform_control": "All outer-training negative windows receive 1 + 2 * hard_negative_count / outer_training_negative_count; positives retain weight 1. Total negative weight matches the hard-negative arm.",
+  "calibration": "Refit sigmoid on unchanged outer calibration year separately for each student; select each ensemble threshold at recall >=0.95 on calibration and freeze before evaluation.",
+  "skips": "Preserve outer-fold skip rules. If teacher lacks both classes or eligible mining negatives are empty, mark both new arms unavailable; never silently substitute baseline.",
+  "required_recall": 0.95,
+  "selection": "No tuning on evaluation labels; report all three fixed arms and all eligible years",
+  "acceptance": "No automatic promotion. Require strictly higher precision and recall >=0.95 in every comparable positive evaluation year; AP must not decrease and Brier/log loss must not increase per year versus baseline. Review paired HARP uncertainty and both controls; improvement over uniform control is needed to attribute benefit to targeted mining.",
+  "zero_positive_years": "Report false positives and FPR; recall remains undefined.",
+  "uncertainty": {
+    "unit": "paired whole-HARP bootstrap within year",
+    "draws": 1000,
+    "seed": 24,
+    "scope": "Conditional on trained models and frozen thresholds; no independence claim across years"
+  },
+  "reserved_test_accessed": false,
+  "limitations": [
+    "Post-hoc development hypothesis informed by historical evaluation errors; not an independent test.",
+    "Weighting can reduce recall and need not improve ranking or probability calibration.",
+    "Missingness associations are descriptive and may reflect region composition; no causal quality claim.",
+    "No label changes, difficult-region exclusions or retrospective alert suppression."
+  ]
+}
