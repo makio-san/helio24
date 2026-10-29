@@ -42,6 +42,8 @@ their historical context; translation does not constitute a new evaluation.
 
 | Yanlış alarm denetimi ve model seçimi / False-alarm audit and model selection | [Türkçe](false-alarm-audit-20261029.tr.md) | [English](false-alarm-audit-20261029.md) |
 
+| Çok dönemli zor negatif deneyi / Multi-period hard-negative experiment | [Türkçe](hard-negative-years-20261029.tr.md) | [English](hard-negative-years-20261029.md) |
+
 ## HTML çıktıları / HTML editions
 
 ```sh

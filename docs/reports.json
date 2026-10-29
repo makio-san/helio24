@@ -187,5 +187,12 @@
     "source_sha256": "b1f498702ec8e22216cbacf73d4c51e615715896839a009090b05432d5f0451a",
     "en": "false-alarm-audit-20261029.md",
     "tr": "false-alarm-audit-20261029.tr.md"
+  },
+  {
+    "id": "hard-negative-years-20261029",
+    "source_language": "en",
+    "source_sha256": "d0744d7eded770d6c5560b2c50c5aac9556c25d10872ef3b1d7b887a220d7777",
+    "en": "hard-negative-years-20261029.md",
+    "tr": "hard-negative-years-20261029.tr.md"
   }
 ]
