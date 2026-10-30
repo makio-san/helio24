@@ -1,0 +1,41 @@
+{
+  "id": "calibration-windows-v1",
+  "status": "execution_contract_frozen",
+  "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+  "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+  "base_protocol": "config/walk-forward-v1.json",
+  "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+  "evidence": "artifacts/calibration_score_audit_20261030_r1/report.json",
+  "evidence_sha256": "37d4773a865824d034d4701b220686575820918b4461e9c33f7c02ef4e0414dd",
+  "evaluation_years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "arms": [
+    "original_baseline",
+    "shared_train_one_year",
+    "shared_train_two_year"
+  ],
+  "training": "For evaluation year Y, both new arms share classifiers trained before Jan 1 of Y-2. Prediction windows must end by that boundary. Fixed 96 features and original model hyperparameters.",
+  "calibration": "Two-year pool spans Y-2 and Y-1 with observation/prediction boundary purging and removal of training HARPs. One-year calibration is its subset with observation_start >= Jan 1 of Y-1.",
+  "evaluation": "Use original annual evaluation rows, removing any HARP shared with new training or two-year calibration. All available arms use these same rows; report removals.",
+  "probability_policy": "Refit sigmoid calibrators separately on each fixed window; same data fits probability mapping and selects threshold. Fixed 0.45 logistic/0.55 XGBoost mixture.",
+  "required_recall": 0.95,
+  "threshold_policy": "Select at recall >=0.95 on each calibration window, freeze before evaluation; no evaluation retuning.",
+  "skips": "Keep each arm independently available only with both training/calibration classes and nonempty evaluation. Original baseline available only when its frozen annual fold exists; never silently substitute. Zero-positive evaluation years retain FP metrics.",
+  "acceptance": "No automatic promotion. Require higher precision with recall >=0.95, AP no lower, Brier/log loss no higher versus BOTH controls in every originally baseline-comparable positive year, with complete candidate coverage. Report unmatched years separately.",
+  "bootstrap": {
+    "draws": 1000,
+    "seed": 24
+  },
+  "reserved_test_accessed": false,
+  "scope": "Adaptive retrospective comparison; no duration grid, no split-date tuning. Paired same-year contrasts isolate window duration under shared shorter training; original baseline contrasts also change training history."
+}
