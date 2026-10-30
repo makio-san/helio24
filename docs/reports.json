@@ -201,5 +201,12 @@
     "source_sha256": "15a60afc128cfc86b64c78c068bfa6654a794cfefd762d36eafc812a73471e0b",
     "en": "calibration-periods-20261030.md",
     "tr": "calibration-periods-20261030.tr.md"
+  },
+  {
+    "id": "calibration-score-audit-20261030",
+    "source_language": "en",
+    "source_sha256": "b824271618d4d195ad5231322ccfb1573723d6d4737e24ef737f219f35f474c9",
+    "en": "calibration-score-audit-20261030.md",
+    "tr": "calibration-score-audit-20261030.tr.md"
   }
 ]

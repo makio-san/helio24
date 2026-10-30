@@ -46,6 +46,8 @@ their historical context; translation does not constitute a new evaluation.
 
 | Ayrı kalibrasyon dönemleri / Separate calibration periods | [Türkçe](calibration-periods-20261030.tr.md) | [English](calibration-periods-20261030.md) |
 
+| Kalibrasyon skorları ve bölge etkisi / Calibration scores and region influence | [Türkçe](calibration-score-audit-20261030.tr.md) | [English](calibration-score-audit-20261030.md) |
+
 ## HTML çıktıları / HTML editions
 
 ```sh
