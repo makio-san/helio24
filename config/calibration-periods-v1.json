@@ -1,0 +1,39 @@
+{
+  "id": "calibration-periods-v1",
+  "status": "execution_contract_frozen",
+  "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+  "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+  "base_protocol": "config/walk-forward-v1.json",
+  "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+  "evaluation_years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "arms": [
+    "baseline_full_year",
+    "late_threshold_control",
+    "separated_calibration"
+  ],
+  "split": "July 1 of the preceding year; early prediction_end <= boundary; late observation_start >= boundary; remove late HARPs shared with early. Outer train and evaluation unchanged.",
+  "baseline_full_year": "Frozen full-year calibration and threshold.",
+  "late_threshold_control": "Frozen full-year calibrators; threshold selected on purged late half. Contains calibration/threshold reuse deliberately as recency control.",
+  "separated_calibration": "Sigmoid calibrators fit only on early half; threshold selected on purged late half.",
+  "required_recall": 0.95,
+  "model_policy": "Frozen per-year logistic and XGBoost; fixed 0.45/0.55 blend; no retraining, feature changes or threshold retuning on evaluation.",
+  "skip_policy": "Keep original outer skips. If late half lacks both classes both new arms unavailable. If early half lacks both classes separated arm unavailable. Never substitute baseline.",
+  "acceptance": "Require complete coverage of baseline-comparable positive years, higher precision and recall >=0.95 in each, AP no lower and Brier/log loss no higher versus baseline. Compare late-threshold control separately; no automatic promotion.",
+  "bootstrap": {
+    "draws": 1000,
+    "seed": 24
+  },
+  "reserved_test_accessed": false,
+  "scope": "Adaptive retrospective development. Comparisons alter calibration sample size and timing; no causal attribution to reuse alone."
+}
