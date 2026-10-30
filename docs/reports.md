@@ -48,6 +48,8 @@ their historical context; translation does not constitute a new evaluation.
 
 | Kalibrasyon skorları ve bölge etkisi / Calibration scores and region influence | [Türkçe](calibration-score-audit-20261030.tr.md) | [English](calibration-score-audit-20261030.md) |
 
+| Kalibrasyon süresi karşılaştırması / Calibration window comparison | [Türkçe](calibration-windows-20261030.tr.md) | [English](calibration-windows-20261030.md) |
+
 ## HTML çıktıları / HTML editions
 
 ```sh
