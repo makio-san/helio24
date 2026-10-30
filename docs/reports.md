@@ -44,6 +44,8 @@ their historical context; translation does not constitute a new evaluation.
 
 | Çok dönemli zor negatif deneyi / Multi-period hard-negative experiment | [Türkçe](hard-negative-years-20261029.tr.md) | [English](hard-negative-years-20261029.md) |
 
+| Ayrı kalibrasyon dönemleri / Separate calibration periods | [Türkçe](calibration-periods-20261030.tr.md) | [English](calibration-periods-20261030.md) |
+
 ## HTML çıktıları / HTML editions
 
 ```sh

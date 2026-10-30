@@ -194,5 +194,12 @@
     "source_sha256": "d0744d7eded770d6c5560b2c50c5aac9556c25d10872ef3b1d7b887a220d7777",
     "en": "hard-negative-years-20261029.md",
     "tr": "hard-negative-years-20261029.tr.md"
+  },
+  {
+    "id": "calibration-periods-20261030",
+    "source_language": "en",
+    "source_sha256": "15a60afc128cfc86b64c78c068bfa6654a794cfefd762d36eafc812a73471e0b",
+    "en": "calibration-periods-20261030.md",
+    "tr": "calibration-periods-20261030.tr.md"
   }
 ]
