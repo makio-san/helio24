@@ -1,0 +1,12 @@
+{
+  "id": "temporal-evaluation-report-v1",
+  "scope": "Frozen completed-fold snapshots until all eligible annual periods finish; no model promotion from incomplete coverage",
+  "arms": ["baseline", "short_training", "chronological", "shuffled_interior"],
+  "comparisons": [["chronological", "baseline"], ["shuffled_interior", "baseline"], ["chronological", "shuffled_interior"], ["chronological", "short_training"]],
+  "probability_bins": [0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1],
+  "bin_membership": "Right-closed intervals, with zero included in the first bin; no evaluation-based bin tuning",
+  "bootstrap": {"draws": 1000, "seed": 24, "unit": "Paired whole HARP within each year; fixed models, calibrators, thresholds and bin assignments"},
+  "uncertainty": "Reuse original precision/recall/FP intervals; add paired Brier/log-loss difference intervals and conditional observed-rate reliability intervals. AP remains a point estimate. Seed spread is descriptive, not a confidence interval.",
+  "coverage": "All seven original eligible years, including zero-positive 2018. Missing positive years must prevent a completed all-year gate. Original 2019-2021 calibration-class skips remain visible.",
+  "no_changes": ["No refitting, relabeling, new threshold selection or exclusions", "No reserved 2024-2025 access", "No automatic promotion", "Never overwrite a prior snapshot or report"]
+}
