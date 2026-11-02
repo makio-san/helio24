@@ -116,6 +116,24 @@ Only regions and times matching the selected outcome are offered. The evaluation
 tab includes an error table and a CSV download without local paths or model inputs.
 Outcome-based filtering is retrospective analysis; it does not change predictions.
 
+The **Experiment progress** tab refreshes every 15 seconds. It shows saved fits,
+current year/input order/seed/epoch, evaluated periods, the last saved record in UTC,
+and the current fit's training-loss history. Process identity is checked against
+local launch records; stopped, failed and unverifiable processes are distinguished.
+An old failure does not override a verified resumed process. The tab also works
+when replay-model artifacts are unavailable. It only reads records and never
+starts or changes training. A live process with no checkpoint update for 15 minutes
+is shown separately; this alone does not prove that the process is stuck.
+
+**Türkçe:** **Experiment progress** sekmesi 15 saniyede bir yenilenir. Kaydedilmiş
+eğitimleri, mevcut yıl/girdi sırası/tohum/epoch bilgisini, değerlendirilmiş dönemleri,
+son kayıt zamanını (UTC) ve mevcut eğitimin kayıp geçmişini gösterir. Süreç kimliği
+yerel başlatma kayıtlarıyla doğrulanır; durmuş, başarısız ve doğrulanamayan durumlar
+ayrılır. Eski hata, doğrulanmış yeni sürecin durumunu değiştirmez. Geçmiş tahmin
+modelinin çıktıları yokken de kullanılabilir. Yalnızca kayıtları okur; eğitim
+başlatmaz veya değiştirmez. Canlı bir süreç 15 dakika checkpoint üretmezse ayrı
+uyarı gösterilir; bu durum tek başına sürecin takıldığını kanıtlamaz.
+
 ## Commit style
 
 Use short, descriptive English messages with a type, scope, and final period:

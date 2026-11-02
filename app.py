@@ -9,6 +9,7 @@ from helio24.data import MAGNETIC_COLUMNS, ROOT, read_observation, trusted_measu
 from helio24.modeling import metrics
 from helio24.review import classify_windows, review_export
 from helio24.event_views import render_event_tab
+from helio24.experiment_views import render_training_tab
 
 st.set_page_config(
     page_title='Helio24 | Solar flare research console',
@@ -184,6 +185,7 @@ if not all((output / name).exists() for name in required):
     st.info('No evaluated model artifacts were found. Run the real-data notebook first.')
     st.code('.venv/bin/python scripts/run_notebook.py', language='bash')
     st.caption('If the data is not available yet, run: python scripts/download.py')
+    render_training_tab(ROOT)
     st.stop()
 
 
@@ -219,8 +221,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-replay_tab, performance_tab, data_tab, event_tab = st.tabs(
-    ['Historical replay', 'Model evaluation', 'Data & method', 'Alarm & event audit']
+replay_tab, performance_tab, data_tab, event_tab, training_tab = st.tabs(
+    ['Historical replay', 'Model evaluation', 'Data & method', 'Alarm & event audit', 'Experiment progress']
 )
 
 with replay_tab:
@@ -578,3 +580,6 @@ with data_tab:
 
 with event_tab:
     render_event_tab(ROOT)
+
+with training_tab:
+    render_training_tab(ROOT)
