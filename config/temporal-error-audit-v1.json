@@ -1,0 +1,14 @@
+{
+  "id": "temporal-error-audit-v1",
+  "status": "descriptive_plan_frozen_before_granular_inspection",
+  "source": "artifacts/temporal_years_20261101_r1",
+  "years": [2014, 2015, 2016],
+  "comparisons": [["chronological", "baseline"], ["shuffled_interior", "baseline"], ["chronological", "shuffled_interior"]],
+  "measurement_fields": ["USFLUX__last", "TOTUSJH__last", "R_VALUE__last", "MEANSHR__last", "USFLUX__delta", "TOTUSJH__delta", "R_VALUE__delta", "MEANSHR__delta"],
+  "measurement_bins": "25/50/75 percentiles of finite values in each original annual training fold; duplicate cuts removed; missing/nonfinite evaluation values kept as unavailable. No evaluation-based cut selection.",
+  "missing_bins": ["zero", "(0,0.01]", "(0.01,0.05]", "(0.05,1]", "unavailable"],
+  "regions": "Rank by extra false-positive windows versus named control; compare top-ten extra-FP share with negative-window exposure. Also retain net and removed errors.",
+  "runs": "Exact one-hour adjacency within one HARP; all gaps and nonmatching windows break runs. Describe extra-FP and all candidate-FP runs, including >=6-window runs.",
+  "scope": "Adaptive descriptive development audit, not independent model selection, causal attribution or significance testing. Thresholds remain frozen; recall may differ between arms.",
+  "prohibitions": ["No training or threshold changes during the ongoing experiment", "No relabeling or region/window exclusions", "No reserved 2024-2025 test access", "No inference that future zero-positive regions are an available predictor"]
+}
