@@ -264,5 +264,12 @@
     "source_sha256": "7803b069892ebbee7bd7f410cc74a81e4fd913ef64ca0e8d1c93806889cc833a",
     "en": "temporal-errors-20261102.md",
     "tr": "temporal-errors-20261102.tr.md"
+  },
+  {
+    "id": "temporal-evaluation-interim-20261102",
+    "source_language": "en",
+    "source_sha256": "7075e2cf4f6abb391765950a1442e0c8ef52f680aae9f185da474c5860fcc74f",
+    "en": "temporal-evaluation-interim-20261102.md",
+    "tr": "temporal-evaluation-interim-20261102.tr.md"
   }
 ]
