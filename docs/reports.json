@@ -257,5 +257,12 @@
     "source_sha256": "79641f4ddc1193c5e640a6338968b1c65c0cd1e944494a04b990055167cf0bd3",
     "en": "runtime-recovery-20261101.md",
     "tr": "runtime-recovery-20261101.tr.md"
+  },
+  {
+    "id": "temporal-errors-20261102",
+    "source_language": "en",
+    "source_sha256": "7803b069892ebbee7bd7f410cc74a81e4fd913ef64ca0e8d1c93806889cc833a",
+    "en": "temporal-errors-20261102.md",
+    "tr": "temporal-errors-20261102.tr.md"
   }
 ]

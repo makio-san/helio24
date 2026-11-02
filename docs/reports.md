@@ -91,3 +91,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Yıllık TCN deneyinin başlatılması / Annual TCN experiment launch | [Türkçe](temporal-execution-20261101.tr.md) | [English](temporal-execution-20261101.md) |
 
 | Yerel ortam kurtarma ve eğitime devam / Local runtime recovery and training resumption | [Türkçe](runtime-recovery-20261101.tr.md) | [English](runtime-recovery-20261101.md) |
+
+| TCN ek yanlış alarm incelemesi / TCN additional false-alarm audit | [Türkçe](temporal-errors-20261102.tr.md) | [English](temporal-errors-20261102.md) |
