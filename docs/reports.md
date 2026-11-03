@@ -95,3 +95,5 @@ their technical names. Numeric tables retain the source document's number notati
 | TCN ek yanlış alarm incelemesi / TCN additional false-alarm audit | [Türkçe](temporal-errors-20261102.tr.md) | [English](temporal-errors-20261102.md) |
 
 | Yıllık TCN ara değerlendirmesi / Annual TCN interim evaluation | [Türkçe](temporal-evaluation-interim-20261102.tr.md) | [English](temporal-evaluation-interim-20261102.md) |
+
+| Eğitim dosyalarının yerel erişimini kurtarma / Training storage recovery | [Türkçe](storage-recovery-20261103.tr.md) | [English](storage-recovery-20261103.md) |
