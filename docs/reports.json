@@ -278,5 +278,12 @@
     "source_sha256": "d891ba0cac46dd001e74901723a5ea99202674fbfb7a15010f6fdb0bfd995724",
     "en": "storage-recovery-20261103.md",
     "tr": "storage-recovery-20261103.tr.md"
+  },
+  {
+    "id": "training-resumption-20261104",
+    "source_language": "en",
+    "source_sha256": "7e30aba2356e0038595b857ab67fc0d2f5b17f37f502bbb84680bec5552e7857",
+    "en": "training-resumption-20261104.md",
+    "tr": "training-resumption-20261104.tr.md"
   }
 ]
