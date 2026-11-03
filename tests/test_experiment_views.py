@@ -30,3 +30,12 @@ def test_monitor_displays_saved_fit_counts_and_stopped_state(tmp_path,monkeypatc
     assert not app.exception
     assert any(item.value=='Stopped' for item in app.warning)
     assert [m.value for m in app.metric][:3]==['0 / 1','2014','2 / 10']
+
+
+def test_cloud_storage_state_hides_unverified_counts(tmp_path,monkeypatch):
+    from helio24 import experiment_views
+    monkeypatch.setattr(experiment_views,'snapshot',lambda *_:{'state':'storage_unavailable'})
+    app=AppTest.from_function(render,args=(str(tmp_path),),default_timeout=10).run()
+    assert not app.exception
+    assert not app.metric
+    assert any('cloud placeholders' in item.value for item in app.warning)

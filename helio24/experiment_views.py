@@ -5,7 +5,8 @@ import streamlit as st
 from helio24.experiment_monitor import snapshot
 
 LABELS={'running':'Running','running_stale':'Running · no recent checkpoint','worker_only':'Worker active · coordinator unavailable',
-        'completed':'Completed','stopped':'Stopped','failed':'Failed','unknown':'Process status unavailable','not_started':'Not started'}
+        'completed':'Completed','stopped':'Stopped','failed':'Failed','unknown':'Process status unavailable','not_started':'Not started',
+        'storage_unavailable':'Local experiment records unavailable'}
 
 
 @st.fragment(run_every='15s')
@@ -18,6 +19,9 @@ def render_training_tab(root, directory=None):
     if state['state'] in ['running','completed']:st.success(label)
     elif state['state'] in ['failed','stopped','worker_only','running_stale']:st.warning(label)
     else:st.info(label)
+    if state['state']=='storage_unavailable':
+        st.warning('Required records are cloud placeholders or inaccessible. Download them locally before checking progress. Counts and process status have not been verified.')
+        return
     if state['state']=='unknown':st.caption('Process access could not be verified. The last saved record is shown below.')
     if state['state']=='running_stale':st.caption('The process is active, but no new checkpoint has been recorded for at least 15 minutes.')
     if state['state']=='worker_only':st.caption('A training worker is active. The coordinator could not be found; later fits may not start automatically.')

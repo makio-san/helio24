@@ -92,3 +92,49 @@ def test_probe_rejects_reused_pid_for_other_experiment(experiment,monkeypatch):
     assert probe_run(run,root,launchers)['state']=='stopped'
     command[-1]=str(run)
     assert probe_run(run,root,launchers)=={'state':'running','pid':123}
+
+
+def test_cloud_prepared_record_does_not_look_not_started(experiment,monkeypatch):
+    from helio24 import experiment_monitor
+    root,run,_=experiment
+    monkeypatch.setattr(experiment_monitor,'is_placeholder',lambda path: path==run/'prepared.json')
+    monkeypatch.setattr(experiment_monitor,'read_record',lambda *_:pytest.fail('Must not open placeholder records'))
+    s=snapshot(root,process_probe=lambda *_:pytest.fail('Process status should remain unverified'))
+    assert s['state']=='storage_unavailable'
+    assert s['completed'] is None and s['total'] is None
+
+
+def test_cloud_optional_record_is_skipped_without_opening(tmp_path,monkeypatch):
+    from helio24 import experiment_monitor
+    monkeypatch.setattr(experiment_monitor,'is_placeholder',lambda _:True)
+    warnings=[]
+    assert experiment_monitor.read_record(tmp_path/'progress.json',warnings) is None
+    assert warnings==['cloud_placeholder:'+str(tmp_path/'progress.json')]
+
+
+def test_cloud_job_identity_does_not_read_or_publish_false_counts(experiment,monkeypatch):
+    from helio24 import experiment_monitor
+    root,run,_=experiment
+    monkeypatch.setattr(experiment_monitor,'is_placeholder',lambda path: path==run/'2014/chronological_seed24/job.json')
+    s=snapshot(root,process_probe=probe('stopped'))
+    assert s['state']=='storage_unavailable'
+    assert s['completed'] is None and s['total'] is None
+
+
+def test_relocated_runner_requires_launcher_path_and_matching_output(experiment,monkeypatch):
+    import psutil
+    from helio24.experiment_monitor import probe_run
+    root,run,_=experiment
+    runner=str(root/'local_execution/scripts/run_temporal_years.py')
+    command=['python',runner,'--output',str(run)]
+    class Process:
+        def cmdline(self):return command
+        def status(self):return psutil.STATUS_RUNNING
+    monkeypatch.setattr(psutil,'Process',lambda _:Process())
+    monkeypatch.setattr(psutil,'process_iter',lambda _:[])
+    launchers=[(root/'launcher.json',{'pid':123,'command':command.copy()})]
+    assert probe_run(run,root,launchers)=={'state':'running','pid':123}
+    command[-1]=str(root/'other')
+    assert probe_run(run,root,launchers)['state']=='stopped'
+    command[-1]=str(run);command[1]=str(root/'unexpected/run_temporal_years.py')
+    assert probe_run(run,root,launchers)['state']=='stopped'

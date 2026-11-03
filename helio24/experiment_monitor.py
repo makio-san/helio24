@@ -4,10 +4,14 @@ import hashlib
 import json
 from pathlib import Path
 import time
+from helio24.storage_preflight import is_placeholder
 
 
 def read_record(path, warnings):
     try:
+        if is_placeholder(path):
+            warnings.append('cloud_placeholder:'+str(path))
+            return None
         record=json.loads(path.read_text())
         if not isinstance(record,dict):raise ValueError('Expected object')
         return record
@@ -35,9 +39,11 @@ def probe_run(directory, root, launchers):
     for path,record in launchers:
         pid=record.get('pid')
         if not isinstance(pid,int) or isinstance(pid,bool):continue
+        expected=record.get('command',[])
+        runner=next((part for part in expected if isinstance(part,str) and Path(part).name=='run_temporal_years.py'),str(root/'scripts/run_temporal_years.py'))
         try:
             process=psutil.Process(pid);command=process.cmdline()
-            if process.status()!=psutil.STATUS_ZOMBIE and str(root/'scripts/run_temporal_years.py') in command and command_matches(command,'--output',directory):
+            if process.status()!=psutil.STATUS_ZOMBIE and runner in command and command_matches(command,'--output',directory):
                 return {'state':'running','pid':pid}
         except (psutil.NoSuchProcess, psutil.ZombieProcess):pass
         except (psutil.AccessDenied,OSError):denied=True
@@ -45,7 +51,7 @@ def probe_run(directory, root, launchers):
         for process in psutil.process_iter(['pid','cmdline','status']):
             try:
                 command=process.info['cmdline'] or []
-                if str(root/'scripts/temporal_worker.py') not in command or process.info['status']==psutil.STATUS_ZOMBIE:continue
+                if not any(Path(part).name=='temporal_worker.py' for part in command) or process.info['status']==psutil.STATUS_ZOMBIE:continue
                 job=Path(command[command.index('--job')+1]).resolve()
                 if job.is_relative_to(directory.resolve()):return {'state':'worker_only','pid':process.pid}
             except (ValueError, IndexError, psutil.NoSuchProcess, psutil.AccessDenied, OSError):continue
@@ -56,6 +62,7 @@ def probe_run(directory, root, launchers):
 def read_epoch_history(directory):
     """Bounded log tail; tolerate old tracebacks and partially written log lines."""
     try:
+        if is_placeholder(directory/'worker.log'):return []
         with (directory/'worker.log').open('rb') as stream:
             stream.seek(0,2);stream.seek(max(0,stream.tell()-65536))
             lines=stream.read().decode('utf-8',errors='replace').splitlines()
@@ -74,6 +81,17 @@ def read_epoch_history(directory):
 def snapshot(root, directory=None, *, now=None, process_probe=probe_run):
     root=Path(root).resolve();directory=Path(directory or root/'artifacts/temporal_years_20261101_r1').resolve()
     now=time.time() if now is None else now;warnings=[]
+    unavailable=[]
+    for path in [directory/'prepared.json',root/'config/temporal-sequence-v2.json']:
+        try:
+            if is_placeholder(path):unavailable.append(str(path))
+        except FileNotFoundError:pass
+        except OSError:unavailable.append(str(path))
+    if unavailable:
+        return {'state':'storage_unavailable','completed':None,'total':None,'epochs':None,
+                'current':None,'jobs':[],'history':[],'finished_years':[],
+                'last_record':None,'record_age_seconds':None,'pid':None,'failure':None,
+                'warnings':unavailable,'directory':str(directory)}
     prepared=read_record(directory/'prepared.json',warnings)
     protocol=read_record(root/'config/temporal-sequence-v2.json',warnings) or {}
     maximum_epochs=protocol.get('training',{}).get('epochs',10)
@@ -88,8 +106,11 @@ def snapshot(root, directory=None, *, now=None, process_probe=probe_run):
                 complete=False
                 if isinstance(result,dict):
                     try:
-                        complete=(result.get('epochs')==maximum_epochs and result.get('job_sha256')==hashlib.sha256((path/'job.json').read_bytes()).hexdigest()
-                                  and all((path/name).exists() for name in ['checkpoint.pt','calibration.npy','evaluation.npy']))
+                        if is_placeholder(path/'job.json'):
+                            warnings.append('cloud_placeholder:'+str(path/'job.json'))
+                        else:
+                            complete=(result.get('epochs')==maximum_epochs and result.get('job_sha256')==hashlib.sha256((path/'job.json').read_bytes()).hexdigest()
+                                      and all((path/name).exists() for name in ['checkpoint.pt','calibration.npy','evaluation.npy']))
                     except OSError:pass
                     if not complete:warnings.append(f'{fold["year"]}/{arm}_seed{seed}/result.json')
                 raw_epoch=(progress or {}).get('epoch',0)
@@ -134,6 +155,8 @@ def snapshot(root, directory=None, *, now=None, process_probe=probe_run):
     finished_years=[]
     for fold in (prepared or {}).get('folds',[]):
         if (directory/str(fold['year'])/'finished.json').exists():finished_years.append(fold['year'])
+    if any(warning.startswith('cloud_placeholder:') for warning in warnings):
+        state='storage_unavailable';completed=None;total=None
     return {'state':state,'completed':completed,'total':total,'epochs':maximum_epochs,'current':current,'jobs':jobs,'history':history,
             'finished_years':finished_years,'last_record':datetime.fromtimestamp(latest_record,timezone.utc).isoformat() if latest_record else None,
             'record_age_seconds':max(0,now-latest_record) if latest_record else None,'pid':process.get('pid'),
