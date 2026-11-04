@@ -99,41 +99,48 @@ def ensure_no_worker(output):
                 raise RuntimeError('An existing worker belongs to this experiment')
 
 
-def run(root, output, job_path, status_path):
+def run_locked(root, output, job_path, status_path, on_state=None):
+    """Execute one fit while the caller holds the experiment lock."""
     def status(state, **extra):
         record = {'state': state, 'scope': 'single_prescribed_fit', 'pid': os.getpid(),
                   'job': str(job_path), 'output': str(output), 'annual_evaluation_complete': False, **extra}
         temporary = status_path.with_suffix('.tmp')
         temporary.write_text(json.dumps(record, indent=2)+'\n')
         temporary.replace(status_path)
+        if on_state is not None:
+            on_state(record)
 
+    try:
+        ensure_no_worker(output)
+        status('verifying')
+        if validate_job(root, output, job_path):
+            status('already_complete')
+            return
+        with (job_path.parent/'worker.log').open('a') as log:
+            worker = subprocess.Popen([sys.executable, str(root/'scripts/temporal_worker.py'), '--job', str(job_path)],
+                                      stdout=log, stderr=subprocess.STDOUT)
+            try:
+                status('training', worker_pid=worker.pid)
+                code = worker.wait()
+            except BaseException:
+                if worker.poll() is None:
+                    worker.terminate()
+                    worker.wait()
+                raise
+            if code:
+                raise RuntimeError(f'Frozen worker exited with code {code}')
+        if not validate_job(root, output, job_path):
+            raise ValueError('Worker exited without a verified result')
+        status('fit_complete')
+    except BaseException as error:
+        status('failed', error=repr(error))
+        raise
+
+
+def run(root, output, job_path, status_path):
     with (output/'.run.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        try:
-            ensure_no_worker(output)
-            status('verifying')
-            if validate_job(root, output, job_path):
-                status('already_complete')
-                return
-            with (job_path.parent/'worker.log').open('a') as log:
-                worker = subprocess.Popen([sys.executable, str(root/'scripts/temporal_worker.py'), '--job', str(job_path)],
-                                          stdout=log, stderr=subprocess.STDOUT)
-                try:
-                    status('training', worker_pid=worker.pid)
-                    code = worker.wait()
-                except BaseException:
-                    if worker.poll() is None:
-                        worker.terminate()
-                        worker.wait()
-                    raise
-                if code:
-                    raise RuntimeError(f'Frozen worker exited with code {code}')
-            if not validate_job(root, output, job_path):
-                raise ValueError('Worker exited without a verified result')
-            status('fit_complete')
-        except BaseException as error:
-            status('failed', error=repr(error))
-            raise
+        run_locked(root, output, job_path, status_path)
 
 
 if __name__ == '__main__':
