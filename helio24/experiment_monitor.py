@@ -40,11 +40,11 @@ def probe_run(directory, root, launchers):
         pid=record.get('pid')
         if not isinstance(pid,int) or isinstance(pid,bool):continue
         expected=record.get('command',[])
-        runner=next((part for part in expected if isinstance(part,str) and Path(part).name=='run_temporal_years.py'),str(root/'scripts/run_temporal_years.py'))
+        runner=next((part for part in expected if isinstance(part,str) and Path(part).name in ['run_temporal_years.py','resume_temporal_queue.py']),str(root/'scripts/run_temporal_years.py'))
         try:
             process=psutil.Process(pid);command=process.cmdline()
             if process.status()!=psutil.STATUS_ZOMBIE and runner in command and command_matches(command,'--output',directory):
-                return {'state':'running','pid':pid}
+                return {'state':'queue_running' if Path(runner).name=='resume_temporal_queue.py' else 'running','pid':pid}
         except (psutil.NoSuchProcess, psutil.ZombieProcess):pass
         except (psutil.AccessDenied,OSError):denied=True
     try:
@@ -145,9 +145,9 @@ def snapshot(root, directory=None, *, now=None, process_probe=probe_run):
     final_valid=(isinstance(final,dict) and isinstance(final.get('metrics'),list)
                  and final.get('protocol_sha256')==(prepared or {}).get('protocol_sha256'))
     if final_valid and total and completed==total:state='completed'
-    elif process['state']=='running':
+    elif process['state'] in ['running','queue_running']:
         last_activity=max([v for v in [latest_record,latest_launch] if v is not None],default=now)
-        state='running_stale' if now-last_activity>900 else 'running'
+        state=process['state']+'_stale' if now-last_activity>900 else process['state']
     elif process['state']=='worker_only':state='worker_only'
     elif process['state']=='unknown':state='unknown'
     elif not prepared:state='not_started'

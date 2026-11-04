@@ -121,11 +121,12 @@ def test_cloud_job_identity_does_not_read_or_publish_false_counts(experiment,mon
     assert s['completed'] is None and s['total'] is None
 
 
-def test_relocated_runner_requires_launcher_path_and_matching_output(experiment,monkeypatch):
+@pytest.mark.parametrize('script,state',[('run_temporal_years.py','running'),('resume_temporal_queue.py','queue_running')])
+def test_relocated_runner_requires_launcher_path_and_matching_output(experiment,monkeypatch,script,state):
     import psutil
     from helio24.experiment_monitor import probe_run
     root,run,_=experiment
-    runner=str(root/'local_execution/scripts/run_temporal_years.py')
+    runner=str(root/'local_execution/scripts'/script)
     command=['python',runner,'--output',str(run)]
     class Process:
         def cmdline(self):return command
@@ -133,8 +134,15 @@ def test_relocated_runner_requires_launcher_path_and_matching_output(experiment,
     monkeypatch.setattr(psutil,'Process',lambda _:Process())
     monkeypatch.setattr(psutil,'process_iter',lambda _:[])
     launchers=[(root/'launcher.json',{'pid':123,'command':command.copy()})]
-    assert probe_run(run,root,launchers)=={'state':'running','pid':123}
+    assert probe_run(run,root,launchers)=={'state':state,'pid':123}
     command[-1]=str(root/'other')
     assert probe_run(run,root,launchers)['state']=='stopped'
-    command[-1]=str(run);command[1]=str(root/'unexpected/run_temporal_years.py')
+    command[-1]=str(run);command[1]=str(root/'unexpected'/script)
     assert probe_run(run,root,launchers)['state']=='stopped'
+
+
+def test_queue_is_distinguished_from_annual_coordinator(experiment):
+    import time
+    root,_,_=experiment
+    assert snapshot(root,process_probe=probe('queue_running'))['state']=='queue_running'
+    assert snapshot(root,process_probe=probe('queue_running'),now=time.time()+3600)['state']=='queue_running_stale'
