@@ -285,5 +285,12 @@
     "source_sha256": "7e30aba2356e0038595b857ab67fc0d2f5b17f37f502bbb84680bec5552e7857",
     "en": "training-resumption-20261104.md",
     "tr": "training-resumption-20261104.tr.md"
+  },
+  {
+    "id": "temporal-queue-20261104",
+    "source_language": "en",
+    "source_sha256": "b4ff7fa7418f3bc15bd07c57b11da78fdbc35d585d8652abe42389d1f2c4132a",
+    "en": "temporal-queue-20261104.md",
+    "tr": "temporal-queue-20261104.tr.md"
   }
 ]

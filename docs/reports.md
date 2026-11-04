@@ -99,3 +99,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Eğitim dosyalarının yerel erişimini kurtarma / Training storage recovery | [Türkçe](storage-recovery-20261103.tr.md) | [English](storage-recovery-20261103.md) |
 
 | Doğrulanmış eğitim devamı / Verified training resumption | [Türkçe](training-resumption-20261104.tr.md) | [English](training-resumption-20261104.md) |
+
+| Kalan zaman serisi eğitimleri / Remaining temporal fits | [Türkçe](temporal-queue-20261104.tr.md) | [English](temporal-queue-20261104.md) |
