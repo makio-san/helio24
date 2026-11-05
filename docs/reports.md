@@ -101,3 +101,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Doğrulanmış eğitim devamı / Verified training resumption | [Türkçe](training-resumption-20261104.tr.md) | [English](training-resumption-20261104.md) |
 
 | Kalan zaman serisi eğitimleri / Remaining temporal fits | [Türkçe](temporal-queue-20261104.tr.md) | [English](temporal-queue-20261104.md) |
+
+| Tamamlanan eğitimler ve referans kanıt kurtarma / Completed fits and reference evidence recovery | [Türkçe](evidence-recovery-20261105.tr.md) | [English](evidence-recovery-20261105.md) |

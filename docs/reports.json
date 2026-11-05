@@ -292,5 +292,12 @@
     "source_sha256": "b4ff7fa7418f3bc15bd07c57b11da78fdbc35d585d8652abe42389d1f2c4132a",
     "en": "temporal-queue-20261104.md",
     "tr": "temporal-queue-20261104.tr.md"
+  },
+  {
+    "id": "evidence-recovery-20261105",
+    "source_language": "en",
+    "source_sha256": "72c183103f6a6134b05362d0b960aea2549bb975f79f4a18a04c7cc444fb475f",
+    "en": "evidence-recovery-20261105.md",
+    "tr": "evidence-recovery-20261105.tr.md"
   }
 ]
