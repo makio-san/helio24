@@ -103,3 +103,7 @@ their technical names. Numeric tables retain the source document's number notati
 | Kalan zaman serisi eğitimleri / Remaining temporal fits | [Türkçe](temporal-queue-20261104.tr.md) | [English](temporal-queue-20261104.md) |
 
 | Tamamlanan eğitimler ve referans kanıt kurtarma / Completed fits and reference evidence recovery | [Türkçe](evidence-recovery-20261105.tr.md) | [English](evidence-recovery-20261105.md) |
+
+| Tamamlanmış yıllık TCN değerlendirmesi / Final annual TCN evaluation | [Türkçe](temporal-evaluation-final-20261106.tr.md) | [English](temporal-evaluation-final-20261106.md) |
+
+| Yerel kanıt kurtarma ve koruma / Local evidence recovery and protection | [Türkçe](local-evidence-protection-20261106.tr.md) | [English](local-evidence-protection-20261106.md) |
