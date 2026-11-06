@@ -12,6 +12,8 @@ LABELS={'running':'Running','running_stale':'Running · no recent checkpoint','w
 
 @st.fragment(run_every='15s')
 def render_training_tab(root, directory=None):
+    from helio24.final_comparison import render_final_comparison
+    render_final_comparison(root)
     st.subheader('Experiment progress')
     st.caption('Annual TCN experiment · development periods 2014–2023 · refreshes every 15 seconds.')
     st.button('Refresh status',key='refresh_training_status')
