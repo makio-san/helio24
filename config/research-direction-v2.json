@@ -1,0 +1,57 @@
+{
+  "id": "research-direction-v2",
+  "status": "selected_provenance_gate_pending",
+  "evidence": "artifacts/temporal_evaluation_20261106_r1/report.json",
+  "evidence_sha256": "0d6e1310fbb19bc4af6491d8b1371fe3b07d42c267d19f91afa4b69399524245",
+  "selected_direction": "Causal regional flare-history context added to the fixed summary-feature ensemble",
+  "hypothesis": "Past activity available at issue time may distinguish persistently high magnetic measurements from regions approaching a strong flare; benefit is unproven.",
+  "stage": "Audit source publication times and contemporaneous region associations before any training.",
+  "required_source_fields": [
+    "event_id",
+    "event_end_utc",
+    "published_at_utc",
+    "region_id",
+    "association_available_at_utc",
+    "source_version"
+  ],
+  "known_local_gap": "data/flare_catalog.csv has event times and associations but no publication/version availability timestamps. Event time alone does not establish causal availability.",
+  "candidate_features": [
+    "count_C_24h",
+    "count_MX_24h",
+    "count_C_72h",
+    "count_MX_72h",
+    "hours_since_C_capped_72",
+    "hours_since_MX_capped_72",
+    "history_coverage_24h",
+    "history_coverage_72h"
+  ],
+  "causality": "All event completion, publication and association availability timestamps strictly precede forecast time. Unknown history remains missing, never assumed quiet. No retrospective associations, future region labels, region ranks or outcomes as inputs.",
+  "controls": [
+    "Frozen annual 96-feature ensemble",
+    "Same fixed ensemble with eight causal context features on identical forecast keys"
+  ],
+  "budget": {
+    "candidate_recipes": 1,
+    "eligible_years": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2022,
+      2023
+    ],
+    "candidate_ensemble_fits": 7,
+    "constituent_estimator_fits": 14,
+    "hyperparameter_search": false
+  },
+  "evaluation": "Preserve annual HARP isolation and purging, prior-year calibration threshold targeting recall >=0.95, six positive years plus zero-positive 2018, paired HARP uncertainty. Already inspected years remain adaptive development.",
+  "success": "Higher precision and fewer FP at recall >=0.95 in each comparable positive year; AP no lower, Brier/log loss no higher; no automatic promotion.",
+  "stop_rule": "Do not train until timestamp and region provenance can be established across all required years and a fixed execution protocol is written. If unavailable, report infeasibility rather than simulate availability.",
+  "reserved_test_accessed": false,
+  "parked": [
+    "More epochs or larger TCN/Transformer grids",
+    "Additional small class-weight or calibration grids",
+    "Alert suppression advertised as improved window precision"
+  ]
+}

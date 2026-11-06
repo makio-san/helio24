@@ -313,5 +313,12 @@
     "source_sha256": "6f4ebb87166461e2e646829cb80b1cf3e42a38e4f9ab5259630d6d34b59336a7",
     "en": "local-evidence-protection-20261106.md",
     "tr": "local-evidence-protection-20261106.tr.md"
+  },
+  {
+    "id": "research-next-20261106",
+    "source_language": "en",
+    "source_sha256": "3d0d5a50bdd6decc809310f070300d377c27a18a570e05bbd9c4d0216c05cd89",
+    "en": "research-next-20261106.md",
+    "tr": "research-next-20261106.tr.md"
   }
 ]
