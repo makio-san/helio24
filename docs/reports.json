@@ -320,5 +320,12 @@
     "source_sha256": "3d0d5a50bdd6decc809310f070300d377c27a18a570e05bbd9c4d0216c05cd89",
     "en": "research-next-20261106.md",
     "tr": "research-next-20261106.tr.md"
+  },
+  {
+    "id": "history-publication-probe-20261107",
+    "source_language": "en",
+    "source_sha256": "6fe6191633e3f8520eef38d281b2f117778c488653ea8b273d8599458c1bb04e",
+    "en": "history-publication-probe-20261107.md",
+    "tr": "history-publication-probe-20261107.tr.md"
   }
 ]
