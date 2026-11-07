@@ -115,3 +115,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Tüm yıllarda bölgesel yanlış alarm incelemesi / Final annual false-alarm localization | [Türkçe](final-alarm-regions-20261107.tr.md) | [English](final-alarm-regions-20261107.md) |
 
 | Alarm dönemi analizi / Alarm episode analysis | [Türkçe](alarm-episodes-20261107.tr.md) | [English](alarm-episodes-20261107.md) |
+
+| Alarm kalıcılığı protokolü / Alarm persistence protocol | [Türkçe](alarm-persistence-protocol-20261107.tr.md) | [English](alarm-persistence-protocol-20261107.md) |

@@ -341,5 +341,12 @@
     "source_sha256": "372b4fc81c85731cfd80bb993ceb71da609f84cc477859ac06fbfd6410bc1cfc",
     "en": "alarm-episodes-20261107.md",
     "tr": "alarm-episodes-20261107.tr.md"
+  },
+  {
+    "id": "alarm-persistence-protocol-20261107",
+    "source_language": "en",
+    "source_sha256": "8bc3be62ea4d54d49a01e04b35cfd3f05b6e7be492be6c8527169c8d5339e7a3",
+    "en": "alarm-persistence-protocol-20261107.md",
+    "tr": "alarm-persistence-protocol-20261107.tr.md"
   }
 ]

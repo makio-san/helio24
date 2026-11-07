@@ -1,0 +1,39 @@
+{
+  "id": "alarm-persistence-v1",
+  "status": "frozen_before_any_persistence_result",
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "episode_audit": "artifacts/alarm_episodes_20261107_r2",
+    "episode_audit_report_sha256": "9d6b5c02d370f0b08ecc0dc3083d2df88d65a39469907077192666b143306788"
+  },
+  "hypothesis": "Requiring k consecutive threshold exceedances before issuing an alarm removes short all-negative alarm episodes and raises episode and window precision without losing positive runs. Unproven; may lower recall and delay alarms.",
+  "rule": "Alarm at hour t of one HARP only if windows t-k+1..t are exactly one hour apart and all have probability >= the unchanged frozen annual threshold. Only current and past windows are used. k=1 is the unchanged control.",
+  "candidates": [
+    {"id": "control", "k": 1},
+    {"id": "persist_3h", "k": 3},
+    {"id": "persist_6h", "k": 6}
+  ],
+  "budget": {"candidate_rules": 2, "model_fits": 0, "threshold_changes": 0, "other_k_values": 0},
+  "primary_arm": "baseline",
+  "secondary_arms": ["chronological"],
+  "years": [2014, 2015, 2016, 2017, 2018, 2022, 2023],
+  "positive_years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "metrics": ["tp", "fp", "fn", "tn", "recall", "precision", "alarm_windows", "episodes", "hit_episodes", "episode_precision", "all_negative_episodes", "positive_runs", "positive_runs_alarmed", "positive_run_recall", "median_alarm_delay_hours", "max_alarm_delay_hours"],
+  "alarm_delay": "For each alarmed positive run, hours from its first positive-labelled window to its first alarm window inside the run. Reported, not gated.",
+  "acceptance": {
+    "per_year_primary": {
+      "episode_precision_higher_than_control": true,
+      "fp_windows_lower_than_control": true,
+      "positive_runs_alarmed_not_below_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "all_year_primary": "per_year_primary holds in all six positive years for the same k",
+    "zero_positive_2018": "Report alarm episodes and FP only; recall and precision gains are undefined and not gated.",
+    "probability_metrics": "AP, Brier and log loss are unchanged by this rule and are not claimed as improvements."
+  },
+  "inference": "Per-year and pooled counts, plus paired full-HARP bootstrap (1000 draws, seed 24) for episode precision and FP difference versus control. Intervals are conditional on frozen predictions and thresholds; no multiple-comparison correction.",
+  "disclosure": "k=3 and k=6 were chosen after seeing descriptive median all-negative episode lengths of 2 to 7 hours in the episode audit. No persistence result had been computed when this file was frozen.",
+  "scope": "Adaptive development on already inspected years, not an independent test. A pass would only justify a separate prospective protocol, never an automatic change to alerts or models.",
+  "prohibitions": ["No training or threshold change", "No other k values, cooldowns, merging or hysteresis after seeing results", "No relabeling or region/window exclusions", "No reserved 2024-2025 test access", "No use of future windows in the rule"]
+}
