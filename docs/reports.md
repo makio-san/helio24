@@ -117,3 +117,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Alarm dönemi analizi / Alarm episode analysis | [Türkçe](alarm-episodes-20261107.tr.md) | [English](alarm-episodes-20261107.md) |
 
 | Alarm kalıcılığı protokolü / Alarm persistence protocol | [Türkçe](alarm-persistence-protocol-20261107.tr.md) | [English](alarm-persistence-protocol-20261107.md) |
+
+| Alarm kalıcılığı sonuçları / Alarm persistence results | [Türkçe](alarm-persistence-results-20261107.tr.md) | [English](alarm-persistence-results-20261107.md) |
