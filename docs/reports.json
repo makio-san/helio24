@@ -369,5 +369,12 @@
     "source_sha256": "ba3c97dd282575ccb9b0301255fd33de482b0fec64d0a0ae4beb540765c136d6",
     "en": "threshold-tradeoff-results-20261107.md",
     "tr": "threshold-tradeoff-results-20261107.tr.md"
+  },
+  {
+    "id": "threshold-selection-protocol-20261107",
+    "source_language": "en",
+    "source_sha256": "6adfe0c4cbadeebc2bbd231128d20d0dfb694d7aff26115d8561768d7fa62082",
+    "en": "threshold-selection-protocol-20261107.md",
+    "tr": "threshold-selection-protocol-20261107.tr.md"
   }
 ]

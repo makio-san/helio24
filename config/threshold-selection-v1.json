@@ -1,0 +1,47 @@
+{
+  "id": "threshold-selection-v1",
+  "status": "frozen_before_any_selection_rule_result",
+  "question": "Can a threshold chosen only from the prior-year calibration windows, with a rule fixed in advance, reach a better precision/recall trade than the existing window-recall 0.95 rule without exceeding the recall tolerance?",
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "threshold_tradeoff_report_sha256": "e0cf54967cf89e68865ee13843b24383f5d1fa2106ab33a574ba3cfdd351f14c",
+    "persistence_config": "config/alarm-persistence-v1.json",
+    "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+    "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c"
+  },
+  "data_rule": "Each rule sees only the calibration windows of the year before the evaluation year (the original annual_fold calibration role) and their labels. Earlier years were training data of the same models and are in-sample, so they are not used. Evaluation windows and labels are not read until thresholds for every rule are written to disk and hashed.",
+  "control": {"id": "control_w95", "basis": "window_recall", "target": 0.95, "note": "Existing rule; must reproduce the stored thresholds exactly."},
+  "candidates": [
+    {"id": "w93", "basis": "window_recall", "target": 0.93},
+    {"id": "w90", "basis": "window_recall", "target": 0.90},
+    {"id": "run95", "basis": "positive_run_recall", "target": 0.95},
+    {"id": "run90", "basis": "positive_run_recall", "target": 0.90}
+  ],
+  "selection": "Window rules use helio24.calibration.recall_threshold on calibrated calibration probabilities. Run rules use the same grid and tie order: among distinct calibrated calibration probabilities with calibration positive-run recall at or above the target, take the fewest calibration false-alarm windows, then the larger threshold. A positive run is consecutive-hour positive-labelled windows of one HARP and is alarmed when any window is at or above the threshold.",
+  "budget": {"candidate_rules": 4, "model_fits": 0, "other_targets": 0, "evaluation_label_use_in_selection": 0},
+  "arms": {
+    "primary": "baseline",
+    "secondary": ["chronological", "shuffled_interior"],
+    "baseline_gate": "Baseline calibration probabilities are recomputed by inference with the stored frozen models and must reproduce the stored baseline threshold under control_w95 in every year. If any year fails, baseline is excluded and reported as not evaluable, and chronological becomes primary. No retraining.",
+    "tcn_arms": "Calibrated seed-ensemble probabilities from the stored per-seed calibration scores and calibrators; control_w95 must reproduce stored thresholds."
+  },
+  "years": [2014, 2015, 2016, 2017, 2018, 2022, 2023],
+  "positive_years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "acceptance": {
+    "per_year_primary": {
+      "episode_precision_higher_than_control": true,
+      "fp_windows_lower_than_control": true,
+      "positive_runs_alarmed_not_below_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "all_year_primary": "per_year_primary holds in all six positive years for the same rule",
+    "zero_positive_2018": "Report thresholds, false-alarm windows and episodes only; recall-based conditions are not applicable.",
+    "result_meaning": "A pass justifies only a separate prospective protocol. It never changes alerts, thresholds or models."
+  },
+  "reported_stability": ["calibration_positive_windows", "calibration_positive_runs", "selected_threshold", "calibration_recall", "evaluation_recall", "evaluation_recall_minus_calibration_recall", "ratio_to_control_threshold"],
+  "inference": "Paired full-HARP bootstrap (1000 draws, seed 24) of episode precision and FP-window differences versus control, conditional on the frozen selected thresholds. It does not include uncertainty from the threshold selection itself.",
+  "disclosure": "Targets 0.93 and 0.90 and the run-level basis were chosen after seeing the threshold tradeoff results: fixed multipliers broke recall in 2016 and 2023, and an oracle threshold had headroom inside the recall tolerance. They were not tuned on any selection-rule result; none had been computed when this file was frozen.",
+  "scope": "Adaptive development on already inspected years, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares.",
+  "prohibitions": ["No evaluation labels or outcomes in any selection rule", "No training or recalibration", "No other targets, bases, multipliers, persistence or combined rules after seeing results", "No relabeling or region/window exclusions", "No reserved 2024-2025 test access", "No use of future windows"]
+}
