@@ -1,0 +1,40 @@
+{
+  "id": "threshold-tradeoff-v1",
+  "status": "frozen_before_any_threshold_tradeoff_result",
+  "question": "Is alarm persistence a better precision/recall trade than simply raising the alarm threshold on the same frozen predictions?",
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "episode_audit_report_sha256": "9d6b5c02d370f0b08ecc0dc3083d2df88d65a39469907077192666b143306788",
+    "persistence_report_sha256": "242b78592fb9c64d1a20809be5179874783bde54a7bc4731fc960fa43841f175",
+    "persistence_config": "config/alarm-persistence-v1.json"
+  },
+  "primary_arm": "baseline",
+  "secondary_arms": ["chronological"],
+  "years": [2014, 2015, 2016, 2017, 2018, 2022, 2023],
+  "positive_years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "deployable_candidates": {
+    "rule": "Alarm when probability >= m times the unchanged frozen annual threshold, capped at 1. No labels or evaluation outcomes are used to set m.",
+    "multipliers": [1.25, 1.5, 2.0],
+    "budget": {"candidate_rules": 3, "model_fits": 0, "other_multipliers": 0},
+    "acceptance": "Same per-year primary conditions as alarm-persistence-v1 versus the unchanged control: episode precision higher, FP windows lower, alarmed positive runs not below, window recall drop at most 0.02. Pass requires all six positive years for the same multiplier.",
+    "inference": "Paired full-HARP bootstrap (1000 draws, seed 24) of episode precision and FP-window differences versus control."
+  },
+  "oracle_references": {
+    "nature": "Diagnostic only. Thresholds are chosen using evaluation labels, so they are not deployable, have no uncertainty interval and cannot be adopted.",
+    "threshold_grid": "Distinct arm probabilities of the year's evaluation windows; alarm when probability >= t.",
+    "matched_recall": "For each persistence candidate (k=3, k=6) and year/arm: the largest t whose window recall is at least the persistence recall. Report achieved recall; ties favour the threshold.",
+    "tolerance_reference": "Largest t whose window recall is at least control recall minus 0.02. Shows the false-alarm headroom inside the frozen recall tolerance.",
+    "reported": ["t", "recall", "precision", "fp", "episodes", "hit_episodes", "episode_precision", "positive_runs_alarmed"]
+  },
+  "verdict_rules": {
+    "persistence_adds_value": "In all six positive years persistence has fewer FP windows and fewer episodes than the matched-recall threshold, for the same k.",
+    "threshold_at_least_as_good": "In all six positive years the matched-recall threshold has FP windows less than or equal to persistence, for the same k.",
+    "otherwise": "mixed; report per-year wins and losses without a single verdict.",
+    "no_automatic_change": "No verdict changes alerts, thresholds or models."
+  },
+  "zero_positive_2018": "Report FP windows and episodes for deployable candidates only; recall-based references and gates are undefined.",
+  "disclosure": "Multipliers 1.25, 1.5 and 2.0 were chosen after the persistence results were seen, to span a range of false-alarm reductions comparable to or larger than persistence. Not tuned on any threshold result; none had been computed when this file was frozen.",
+  "scope": "Adaptive development on already inspected years, not an independent test. Counts are overlapping forecast windows and window groupings, not physical flares.",
+  "prohibitions": ["No training", "No relabeling or region/window exclusions", "No other multipliers, k values, cooldowns or combined rules after seeing results", "No reserved 2024-2025 test access", "No adoption of oracle thresholds", "No use of future windows in any rule"]
+}

@@ -119,3 +119,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Alarm kalıcılığı protokolü / Alarm persistence protocol | [Türkçe](alarm-persistence-protocol-20261107.tr.md) | [English](alarm-persistence-protocol-20261107.md) |
 
 | Alarm kalıcılığı sonuçları / Alarm persistence results | [Türkçe](alarm-persistence-results-20261107.tr.md) | [English](alarm-persistence-results-20261107.md) |
+
+| Eşik ve kalıcılık protokolü / Threshold versus persistence protocol | [Türkçe](threshold-tradeoff-protocol-20261107.tr.md) | [English](threshold-tradeoff-protocol-20261107.md) |
