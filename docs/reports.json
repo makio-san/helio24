@@ -327,5 +327,12 @@
     "source_sha256": "6fe6191633e3f8520eef38d281b2f117778c488653ea8b273d8599458c1bb04e",
     "en": "history-publication-probe-20261107.md",
     "tr": "history-publication-probe-20261107.tr.md"
+  },
+  {
+    "id": "final-alarm-regions-20261107",
+    "source_language": "en",
+    "source_sha256": "01f99976e9f958b8d48900d5895c9c83a6a0609d05a577c70184831a9a725b90",
+    "en": "final-alarm-regions-20261107.md",
+    "tr": "final-alarm-regions-20261107.tr.md"
   }
 ]
