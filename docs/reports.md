@@ -125,3 +125,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Eşik ve kalıcılık sonuçları / Threshold versus persistence results | [Türkçe](threshold-tradeoff-results-20261107.tr.md) | [English](threshold-tradeoff-results-20261107.md) |
 
 | Eşik seçimi protokolü / Threshold selection protocol | [Türkçe](threshold-selection-protocol-20261107.tr.md) | [English](threshold-selection-protocol-20261107.md) |
+
+| Eşik seçimi sonuçları / Threshold selection results | [Türkçe](threshold-selection-results-20261108.tr.md) | [English](threshold-selection-results-20261108.md) |
