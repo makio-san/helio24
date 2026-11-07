@@ -4,11 +4,25 @@ Rapor tarihi: 16 Ekim 2026. Bu belge kayıtlı deney sonuçlarını bir araya ge
 yeni model eğitimi veya yeni test sonucu içermez. Son kaynak incelemeleri
 etiketleri ve performans sayılarını değiştirmedi.
 
+## Önce okunacak üç bulgu
+
+Tam veri modelinin sonraki dönem incelemesi için (aşağıdaki tablolarla aynı sayılar):
+
+| Bulgu | Sayı | Nasıl okunmalı? |
+| --- | --- | --- |
+| Yanlış alarm yükü | 897 doğru alarma karşı 3.824 yanlış alarm; false alarm ratio %81,00 | Asıl sınırlama budur. Alarmların yaklaşık %81'i yanlıştır |
+| Accuracy tek başına yanıltıcı | Model %94,80; sürekli negatif tahmin %98,68 ama recall 0 | Başarı hedefi accuracy değildir. Accuracy her zaman hep-negatif taban çizgisiyle birlikte okunur |
+| Recall belirsizliği geniş | Recall %90,61; %95 aralık %80,09–96,65 | Nokta tahmini kesin değildir. %95 hedefi aralığın içinde kalır, garanti edilmez |
+
+Bu bölüm yalnız sunumu düzenler. Model, eşik, etiket ve sayılar değişmedi; yeni
+eğitim veya test yapılmadı.
+
 ## Ana sonuçlar
 
 | Metrik | Dashboard modeli: ilk test | Tam veri: doğrulama | Tam veri: sonraki dönem incelemesi |
 | --- | ---: | ---: | ---: |
 | Accuracy | %92,94 | %91,37 | %94,80 |
+| Accuracy: sürekli negatif taban çizgisi | %98,71 | %97,87 | %98,68 |
 | Recall | %95,88 | %90,06 | %90,61 |
 | Precision | %14,98 | %18,52 | %19,00 |
 | F1 | 0,2591 | 0,3072 | 0,3141 |

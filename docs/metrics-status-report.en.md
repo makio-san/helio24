@@ -4,11 +4,25 @@ Report date: 16 October 2026. This document consolidates saved experiment
 results; it contains no new model training or test result. Recent source
 reviews did not change labels or performance figures.
 
+## Three findings to read first
+
+For the full-data model's later-period audit (same numbers as the tables below):
+
+| Finding | Figure | How to read it |
+| --- | --- | --- |
+| False-alarm burden | 897 true alarms against 3.824 false alarms; false alarm ratio %81,00 | This is the main limitation. About 81% of alarms are false |
+| Accuracy alone is misleading | Model %94,80; always predicting negative %98,68 but recall 0 | Accuracy is not the objective. It is always read together with the always-negative baseline |
+| Recall uncertainty is wide | Recall %90,61; %95 interval %80,09–96,65 | The point estimate is not exact. The 95% target lies inside the interval and is not guaranteed |
+
+This section only reorganizes presentation. Model, threshold, labels and numbers
+did not change; no new training or testing was run.
+
 ## Headline results
 
 | Metric | Dashboard model: initial test | Full data: validation | Full data: later-period audit |
 | --- | ---: | ---: | ---: |
 | Accuracy | %92,94 | %91,37 | %94,80 |
+| Accuracy: always-negative baseline | %98,71 | %97,87 | %98,68 |
 | Recall | %95,88 | %90,06 | %90,61 |
 | Precision | %14,98 | %18,52 | %19,00 |
 | F1 | 0,2591 | 0,3072 | 0,3141 |
