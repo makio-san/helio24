@@ -113,3 +113,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Patlama geçmişi kaynak zamanları / Flare-history source timing probe | [Türkçe](history-publication-probe-20261107.tr.md) | [English](history-publication-probe-20261107.md) |
 
 | Tüm yıllarda bölgesel yanlış alarm incelemesi / Final annual false-alarm localization | [Türkçe](final-alarm-regions-20261107.tr.md) | [English](final-alarm-regions-20261107.md) |
+
+| Alarm dönemi analizi / Alarm episode analysis | [Türkçe](alarm-episodes-20261107.tr.md) | [English](alarm-episodes-20261107.md) |
