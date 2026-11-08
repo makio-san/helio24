@@ -141,3 +141,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Bölgesel bağlam kaynakları / Regional context sources | [Türkçe](region-context-sources-20261109.tr.md) | [English](region-context-sources-20261109.md) |
 
 | Bölgesel bağlam protokolü / Regional context protocol | [Türkçe](region-context-protocol-20261109.tr.md) | [English](region-context-protocol-20261109.md) |
+
+| Bölgesel bağlam sonuçları / Regional context results | [Türkçe](region-context-results-20261109.tr.md) | [English](region-context-results-20261109.md) |

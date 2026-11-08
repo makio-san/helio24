@@ -432,5 +432,12 @@
     "source_sha256": "2a380a0632694afd0754d094ca0b09c523aeb3844aa5dd923712480ce1f3536d",
     "en": "region-context-protocol-20261109.md",
     "tr": "region-context-protocol-20261109.tr.md"
+  },
+  {
+    "id": "region-context-results-20261109",
+    "source_language": "en",
+    "source_sha256": "2083c3db51746f1f172c0ca8b15617ef64b558bc2fd93e057a6163f1f1baa43a",
+    "en": "region-context-results-20261109.md",
+    "tr": "region-context-results-20261109.tr.md"
   }
 ]
