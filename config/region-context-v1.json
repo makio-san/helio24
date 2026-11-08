@@ -1,0 +1,60 @@
+{
+  "id": "region-context-v1",
+  "status": "frozen_before_any_candidate_result",
+  "goal": "Test whether causal sunspot-region context from the issued NOAA SRS, added to the fixed 96 magnetic summaries, raises window precision at the project recall target. Target precision 0.30 at recall >= 0.95; one step is not expected to reach it and the distance is reported.",
+  "evidence": {
+    "sources_config": "config/region-context-sources-v1.json",
+    "sources_audit": "artifacts/region_context_sources_20261109_r1/report.json",
+    "srs_directory": "data/region_summaries_20261109_r1",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+    "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+    "base_protocol": "config/walk-forward-v1.json",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82"
+  },
+  "motivation": "In the frozen baseline 80% to 97% of false-alarm windows fall inside numbered regions present in the issued SRS, and 90.8% of positive development windows have their region in the SRS available at issue time. The SRS content (magnetic class, McIntosh class, area, spot count, region age) is the information the 96 summaries do not carry. Delta and gamma configurations are established flare indicators in the literature; their value on top of SHARP summaries in this record is unproven.",
+  "availability_rule": "A window at forecast time t uses the latest SRS whose issue time is <= t - 30 minutes, and only the SRS rows whose NOAA number is in the HARP's NOAA_ARS on the forecast date. A HARP with no such row has srs_available = 0 and every other context value missing. Missing values pass through the existing median imputer with a missing indicator, so the model sees that context is absent; absence is never encoded as quiet.",
+  "context_features": {
+    "srs_available": "1 if at least one SRS row matched, else 0",
+    "hours_since_issue": "t minus the issue time of the SRS used, in hours",
+    "n_regions": "number of matched SRS rows",
+    "mag_rank": "max over rows of {Alpha: 0, Beta: 1, Gamma: 2, Beta-Gamma: 2, Beta-Delta: 3, Beta-Gamma-Delta: 4}",
+    "has_delta": "1 if any matched magnetic class contains Delta",
+    "has_gamma": "1 if any matched magnetic class contains Gamma",
+    "zurich_rank": "max over rows of the modified Zurich letter {A: 0, B: 1, H: 1, C: 2, D: 3, E: 4, F: 5}",
+    "penumbra_rank": "max over rows of the second McIntosh letter {x: 0, r: 1, s: 2, a: 3, h: 4, k: 5}",
+    "compact_rank": "max over rows of the third McIntosh letter {x: 0, o: 1, i: 2, c: 3}",
+    "area_log": "log(1 + sum of matched areas, millionths of a hemisphere)",
+    "spots_log": "log(1 + sum of matched spot counts NN)",
+    "extent_max": "max matched longitudinal extent LL in degrees",
+    "srs_history_days": "max over rows of the number of earlier issued SRS products, strictly before the one used, that list the same NOAA number"
+  },
+  "candidates": [
+    {"id": "control", "definition": "Frozen baseline ensemble predictions and prior-year thresholds of the annual comparison, identical evaluation keys. No refit.", "fits": 0},
+    {"id": "flag", "definition": "Refit of the unchanged walk-forward-v1 logistic and XGBoost recipes on the 96 summaries plus srs_available and hours_since_issue only. Isolates refitting and availability from content.", "fits": "2 per year"},
+    {"id": "context", "definition": "Same refit on the 96 summaries plus all 13 context features.", "fits": "2 per year"}
+  ],
+  "training": "Annual folds of helio24.walk_forward.annual_fold on the frozen development shards; the audit of every fold must equal the frozen baseline fold audit. Models, hyperparameters, imputer, scaler, sigmoid calibration on the calibration year and the 0.45/0.55 ensemble weight are those of config/walk-forward-v1.json, unchanged. Thresholds are selected on calibration-year probabilities at window recall 0.95 and written to disk and hashed before any evaluation label is read.",
+  "budget": {"candidate_recipes": 2, "years": 7, "constituent_fits": 28, "hyperparameter_search": 0, "feature_sets_after_results": 0},
+  "years": [2014, 2015, 2016, 2017, 2018, 2022, 2023],
+  "positive_years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "acceptance": {
+    "per_year_primary": {
+      "episode_precision_higher_than_control": true,
+      "fp_windows_lower_than_control": true,
+      "positive_runs_alarmed_not_below_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "all_year_primary": "per_year_primary holds in all six positive years for the same candidate",
+    "attribution": "A pass of context that flag does not share is attributed to the SRS content. A pass shared by flag and context is attributed to refitting or availability, not to content.",
+    "also_reported": ["recall >= 0.95 reached", "average_precision", "brier", "log_loss", "fp_allowed_for_precision_0.30", "fp_excess_over_target"],
+    "zero_positive_2018": "Report thresholds, false-alarm windows and episodes only; recall-based conditions are not applicable.",
+    "result_meaning": "A pass justifies only a separate prospective protocol. It never changes alerts, thresholds or models."
+  },
+  "inference": "Paired full-HARP bootstrap (1000 draws, seed 24) of episode precision and FP-window differences versus control, conditional on the frozen thresholds. It excludes refitting and threshold-selection uncertainty and is not corrected for multiple comparisons.",
+  "disclosure": "The feature list and the ordinal encodings were fixed from the SRS vocabulary and from where false alarms concentrate in the frozen baseline of the same years, which is adaptive. No candidate result had been computed when this file was frozen. The flag candidate exists so that a gain cannot be attributed to content when refitting alone produces it.",
+  "scope": "Adaptive development on already inspected years, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares.",
+  "prohibitions": ["No evaluation labels in any feature, fit or threshold", "No hyperparameter, feature or encoding change after seeing results", "No flare catalog or event report as input", "No future SRS, no SRS issued after t - 30 minutes", "No relabeling or region/window exclusions", "No reserved 2024-2025 test access", "No fallback if the baseline gate fails"]
+}

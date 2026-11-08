@@ -139,3 +139,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Kesinlik bağlamı sonuçları / Precision context results | [Türkçe](precision-context-results-20261109.tr.md) | [English](precision-context-results-20261109.md) |
 
 | Bölgesel bağlam kaynakları / Regional context sources | [Türkçe](region-context-sources-20261109.tr.md) | [English](region-context-sources-20261109.md) |
+
+| Bölgesel bağlam protokolü / Regional context protocol | [Türkçe](region-context-protocol-20261109.tr.md) | [English](region-context-protocol-20261109.md) |
