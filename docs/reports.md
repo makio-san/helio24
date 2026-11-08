@@ -135,3 +135,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Eşik seçimi v2 sonuçları / Threshold selection v2 results | [Türkçe](threshold-selection-v2-results-20261108.tr.md) | [English](threshold-selection-v2-results-20261108.md) |
 
 | Kesinlik bağlamı protokolü / Precision context protocol | [Türkçe](precision-context-protocol-20261108.tr.md) | [English](precision-context-protocol-20261108.md) |
+
+| Kesinlik bağlamı sonuçları / Precision context results | [Türkçe](precision-context-results-20261109.tr.md) | [English](precision-context-results-20261109.md) |
