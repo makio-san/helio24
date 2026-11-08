@@ -129,3 +129,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Eşik seçimi sonuçları / Threshold selection results | [Türkçe](threshold-selection-results-20261108.tr.md) | [English](threshold-selection-results-20261108.md) |
 
 | Eşik seçimi v2 protokolü / Threshold selection v2 protocol | [Türkçe](threshold-selection-v2-protocol-20261108.tr.md) | [English](threshold-selection-v2-protocol-20261108.md) |
+
+| Kanıt kurtarma / Evidence recovery | [Türkçe](evidence-recovery-20261108.tr.md) | [English](evidence-recovery-20261108.md) |

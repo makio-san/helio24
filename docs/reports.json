@@ -390,5 +390,12 @@
     "source_sha256": "ba6e472274fc2aac9503b79a70e9ca282f56e27e3d512218af17c2cb5ad15285",
     "en": "threshold-selection-v2-protocol-20261108.md",
     "tr": "threshold-selection-v2-protocol-20261108.tr.md"
+  },
+  {
+    "id": "evidence-recovery-20261108",
+    "source_language": "en",
+    "source_sha256": "68800d20a9066d4b806f9b9c643045b801801f3aeb845329163ebe8c206946dd",
+    "en": "evidence-recovery-20261108.md",
+    "tr": "evidence-recovery-20261108.tr.md"
   }
 ]
