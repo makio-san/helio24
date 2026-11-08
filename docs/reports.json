@@ -397,5 +397,12 @@
     "source_sha256": "68800d20a9066d4b806f9b9c643045b801801f3aeb845329163ebe8c206946dd",
     "en": "evidence-recovery-20261108.md",
     "tr": "evidence-recovery-20261108.tr.md"
+  },
+  {
+    "id": "threshold-selection-v2-results-20261108",
+    "source_language": "en",
+    "source_sha256": "a83ce5b295a5f2911a85183fffe2e1c825bdf98c35b3d3a764f2bf66d1231354",
+    "en": "threshold-selection-v2-results-20261108.md",
+    "tr": "threshold-selection-v2-results-20261108.tr.md"
   }
 ]
