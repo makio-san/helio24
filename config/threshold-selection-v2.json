@@ -1,0 +1,62 @@
+{
+  "id": "threshold-selection-v2",
+  "status": "frozen_before_any_baseline_selection_result",
+  "supersedes": "threshold-selection-v1 for the baseline arm only",
+  "question": "With the frozen development feature shards restored and verified, does the baseline arm pass the feasibility gate, and if so can a threshold chosen only from the prior-year calibration windows, with the same rules fixed in version 1, reach a better precision/recall trade than the existing window-recall 0.95 rule without exceeding the recall tolerance?",
+  "reason_for_new_version": "Version 1 could not evaluate the baseline arm because all 20 frozen development feature shards were missing. They were regenerated from the verified official archives and every shard matched its frozen SHA256. Version 1 stays frozen and its reported results are unchanged.",
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "v1_results_report_sha256": "dae49d81c516a8a3bc512ccf5ef10081cc252fa162b8d0274fba97e4ff54a6b1",
+    "persistence_config": "config/alarm-persistence-v1.json",
+    "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+    "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+    "frozen_shards_report": "artifacts/v2_development_features_20261025_r2/report.json",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "regenerated_shards_report_sha256": "36e8484a1496f6f1d7e117143766bfa9a15c306f4ac3984be4de321d2b5f7086",
+    "shard_count": 20
+  },
+  "data_rule": "Each rule sees only the calibration windows of the year before the evaluation year (the calibration role of the original annual_fold) and their labels. Earlier years were training data of the same models and are in-sample, so they are not used. Evaluation windows and labels are not read until thresholds for every rule are written to disk and hashed.",
+  "control": {"id": "control_w95", "basis": "window_recall", "target": 0.95, "note": "Existing rule; must reproduce the stored baseline threshold."},
+  "candidates": [
+    {"id": "w93", "basis": "window_recall", "target": 0.93},
+    {"id": "w90", "basis": "window_recall", "target": 0.90},
+    {"id": "run95", "basis": "positive_run_recall", "target": 0.95},
+    {"id": "run90", "basis": "positive_run_recall", "target": 0.90}
+  ],
+  "selection": "Identical to threshold-selection-v1: window rules use helio24.calibration.recall_threshold on calibrated calibration probabilities; run rules take, among distinct calibrated calibration probabilities with calibration positive-run recall at or above the target, the fewest calibration false-alarm windows, then the larger threshold. A positive run is consecutive-hour positive-labelled windows of one HARP and is alarmed when any window is at or above the threshold.",
+  "budget": {"candidate_rules": 4, "model_fits": 0, "other_targets": 0, "evaluation_label_use_in_selection": 0},
+  "arm": {
+    "evaluated": "baseline",
+    "definition": "The original 96-summary-feature ensemble stored as `ensemble` in each year of artifacts/walk_forward_20261028_r1: calibrated logistic and XGBoost probabilities combined with the stored ensemble weight. It is not the walk-forward `baseline` candidate, which is the training prevalence constant.",
+    "not_rerun": "The chronological and shuffled_interior arms are not recomputed. Their version 1 results were already seen and are reported unchanged."
+  },
+  "baseline_gate": {
+    "steps": [
+      "G1 Every regenerated shard file hash equals the frozen SHA256 recorded in the frozen shards report; all 20 are required.",
+      "G2 The stored models.joblib of each evaluated year matches its SHA256 in the frozen walk-forward report.",
+      "G3 Calibration probabilities are recomputed by inference with the stored models and calibrators on the calibration windows of annual_fold, built with the table construction of scripts/run_walk_forward.py. Under control_w95 the threshold must equal the stored baseline threshold in artifacts/temporal_years_20261101_r1/<year>/thresholds.json (relative tolerance 1e-12).",
+      "G4 Label-free identity check: evaluation probabilities recomputed the same way must equal the `baseline` column of the frozen predictions.parquet on the key (harp, forecast_time) with maximum absolute difference at most 1e-6 and identical key sets."
+    ],
+    "failure": "If any step fails in any year, the baseline arm is reported as not evaluable with the failing step and year, and no selection rule is evaluated for it. No fallback to another candidate model, no retraining, no recalibration and no rule change is allowed.",
+    "gate_before_rules": "G1 to G4 are computed and written to disk before any selection rule is evaluated."
+  },
+  "years": [2014, 2015, 2016, 2017, 2018, 2022, 2023],
+  "positive_years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "acceptance": {
+    "per_year_primary": {
+      "episode_precision_higher_than_control": true,
+      "fp_windows_lower_than_control": true,
+      "positive_runs_alarmed_not_below_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "all_year_primary": "per_year_primary holds in all six positive years for the same rule",
+    "zero_positive_2018": "Report thresholds, false-alarm windows and episodes only; recall-based conditions are not applicable.",
+    "result_meaning": "A pass justifies only a separate prospective protocol. It never changes alerts, thresholds or models."
+  },
+  "reported_stability": ["calibration_positive_windows", "calibration_positive_runs", "selected_threshold", "calibration_recall", "evaluation_recall", "evaluation_recall_minus_calibration_recall", "ratio_to_control_threshold"],
+  "inference": "Paired full-HARP bootstrap (1000 draws, seed 24) of episode precision and FP-window differences versus control, conditional on the frozen selected thresholds. It does not include uncertainty from the threshold selection itself.",
+  "disclosure": "The rules, targets and acceptance conditions are identical to version 1 and are not tuned for the baseline arm. They were chosen after the threshold tradeoff results, and none of the four rules passed for the chronological and shuffled_interior arms in version 1. That is known before this protocol and is a reason to expect a negative result, not evidence of tuning. No baseline selection-rule result had been computed when this file was frozen. The regenerated shard report differs from the frozen shard report in its completion time, input paths and the hash of helio24/v2_archive.py; the per-shard hashes, row counts, positive counts and HARP count are identical.",
+  "scope": "Adaptive development on already inspected years, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares.",
+  "prohibitions": ["No evaluation labels or outcomes in any selection rule", "No training or recalibration", "No other targets, bases, multipliers, persistence or combined rules after seeing results", "No relabeling or region/window exclusions", "No reserved 2024-2025 test access", "No use of future windows", "No use of a shard that fails its SHA256 check", "No fallback to another candidate model if the baseline gate fails"]
+}

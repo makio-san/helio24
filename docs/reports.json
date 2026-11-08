@@ -383,5 +383,12 @@
     "source_sha256": "b8d46ccfee7fbe36d95c1d26ebca023d5590bb24698bc7384b84ef5969aed869",
     "en": "threshold-selection-results-20261108.md",
     "tr": "threshold-selection-results-20261108.tr.md"
+  },
+  {
+    "id": "threshold-selection-v2-protocol-20261108",
+    "source_language": "en",
+    "source_sha256": "ba6e472274fc2aac9503b79a70e9ca282f56e27e3d512218af17c2cb5ad15285",
+    "en": "threshold-selection-v2-protocol-20261108.md",
+    "tr": "threshold-selection-v2-protocol-20261108.tr.md"
   }
 ]
