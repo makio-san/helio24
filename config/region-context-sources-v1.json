@@ -1,0 +1,30 @@
+{
+  "id": "region-context-sources-v1",
+  "status": "acquisition_and_provenance_audit_only",
+  "purpose": "Acquire two public sources that carry an issue time inside each product, so that causal regional context (sunspot magnetic class, McIntosh class, area, spot count) can be attached to HARP forecast windows without assuming availability. No feature is built and no model is fitted under this file.",
+  "sources": {
+    "srs": {
+      "name": "Joint USAF/NOAA Solar Region Summary (SRS)",
+      "archive": "https://www.ngdc.noaa.gov/stp/space-weather/swpc-products/daily_reports/solar_region_summaries/<YYYY>/<MM>/<YYYYMMDD>SRS.txt",
+      "issue_time_field": ":Issued: <YYYY Mon DD HHMM UTC> header line inside every product; nominal issue 0030 UTC daily, content valid at 2400Z of the previous day",
+      "period": ["2010-05-01", "2023-12-31"],
+      "expected_files": 4993,
+      "approximate_bytes": 5000000,
+      "fields": ["Nmbr", "Location", "Lo", "Area", "Z", "LL", "NN", "Mag Type"],
+      "transport": "HTTPS only"
+    },
+    "harp_noaa": {
+      "name": "JSOC hmi.sharp_cea_720s keywords HARPNUM, T_REC, NOAA_AR, NOAA_ARS, NOAA_NUM at daily cadence",
+      "query": "op=rs_list&ds=hmi.sharp_cea_720s[][<YYYY.MM.01>_TAI/<days>d@1d]&key=HARPNUM,T_REC,NOAA_AR,NOAA_ARS,NOAA_NUM",
+      "period": ["2010-05-01", "2023-12-31"],
+      "expected_queries": 164,
+      "approximate_bytes": 4000000,
+      "transport": "HTTPS first; HTTP fallback because jsoc.stanford.edu presents a self-signed certificate. The fallback is unauthenticated and is recorded per query in the manifest, as in scripts/fetch_region_headers.py.",
+      "limitation": "NOAA_ARS is the definitive-series association. Its availability time is not stated by JSOC; the audit therefore treats the SRS issue time as the availability bound for a NOAA number and only uses an association on days when that NOAA number appears in the issued SRS."
+    }
+  },
+  "causality_rule_for_later_use": "A forecast issued at time t may use the latest SRS whose :Issued: time is <= t minus a fixed safety margin of 30 minutes, and only the SRS row whose NOAA number is in the HARP's NOAA_ARS for that day. A HARP without a numbered region, or a day without an SRS, yields missing context, never 'quiet'.",
+  "audit_outputs": ["per-file SHA256 and issue time", "files missing or without a parseable issue time", "Mag Type and Z vocabularies by year", "share of development HARP forecast windows with at least one NOAA number", "share of those windows whose NOAA number appears in the SRS available at issue time"],
+  "not_acquired": "SWPC solar event reports (flare history) carry only an archive :Created: time, not an issue time; docs/history-publication-probe-20261107.md keeps availability_verified=false. They are not acquired here.",
+  "prohibitions": ["No reserved 2024-2025 period", "No feature construction or model fitting under this file", "No substitution of download time for availability time"]
+}

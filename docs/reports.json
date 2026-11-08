@@ -418,5 +418,12 @@
     "source_sha256": "97750d4c692ffa5b90bc93a4b592ab9884d1dffb7675d7a6aa52c17d11c01ed7",
     "en": "precision-context-results-20261109.md",
     "tr": "precision-context-results-20261109.tr.md"
+  },
+  {
+    "id": "region-context-sources-20261109",
+    "source_language": "en",
+    "source_sha256": "c3cdeaf31b035288ec6efd35ad028631ff850207e47c928371685d28b5418ee9",
+    "en": "region-context-sources-20261109.md",
+    "tr": "region-context-sources-20261109.tr.md"
   }
 ]
