@@ -143,3 +143,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Bölgesel bağlam protokolü / Regional context protocol | [Türkçe](region-context-protocol-20261109.tr.md) | [English](region-context-protocol-20261109.md) |
 
 | Bölgesel bağlam sonuçları / Regional context results | [Türkçe](region-context-results-20261109.tr.md) | [English](region-context-results-20261109.md) |
+
+| Çalışma noktası incelemesi / Operating point review | [Türkçe](operating-point-review-20261109.tr.md) | [English](operating-point-review-20261109.md) |

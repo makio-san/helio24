@@ -1,0 +1,29 @@
+{
+  "id": "operating-point-review-v1",
+  "status": "frozen_before_any_result",
+  "purpose": "Describe what the frozen baseline delivers at recall targets below the project constraint of 0.95, so that the constraint can be reviewed with numbers. This is a decision aid, not a model change. No acceptance rule, no promotion, no threshold adopted.",
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+    "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+    "frozen_shards_report": "artifacts/v2_development_features_20261025_r2/report.json",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82"
+  },
+  "arm": "baseline (original 96-summary ensemble), stage-one inference only with the stored frozen models; zero fits",
+  "deployable_curve": {
+    "rule": "For each recall target, the threshold is selected on the prior calibration year only with helio24.calibration.recall_threshold, then applied unchanged to the evaluation year. This is the rule the project already uses at 0.95.",
+    "recall_targets": [0.95, 0.925, 0.90, 0.875, 0.85, 0.80, 0.75, 0.70]
+  },
+  "oracle_curve": {
+    "rule": "For each recall target, the threshold is selected on the evaluation year itself. Not deployable; reported only as the upper bound of what any prior-year rule could reach, and to read off the recall at which precision 0.30 would be met.",
+    "recall_targets": [0.95, 0.925, 0.90, 0.875, 0.85, 0.80, 0.75, 0.70],
+    "precision_targets_for_required_recall": [0.20, 0.30]
+  },
+  "reported_per_point": ["threshold", "tp", "fp", "fn", "recall", "precision", "alarm_windows", "episodes", "episode_precision", "positive_runs", "positive_runs_alarmed", "positive_run_recall", "missed_positive_runs"],
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "order_of_operations": "Deployable thresholds for every target and year are written to disk and hashed before any evaluation label is read. Oracle thresholds are computed afterwards and are labelled oracle in every table.",
+  "interpretation": "Positive runs are consecutive-hour positive windows of one HARP; a missed run is a flare episode for which no window alarmed. The review should weigh missed runs, not only window recall, because window recall counts overlapping windows of the same episode.",
+  "scope": "Adaptive development description on already inspected years, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares.",
+  "prohibitions": ["No model or threshold change", "No reserved 2024-2025 test access", "No new recall targets after seeing results", "No presentation of an oracle point as deployable"]
+}
