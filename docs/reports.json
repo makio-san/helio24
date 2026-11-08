@@ -404,5 +404,12 @@
     "source_sha256": "a83ce5b295a5f2911a85183fffe2e1c825bdf98c35b3d3a764f2bf66d1231354",
     "en": "threshold-selection-v2-results-20261108.md",
     "tr": "threshold-selection-v2-results-20261108.tr.md"
+  },
+  {
+    "id": "precision-context-protocol-20261108",
+    "source_language": "en",
+    "source_sha256": "01faa1f8a653d22e4840d4f0df092b8ae35149814296e625730902276d61bdf6",
+    "en": "precision-context-protocol-20261108.md",
+    "tr": "precision-context-protocol-20261108.tr.md"
   }
 ]

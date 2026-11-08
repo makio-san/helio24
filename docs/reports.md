@@ -133,3 +133,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Kanıt kurtarma / Evidence recovery | [Türkçe](evidence-recovery-20261108.tr.md) | [English](evidence-recovery-20261108.md) |
 
 | Eşik seçimi v2 sonuçları / Threshold selection v2 results | [Türkçe](threshold-selection-v2-results-20261108.tr.md) | [English](threshold-selection-v2-results-20261108.md) |
+
+| Kesinlik bağlamı protokolü / Precision context protocol | [Türkçe](precision-context-protocol-20261108.tr.md) | [English](precision-context-protocol-20261108.md) |

@@ -1,0 +1,66 @@
+{
+  "id": "precision-context-v1",
+  "status": "frozen_before_any_candidate_result",
+  "goal": "Raise window precision at the project recall target by adding causal, catalog-free regional context to the frozen baseline ensemble. The target precision is 0.30 at recall >= 0.95; this protocol does not expect one step to reach it and measures the distance.",
+  "motivation": {
+    "false_alarm_concentration": "In the frozen annual baseline predictions the share of false-alarm windows inside HARPs with zero positive windows that year is 55% (2014), 66% (2015), 72% (2016), 78% (2017), 84% (2022) and 76% (2023). The ten HARPs with most false alarms carry 2729 of 13886 (2014), 2696 of 11453 (2015), 1478 of 2289 (2016), 1198 of 1287 (2017), 2430 of 10072 (2022) and 1836 of 5992 (2023).",
+    "blocked_route": "config/research-direction-v2.json selected causal flare-history context, but its stop rule forbids training until publication-time provenance is established, and docs/history-publication-probe-20261107.md left availability_verified=false. This protocol tests the same hypothesis, that persistently high measurements can be told from regions approaching a flare, through context that needs no external catalog.",
+    "rejected_before": "Fixed alarm persistence (k-of-k) failed; threshold multipliers and prior-year recall targets failed; 24/48-hour raw-history summaries, weighting, pooling, splines, Extra Trees and histogram boosting did not pass promotion."
+  },
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+    "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+    "frozen_shards_report": "artifacts/v2_development_features_20261025_r2/report.json",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "baseline_gate_report": "artifacts/threshold_selection_baseline_20261108_r1/report.json"
+  },
+  "stage_one": "The stored frozen annual ensemble of artifacts/walk_forward_20261028_r1 (calibrated logistic and XGBoost with the stored weight), inference only. Zero stage-one fits. Its calibration-year and evaluation-year probabilities are out of sample for stage one.",
+  "context_features": {
+    "source": "Only windows of the same HARP with forecast_time strictly before the current forecast_time, in the same annual-fold role, plus the current window. No labels, no events, no future windows, no other HARPs.",
+    "list": [
+      "logit_p: logit of the current stage-one probability",
+      "age_log_hours: log(1 + hours since the first window of this HARP in the record)",
+      "past24_max_logit, past24_mean_logit: over windows in (t-24h, t)",
+      "past72_max_logit, past72_mean_logit: over windows in (t-72h, t)",
+      "past72_hours_above_control: windows in (t-72h, t) at or above the frozen control threshold of that year",
+      "slope6: logit_p minus the mean logit over (t-6h, t)",
+      "coverage24, coverage72: number of past windows found in each lookback",
+      "missing_fraction: of the current window"
+    ],
+    "missing_history": "A lookback with no past window gives coverage 0 and past statistics equal to the current logit; the coverage features carry the information that history is absent. History is never assumed quiet."
+  },
+  "candidates": [
+    {"id": "control", "definition": "Stage-one probability with the frozen prior-year threshold (window recall 0.95 on the calibration year). Identical to the baseline arm of the annual comparison."},
+    {"id": "recal", "definition": "Stage two on [logit_p, missing_fraction] only. Isolates the effect of fitting a second stage on calibration-year labels without any trajectory information."},
+    {"id": "context", "definition": "Stage two on all context features."}
+  ],
+  "stage_two": {
+    "model": "StandardScaler then LogisticRegression(C=1.0, solver=lbfgs, max_iter=2000, class_weight=None, random_state=24). No search.",
+    "training_data": "Calibration year of the annual fold only (the year before the evaluation year). Training years are in sample for stage one and are not used.",
+    "cross_fitting": "Five HARP-group folds on the calibration year, fold = rank of the HARP id among sorted calibration HARPs modulo 5. Each calibration window receives a stage-two probability from the model fitted on the other four folds. The threshold is selected on these cross-fitted probabilities with helio24.calibration.recall_threshold at target 0.95. The stage-two model refitted on the whole calibration year is applied to the evaluation year.",
+    "fits": "Per year and candidate: 5 cross-fit models plus 1 full model. Total 7 years x 2 candidates x 6 = 84 small logistic fits."
+  },
+  "order_of_operations": "For every year: features and stage-two models are built from calibration-year data; thresholds for every candidate are written to disk and hashed before any evaluation label is read.",
+  "years": [2014, 2015, 2016, 2017, 2018, 2022, 2023],
+  "positive_years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "acceptance": {
+    "per_year_primary": {
+      "episode_precision_higher_than_control": true,
+      "fp_windows_lower_than_control": true,
+      "positive_runs_alarmed_not_below_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "all_year_primary": "per_year_primary holds in all six positive years for the same candidate",
+    "attribution": "A pass of context that recal does not share is attributed to trajectory information. A pass shared by recal and context is attributed to calibration-year refitting, not to context.",
+    "zero_positive_2018": "Report thresholds, false-alarm windows and episodes only; recall-based conditions are not applicable.",
+    "target_distance": "Report per year the window precision and the number of false-alarm windows that would give precision 0.30 at the achieved true positives.",
+    "result_meaning": "A pass justifies only a separate prospective protocol. It never changes alerts, thresholds or models."
+  },
+  "reported_metrics": ["tp", "fp", "fn", "tn", "precision", "recall", "alarm_windows", "episodes", "episode_precision", "positive_runs", "positive_runs_alarmed", "average_precision", "brier", "log_loss"],
+  "inference": "Paired full-HARP bootstrap (1000 draws, seed 24) of episode precision and FP-window differences versus control, conditional on the frozen thresholds. It does not include the uncertainty of stage-two fitting or threshold selection.",
+  "disclosure": "The context features were chosen after seeing where false alarms concentrate in the frozen baseline predictions of the same years, which is adaptive. They were not chosen on any stage-two result; none had been computed when this file was frozen. Stage two uses calibration-year labels to fit, where the control uses them only to select a threshold; the recal candidate exists to make that difference visible.",
+  "scope": "Adaptive development on already inspected years, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares.",
+  "prohibitions": ["No evaluation labels in any feature, fit or threshold", "No stage-one refit, no XGBoost or neural fits", "No feature, lookback, regularization or model change after seeing results", "No external flare catalog as input", "No relabeling or region/window exclusions", "No reserved 2024-2025 test access", "No use of future windows or other HARPs", "No fallback if the baseline gate fails"]
+}
