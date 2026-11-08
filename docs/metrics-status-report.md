@@ -138,6 +138,24 @@ recall'ı %91,82, precision'ı %17,59, AP'si 0,4905'tir. Aday, geliştirme kabul
 kurallarını sağlayamadığı için seçilmedi. Sonraki dönemde görülen olumlu bir
 metrik bu kararı geriye dönük değiştirmek için kullanılmadı.
 
+## Çalışma noktası kararı (2026-11-09)
+
+Yıllık V2 baseline için proje hedefi yeniden tanımlandı: önceki kalibrasyon yılında pencere recall 0,90'da
+seçilen eşik. Önceki hedef olan "recall en az 0,95'te kesinlik 0,30" bırakıldı, çünkü
+[çalışma noktası incelemesi](operating-point-review-20261109.tr.md) bunun bu model ve veriyle ulaşılamaz olduğunu
+gösterdi. Bu bir performans iyileşmesi değildir; model, özellikler ve olasılıklar değişmedi. Yukarıdaki tablolar
+ve bu rapordaki hiçbir sayı değişmedi. Gösterge paneli uyarı eşiği bu kararla değişmez. Ayrıntılar ve yıl bazlı
+beklentiler [karar belgesindedir](operating-point-decision-20261109.tr.md).
+
+| yıl | kesinlik (0,90 hedefi) | sunulan recall | kaçan pozitif seri | kesinlik (0,95 hedefi) |
+| --- | --- | --- | --- | --- |
+| 2014 | 0.2082 | 0.8688 | 6 | 0.1359 |
+| 2015 | 0.1721 | 0.9653 | 0 | 0.1052 |
+| 2016 | 0.1106 | 0.8950 | 0 | 0.0714 |
+| 2017 | 0.1850 | 0.9289 | 1 | 0.1555 |
+| 2022 | 0.0442 | 0.9834 | 0 | 0.0396 |
+| 2023 | 0.1186 | 0.8361 | 3 | 0.1034 |
+
 ## Tam rapor ve yeniden üretim
 
 ```sh

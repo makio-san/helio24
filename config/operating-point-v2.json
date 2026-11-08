@@ -1,0 +1,28 @@
+{
+  "id": "operating-point-v2",
+  "status": "project_target_redefined_2026-11-09",
+  "supersedes": "The development target 'precision 0.30 at window recall >= 0.95'",
+  "decision": "The project operating point for the annual V2 baseline is a threshold selected on the prior calibration year at window recall 0.90 with helio24.calibration.recall_threshold, applied unchanged to the next year.",
+  "basis": {
+    "review": "docs/operating-point-review-20261109.md",
+    "review_artifact": "artifacts/operating_point_review_20261109_r1/report.json",
+    "finding": "Precision 0.30 at high recall is not reachable by this model and data: even the evaluation-year oracle needs recall <= 0.67 (2014), 0.79 (2015), 0.58 (2016), 0.23 (2022) and 0.25 (2023); only 2017 reaches it at 0.90. Eight independent routes (threshold rules, alarm persistence, recalibration, probability trajectory, issued SRS context, weighting, model grids, TCN) left precision at the 0.95 target in the 0.04-0.16 band."
+  },
+  "expected_development_performance_at_0.90": {
+    "years": [2014, 2015, 2016, 2017, 2022, 2023],
+    "precision": [0.2082, 0.1721, 0.1106, 0.1850, 0.0442, 0.1186],
+    "delivered_recall": [0.8688, 0.9653, 0.8950, 0.9289, 0.9834, 0.8361],
+    "fp_windows": [7634, 6294, 1303, 1035, 8949, 4852],
+    "missed_positive_runs": [6, 0, 0, 1, 0, 3],
+    "missed_positive_runs_at_0.95": [3, 0, 0, 1, 0, 2],
+    "note": "Observed on already inspected development years; these are expectations for reporting, not guarantees. Delivered recall ranges from 0.836 to 0.983 because the calibration year and the evaluation year differ."
+  },
+  "what_this_is_not": "Not a performance improvement. The model, its features and its probabilities are unchanged; the target was aligned with what the data supports. Every report that states this operating point must say so.",
+  "operational_scope": "Applies to development reporting and to future development protocols. The dashboard alert threshold (app.py) and any deployed alert are not changed by this file; changing them needs a separate decision and the reserved 2024-2025 test.",
+  "reporting_rules": [
+    "State precision together with delivered recall and missed positive runs for every year",
+    "State that the target was redefined on 2026-11-09 and why",
+    "Keep the 0.95 results visible for comparison in any report that compares to earlier work"
+  ],
+  "reserved_test_accessed": false
+}

@@ -139,6 +139,24 @@ Experiment 3's temporal-feature candidate achieved later-period accuracy
 because it failed the development acceptance rules. A favorable later-period
 metric was not used to reverse that decision.
 
+## Operating point decision (2026-11-09)
+
+The project target for the annual V2 baseline was redefined: a threshold selected on the prior calibration year
+at window recall 0.90. The earlier target, precision 0.30 at recall at least 0.95, was dropped because the
+[operating point review](operating-point-review-20261109.md) showed it is not reachable by this model and data.
+This is not a performance improvement; the model, features and probabilities are unchanged. The tables above and
+every number in this report are unchanged. The dashboard alert threshold is not changed by this decision. Details
+and per-year expectations are in the [decision document](operating-point-decision-20261109.md).
+
+| year | precision (target 0.90) | delivered recall | missed positive runs | precision (target 0.95) |
+| --- | --- | --- | --- | --- |
+| 2014 | 0.2082 | 0.8688 | 6 | 0.1359 |
+| 2015 | 0.1721 | 0.9653 | 0 | 0.1052 |
+| 2016 | 0.1106 | 0.8950 | 0 | 0.0714 |
+| 2017 | 0.1850 | 0.9289 | 1 | 0.1555 |
+| 2022 | 0.0442 | 0.9834 | 0 | 0.0396 |
+| 2023 | 0.1186 | 0.8361 | 3 | 0.1034 |
+
 ## Full report and reproduction
 
 ```sh
