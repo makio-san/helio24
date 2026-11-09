@@ -1,0 +1,40 @@
+{
+  "id": "sharp-maps-v1",
+  "status": "frozen_before_any_map_download",
+  "date": "2026-11-09",
+  "goal": "Acquire one radial-field (Br) SHARP CEA map per development HARP-day so that a later, separately frozen protocol can test whether image information raises window precision at the project operating point (config/operating-point-v2.json). This file covers acquisition only; it defines no model, no candidate and no acceptance rule.",
+  "source": {
+    "index": "http://jsoc.stanford.edu/cgi-bin/ajax/jsoc_info (op=rs_list, key=HARPNUM,T_REC, seg=Br)",
+    "files": "https://jsoc1.stanford.edu",
+    "series": "hmi.sharp_cea_720s",
+    "segment": "Br"
+  },
+  "scope": {
+    "index_period": ["2010-05-01", "2023-12-31"],
+    "cadence": "one record per HARP per day at T_REC 00:00:00 TAI",
+    "selection": "HARP-days that contain at least one development forecast window in the frozen shards",
+    "frozen_shards": "artifacts/v2_development_features_20261025_r2",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "reserved_period": "No record with T_REC on or after 2024-01-01 is indexed or requested. The reserved 2024-2025 test stays closed."
+  },
+  "measured_before_download": {
+    "development_harp_days": 33249,
+    "harp_days_with_a_record": 32717,
+    "estimated_transfer_gb": 12.4,
+    "calibration": "40 HEAD requests, pooled 1.653 compressed bytes per pixel, range 1.139-2.907"
+  },
+  "processing": {
+    "output_shape_height_width": [128, 256],
+    "resize": "area mean over valid pixels (adaptive average of values divided by adaptive average of the validity mask); cells with no valid pixel are stored as 0",
+    "dtype": "float16, gauss, no clipping or normalisation",
+    "kept_per_map": "raw sha256, raw bytes, original width and height, NaN fraction, T_REC",
+    "raw_files": "deleted after hashing and resizing because free disk space is about 12 GB"
+  },
+  "availability_rule_for_later_use": "A map with record time T_REC may be used only by forecast windows at least 24 hours after T_REC unless a later protocol documents a shorter measured publication latency. The acquisition does not attach maps to windows.",
+  "limits": [
+    "One map per day means a window can see a map that is up to about two days old under the 24-hour rule.",
+    "Resizing to a fixed shape changes the pixel scale differently for each HARP; original dimensions are kept so a later protocol can account for it.",
+    "JSOC storage paths can go offline; unavailable records are listed in the manifest and never imputed."
+  ],
+  "reserved_test_accessed": false
+}
