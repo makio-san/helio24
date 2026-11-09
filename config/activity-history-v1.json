@@ -1,0 +1,52 @@
+{
+  "id": "activity-history-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-09",
+  "goal": "Test whether causal flare history from issued NOAA SGAS products, added to the fixed 96 magnetic summaries, raises window precision at the project operating point (prior-year threshold at window recall 0.90, config/operating-point-v2.json).",
+  "provenance": "Every SGAS product carries an :Issued: time (nominal 0245 UTC) and lists the previous UT day's energetic events with NOAA region number and X-ray class, plus the X-ray background. This replaces the blocked solar event reports, which carry only an archive :Created: time (docs/history-publication-probe-20261107.md).",
+  "evidence": {
+    "sgas_directory": "data/activity_summaries_20261109_r1",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+    "control_thresholds": "artifacts/operating_point_review_20261109_r1/deployable_thresholds.json",
+    "control_thresholds_sha256": "bd4594e2ab0e5ebcdc58cc438b59f7a213828fa3dfdd5b5dfb9c7fcb0df3d6c0",
+    "base_protocol": "config/walk-forward-v1.json",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82"
+  },
+  "recall_target": 0.9,
+  "availability_rule": "A window at forecast time t uses only SGAS products whose issue time is <= t - 30 minutes. Regional events are those whose NOAA number is in the HARP's NOAA_ARS on the forecast date. A HARP without a NOAA number, or with no SGAS issued in the preceding 75 hours, has history_available = 0 and missing regional values; absence is never encoded as quiet. Spans are measured on issue time: 1d = 27 h, 3d = 75 h.",
+  "features": {
+    "history_available": "1 if the HARP has a NOAA number and at least one SGAS was issued in the last 75 h",
+    "reports_3d": "number of SGAS products issued in the last 75 h",
+    "hours_since_issue": "t minus the latest issue time, if within 27.5 h",
+    "reg_c_1d / reg_c_3d": "C-class events of the HARP's regions in products of the last 27 h / 75 h",
+    "reg_mx_1d / reg_mx_3d": "M- or X-class events, same spans",
+    "reg_events_3d": "all listed events of the regions (with or without X-ray class), 75 h",
+    "reg_max_logflux_3d": "log10 peak flux of the largest regional event, 75 h; missing if none",
+    "reg_mx_life": "M/X events of the regions in every earlier product",
+    "reg_max_logflux_life": "log10 peak flux of the largest regional event in every earlier product",
+    "disk_mx_1d / disk_mx_3d": "full-disk M/X events, 27 h / 75 h",
+    "disk_max_logflux_1d": "largest full-disk event in the latest product",
+    "xray_background_log": "log10 of the X-ray background in the latest product"
+  },
+  "candidates": [
+    {"id": "control", "definition": "Frozen baseline probabilities with the prior-year threshold at recall 0.90. No refit."},
+    {"id": "flag", "definition": "Refit of the unchanged walk-forward-v1 recipes on 96 summaries plus history_available, reports_3d, hours_since_issue. Isolates refitting and availability from content."},
+    {"id": "history", "definition": "Same refit on 96 summaries plus all 15 history features."}
+  ],
+  "training": "Annual folds of helio24.walk_forward.annual_fold; fold audits must equal the frozen baseline. Models, hyperparameters, calibration and the 0.45/0.55 weight are those of config/walk-forward-v1.json. Thresholds come from calibration-year probabilities at window recall 0.90 and are hashed before any evaluation label is read.",
+  "budget": {"candidate_recipes": 2, "years": 6, "constituent_fits": 24, "hyperparameter_search": 0, "feature_sets_after_results": 0},
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "acceptance": {
+    "per_year_primary": {"episode_precision_higher_than_control": true, "fp_windows_lower_than_control": true, "positive_runs_alarmed_not_below_control": true, "window_recall_drop_at_most": 0.02},
+    "all_year_primary": "per_year_primary holds in all six years for the same candidate",
+    "attribution": "A pass of history that flag does not share is attributed to flare-history content.",
+    "also_reported": ["precision", "accuracy against always-negative accuracy", "average_precision", "brier", "log_loss", "tss"],
+    "result_meaning": "A pass justifies only a separate prospective protocol. It never changes alerts, thresholds or models."
+  },
+  "limits": "SGAS lists energetic events, not every C-class flare; archived text may differ from the bytes first issued; NOAA_ARS is the definitive JSOC association. Already inspected years: adaptive development, not an independent test.",
+  "prohibitions": ["No evaluation labels in any feature, fit or threshold", "No feature or hyperparameter change after results", "No SGAS issued after t - 30 minutes", "No reserved 2024-2025 test access"],
+  "reserved_test_accessed": false
+}
