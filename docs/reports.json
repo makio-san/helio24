@@ -460,5 +460,12 @@
     "source_sha256": "a2ef07f6cc5f4e2a18a5d3759b7a0af41704ef99cf4d6be86a43606efad13b34",
     "en": "full-metrics-20261109.md",
     "tr": "full-metrics-20261109.tr.md"
+  },
+  {
+    "id": "activity-history-20261109",
+    "source_language": "en",
+    "source_sha256": "b23010ce24995d2d5411992aab3e5988251f080ee9039528a338235d326359fc",
+    "en": "activity-history-20261109.md",
+    "tr": "activity-history-20261109.tr.md"
   }
 ]
