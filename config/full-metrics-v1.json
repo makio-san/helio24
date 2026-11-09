@@ -1,0 +1,12 @@
+{
+  "id": "full-metrics-v1",
+  "date": "2026-11-09",
+  "purpose": "Report every project metric per development year for the frozen annual V2 baseline at the operating point of config/operating-point-v2.json. Descriptive; no model, threshold or label is changed.",
+  "predictions": "artifacts/temporal_years_20261101_r1",
+  "thresholds": "artifacts/operating_point_review_20261109_r1/deployable_thresholds.json",
+  "recall_target": "0.9",
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "probability_column": "baseline",
+  "bootstrap": {"draws": 1000, "seed": 24, "unit": "HARP"},
+  "reserved_test_accessed": false
+}

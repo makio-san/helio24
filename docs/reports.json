@@ -453,5 +453,12 @@
     "source_sha256": "8fa8618c00e19e3fe185fd66ce7d2cf9156a4be4384f0c3ea04785823c169197",
     "en": "operating-point-decision-20261109.md",
     "tr": "operating-point-decision-20261109.tr.md"
+  },
+  {
+    "id": "full-metrics-20261109",
+    "source_language": "en",
+    "source_sha256": "a2ef07f6cc5f4e2a18a5d3759b7a0af41704ef99cf4d6be86a43606efad13b34",
+    "en": "full-metrics-20261109.md",
+    "tr": "full-metrics-20261109.tr.md"
   }
 ]

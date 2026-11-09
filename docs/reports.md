@@ -147,3 +147,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Çalışma noktası incelemesi / Operating point review | [Türkçe](operating-point-review-20261109.tr.md) | [English](operating-point-review-20261109.md) |
 
 | Çalışma noktası kararı / Operating point decision | [Türkçe](operating-point-decision-20261109.tr.md) | [English](operating-point-decision-20261109.md) |
+
+| Tam metrikler / Full metrics | [Türkçe](full-metrics-20261109.tr.md) | [English](full-metrics-20261109.md) |
