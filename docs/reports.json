@@ -488,5 +488,12 @@
     "source_sha256": "7900eeb8831fec12d0dbd042500a9606e31701cd885a041066b73bec0e64d6d1",
     "en": "cycle25-diagnostic-20261110.md",
     "tr": "cycle25-diagnostic-20261110.tr.md"
+  },
+  {
+    "id": "label-coverage-20261110",
+    "source_language": "en",
+    "source_sha256": "9e3cb45b276de5a79d96aaefc120407941dcb5598d6474d6ed79e9bb876e45d6",
+    "en": "label-coverage-20261110.md",
+    "tr": "label-coverage-20261110.tr.md"
   }
 ]

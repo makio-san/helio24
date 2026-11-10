@@ -157,3 +157,5 @@ their technical names. Numeric tables retain the source document's number notati
 | İki kademeli çalışma noktası / Two-tier operating point | [Türkçe](two-tier-20261110.tr.md) | [English](two-tier-20261110.md) |
 
 | 25. döngü sıralama teşhisi / Cycle-25 ranking diagnostic | [Türkçe](cycle25-diagnostic-20261110.tr.md) | [English](cycle25-diagnostic-20261110.md) |
+
+| Etiket kapsamı denetimi / Label coverage audit | [Türkçe](label-coverage-20261110.tr.md) | [English](label-coverage-20261110.md) |
