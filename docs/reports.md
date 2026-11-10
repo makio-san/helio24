@@ -151,3 +151,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Tam metrikler / Full metrics | [Türkçe](full-metrics-20261109.tr.md) | [English](full-metrics-20261109.md) |
 
 | SGAS patlama geçmişi / SGAS flare history | [Türkçe](activity-history-20261109.tr.md) | [English](activity-history-20261109.md) |
+
+| SHARP Br haritası CNN özellikleri / SHARP Br map CNN features | [Türkçe](image-features-20261110.tr.md) | [English](image-features-20261110.md) |

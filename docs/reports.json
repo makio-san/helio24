@@ -467,5 +467,12 @@
     "source_sha256": "b23010ce24995d2d5411992aab3e5988251f080ee9039528a338235d326359fc",
     "en": "activity-history-20261109.md",
     "tr": "activity-history-20261109.tr.md"
+  },
+  {
+    "id": "image-features-20261110",
+    "source_language": "en",
+    "source_sha256": "39c9ce01b6f54819dab5a4802aab3370175da7b8cf18d20af4d8bdf89ae40ca4",
+    "en": "image-features-20261110.md",
+    "tr": "image-features-20261110.tr.md"
   }
 ]
