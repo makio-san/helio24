@@ -474,5 +474,12 @@
     "source_sha256": "39c9ce01b6f54819dab5a4802aab3370175da7b8cf18d20af4d8bdf89ae40ca4",
     "en": "image-features-20261110.md",
     "tr": "image-features-20261110.tr.md"
+  },
+  {
+    "id": "two-tier-20261110",
+    "source_language": "en",
+    "source_sha256": "d79685385f87b1070ec461707b294a061777ed96d4c1ac3ba86d37d35d1773c9",
+    "en": "two-tier-20261110.md",
+    "tr": "two-tier-20261110.tr.md"
   }
 ]

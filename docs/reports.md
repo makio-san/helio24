@@ -153,3 +153,5 @@ their technical names. Numeric tables retain the source document's number notati
 | SGAS patlama geçmişi / SGAS flare history | [Türkçe](activity-history-20261109.tr.md) | [English](activity-history-20261109.md) |
 
 | SHARP Br haritası CNN özellikleri / SHARP Br map CNN features | [Türkçe](image-features-20261110.tr.md) | [English](image-features-20261110.md) |
+
+| İki kademeli çalışma noktası / Two-tier operating point | [Türkçe](two-tier-20261110.tr.md) | [English](two-tier-20261110.md) |
