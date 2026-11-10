@@ -10,7 +10,7 @@ from sklearn.model_selection import GroupKFold
 
 from helio24.data import FEATURE_COLUMNS
 from helio24.v2_training import candidate_models, load_development
-from scripts.audit_alarm_persistence import evaluate, sha
+from scripts.audit_alarm_persistence import positive_run_stats, sha
 
 KEY = ['harp', 'forecast_time']
 CAPACITY = 'USFLUX__last'
@@ -19,7 +19,8 @@ CAPACITY = 'USFLUX__last'
 def composition(frame, reference_median):
     positive = frame[frame.target.eq(1)]
     flaring = positive.harp.unique()
-    runs = evaluate(frame.assign(probability=0.0), 'probability', 1.0, 1)[0]['positive_runs']
+    windows = frame.sort_values(['harp', 'forecast_time']).reset_index(drop=True).assign(alarm=False)
+    runs, _, _ = positive_run_stats(windows)
     return dict(windows=len(frame), harps=frame.harp.nunique(), flaring_harps=len(flaring), positive_windows=len(positive),
                 positive_runs=runs, positive_share=float(frame.target.mean()),
                 median_windows_per_flaring_harp=float(frame[frame.harp.isin(flaring)].groupby('harp').size().median()),
