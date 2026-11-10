@@ -1,0 +1,38 @@
+{
+  "id": "label-coverage-v1",
+  "status": "frozen_before_any_result",
+  "date": "2026-11-10",
+  "purpose": "Measure how many GOES M/X flares of each development year reach a positive label in the frozen development table, using two independent sources: the issued NOAA SGAS energetic-event lists (region number and peak time) joined to HARPs through the definitive JSOC NOAA_ARS association, and the frozen HEK inventory of M/X events that SWAN-SF V2 attached to no HARP. Data audit only: no relabelling, no model fitting, no threshold change.",
+  "why": "The cycle-25 diagnostic found that 83% (2022) and 74% (2023) of false-alarm windows at the watch threshold come from HARPs with no positive window in the year, against 44-53% in 2014-2015, and that 2022 and 2023 hold only 16 and 38 positive runs in 12 and 27 flaring HARPs. The frozen HEK inventory lists 174 (2022) and 293 (2023) M/X events that V2 attached to no HARP, against 45 (2014) and 21 (2015). Windows containing an unassigned event are excluded, so a HARP whose flares are all unassigned keeps only negative windows and looks like a never-flaring region.",
+  "evidence": {
+    "frozen_shards": "artifacts/v2_development_features_20261025_r2",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "watch_tier_thresholds": "artifacts/operating_point_review_20261109_r1/deployable_thresholds.json",
+    "watch_tier_thresholds_sha256": "bd4594e2ab0e5ebcdc58cc438b59f7a213828fa3dfdd5b5dfb9c7fcb0df3d6c0",
+    "sgas_directory": "data/activity_summaries_20261109_r1",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "hek_unassigned_events": "artifacts/v2_label_inventory_recovery_20261108_r1/unassigned_major_events.csv",
+    "hek_unassigned_events_sha256": "e584b58fbea9f1e03f025df75edae9312303f0dafd82db04347a5ba7fc71be8f"
+  },
+  "sgas_events": "Section A rows of each SGAS product with an X-ray class M or X. The product issued on day D lists the events of UT day D-1; the peak is the Max column on that day. Rows without a region number are counted but cannot be mapped.",
+  "association": "An SGAS event with NOAA region n peaking on date d is mapped to every HARP whose NOAA_ARS on date d contains n (definitive JSOC keyword, data/harp_noaa_mapping_20261109_r1). Events mapped to more than one HARP are counted as ambiguous and classified by their best outcome across those HARPs.",
+  "classification": {
+    "covered": "At least one development window of a mapped HARP has forecast_time <= peak < prediction_end and target 1.",
+    "hidden": "Such windows exist for the mapped HARP and all have target 0: the flare is in the data as a negative.",
+    "no_window": "No development window of the mapped HARP contains the peak: excluded by the fail-closed rule, removed at a fold boundary, or not observed."
+  },
+  "hek_cross_check": "An SGAS M/X event matches a HEK unassigned event when the class letter and number agree and the peak times differ by at most 5 minutes. Reported per year: HEK unassigned events, those with an SGAS match, and those whose SGAS match is mapped to a HARP.",
+  "evaluation_year_effect": "For the six evaluation years, with the stored baseline probability: FP windows at the recall-0.90 watch threshold that belong to hidden HARPs (HARPs with a hidden or no_window event and no positive window in the year), their share of all FP windows, and precision and AP after removing all windows of hidden HARPs. Removal is a bound on the label effect, not a relabelling.",
+  "years": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023],
+  "evaluation_years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "reading": {
+    "R1_coverage_collapsed": "The covered share of mapped SGAS M/X events is below 0.50 in both 2022 and 2023 and at least 0.50 in 2014 and 2015: cycle-25 labels miss most flares; a separate frozen protocol for an independent HARP association of M/X events (NOAA_ARS plus SGAS or HEK region numbers) and a walk-forward rerun on the relabelled table is justified.",
+    "R2_labels_hold": "The covered share is at least 0.50 in 2022 and 2023: the label pipeline is not the cause of the cycle-25 weakness.",
+    "mixed": "Any other pattern is reported as is."
+  },
+  "scope": "Development years only; the reserved 2024-2025 test is not read. SGAS region numbers and NOAA_ARS are themselves associations and can disagree with V2's; this audit measures agreement, not truth.",
+  "prohibitions": ["No relabelling in this audit", "No model or threshold change", "No reserved 2024-2025 test access", "No new readings after seeing results"],
+  "reserved_test_accessed": false
+}
