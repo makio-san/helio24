@@ -481,5 +481,12 @@
     "source_sha256": "d79685385f87b1070ec461707b294a061777ed96d4c1ac3ba86d37d35d1773c9",
     "en": "two-tier-20261110.md",
     "tr": "two-tier-20261110.tr.md"
+  },
+  {
+    "id": "cycle25-diagnostic-20261110",
+    "source_language": "en",
+    "source_sha256": "7900eeb8831fec12d0dbd042500a9606e31701cd885a041066b73bec0e64d6d1",
+    "en": "cycle25-diagnostic-20261110.md",
+    "tr": "cycle25-diagnostic-20261110.tr.md"
   }
 ]

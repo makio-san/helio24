@@ -155,3 +155,5 @@ their technical names. Numeric tables retain the source document's number notati
 | SHARP Br haritası CNN özellikleri / SHARP Br map CNN features | [Türkçe](image-features-20261110.tr.md) | [English](image-features-20261110.md) |
 
 | İki kademeli çalışma noktası / Two-tier operating point | [Türkçe](two-tier-20261110.tr.md) | [English](two-tier-20261110.md) |
+
+| 25. döngü sıralama teşhisi / Cycle-25 ranking diagnostic | [Türkçe](cycle25-diagnostic-20261110.tr.md) | [English](cycle25-diagnostic-20261110.md) |
