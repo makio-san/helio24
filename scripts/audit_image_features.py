@@ -3,6 +3,9 @@ import argparse
 import gc
 import json
 from pathlib import Path
+import shutil
+import subprocess
+import sys
 
 import numpy as np
 import pandas as pd
@@ -81,90 +84,22 @@ def attach_maps(frame, maps, score):
     return out[CONTEXT]
 
 
-def build_net(dropout):
-    import torch
-    from torch import nn
+def stacked_scores(maps, cache, train, year, settings, work):
+    """Out-of-fold logits for training-role HARPs, mean fold logit for every other HARP; maps before year+1 only.
 
-    class MapNet(nn.Module):
-        def __init__(self):
-            super().__init__()
-            layers, channels = [], 1
-            for width in (16, 32, 64, 128):
-                layers += [nn.Conv2d(channels, width, 3, padding=1), nn.BatchNorm2d(width), nn.ReLU(), nn.MaxPool2d(2)]
-                channels = width
-            self.features = nn.Sequential(*layers)
-            self.head = nn.Sequential(nn.Dropout(dropout), nn.Linear(2*channels+3, 1))
-
-        def forward(self, image, extra):
-            maps = self.features(image)
-            return self.head(torch.cat([maps.mean((2, 3)), maps.amax((2, 3)), extra], 1))[:, 0]
-    return MapNet()
-
-
-def _batch(images, extra, index, device):
-    import torch
-    image = torch.from_numpy(np.clip(images[index].astype(np.float32)/500, -6, 6))[:, None].to(device)
-    return image, torch.from_numpy(extra[index]).to(device)
-
-
-def train_cnn(images, extra, labels, settings, seed, device):
-    import torch
-    torch.manual_seed(seed)
-    rng = np.random.default_rng(seed)
-    model = build_net(settings['dropout']).to(device)
-    optimiser = torch.optim.Adam(model.parameters(), lr=settings['learning_rate'], weight_decay=settings['weight_decay'])
-    loss_fn = torch.nn.BCEWithLogitsLoss()
-    target = torch.from_numpy(labels.astype(np.float32))
-    last = float('nan')
-    for _ in range(settings['epochs']):
-        model.train()
-        order, total = rng.permutation(len(labels)), 0.0
-        for start in range(0, len(order), settings['batch']):
-            index = np.sort(order[start:start+settings['batch']])
-            image, scalars = _batch(images, extra, index, device)
-            flip = torch.from_numpy(rng.random(len(index)) < 0.5).to(device)
-            image = torch.where(flip[:, None, None, None], image.flip(3), image)
-            sign = torch.from_numpy(np.where(rng.random(len(index)) < 0.5, -1.0, 1.0).astype(np.float32)).to(device)
-            loss = loss_fn(model(image*sign[:, None, None, None], scalars), target[index].to(device))
-            optimiser.zero_grad()
-            loss.backward()
-            optimiser.step()
-            total += loss.item()*len(index)
-        last = total/len(order)
-    return model, last
-
-
-def score_cnn(model, images, extra, index, device, batch=256):
-    import torch
-    model.eval()
-    out = np.empty(len(index), dtype=np.float32)
-    with torch.no_grad():
-        for start in range(0, len(index), batch):
-            part = index[start:start+batch]
-            out[start:start+len(part)] = model(*_batch(images, extra, part, device)).cpu().numpy()
-    return out
-
-
-def stacked_scores(maps, images, extra, train, year, settings, device):
-    """Out-of-fold logits for training-role HARPs, mean fold logit for every other HARP; maps before year+1 only."""
-    labels = map_labels(maps, train)
-    usable = np.flatnonzero(maps.t_rec.lt(pd.Timestamp(f'{year+1}-01-01', tz='UTC')).to_numpy())
-    fold = maps.harp.to_numpy() % FOLDS
-    scores, log = np.full((FOLDS, len(maps)), np.nan, dtype=np.float32), []
-    for k in range(FOLDS):
-        fit = np.flatnonzero(np.isfinite(labels) & (fold != k))
-        model, loss = train_cnn(images[fit], extra[fit], labels[fit], settings, settings['seed']+year*10+k, device)
-        scores[k, usable] = score_cnn(model, images, extra, usable, device)
-        log.append({'year': year, 'fold': k, 'maps': len(fit), 'positive_maps': int(labels[fit].sum()), 'final_loss': loss})
-        del model
-    in_train = maps.harp.isin(set(train.harp)).to_numpy()
-    final = np.where(in_train, scores[fold, np.arange(len(maps))], scores.mean(axis=0))
-    return final, log
-
-
-def pick_device():
-    import torch
-    return 'mps' if torch.backends.mps.is_available() else 'cpu'
+    Torch runs in a fresh process because it cannot share one with the scikit-learn/XGBoost runtime.
+    """
+    work.mkdir(parents=True)
+    np.save(work/'labels.npy', map_labels(maps, train))
+    np.save(work/'usable.npy', np.flatnonzero(maps.t_rec.lt(pd.Timestamp(f'{year+1}-01-01', tz='UTC')).to_numpy()))
+    np.save(work/'harp.npy', maps.harp.to_numpy())
+    np.save(work/'in_train.npy', maps.harp.isin(set(train.harp)).to_numpy())
+    (work/'job.json').write_text(json.dumps({'year': year, 'folds': FOLDS, 'settings': settings, 'cache': str(cache)}))
+    with (work/'worker.log').open('w') as log:
+        subprocess.run([sys.executable, str(Path(__file__).resolve().parent/'image_worker.py'), '--job', str(work)],
+                       stdout=log, stderr=subprocess.STDOUT, check=True)
+    result = json.loads((work/'result.json').read_text())
+    return np.load(work/'scores.npy'), result['log'], result['device']
 
 
 def run(config_path, output):
@@ -185,15 +120,22 @@ def run(config_path, output):
     original, _ = load_development(Path(base['source']), evidence['frozen_shards_report_sha256'])
     development = pd.concat(original.values(), ignore_index=True)
     del original
-    device = pick_device()
     output.mkdir(parents=True)
+    cache = output/'map_cache'
+    cache.mkdir()
+    np.save(cache/'images.npy', images)
+    np.save(cache/'extra.npy', extra)
+    del images, extra
+    device = None
     thresholds, prepared, coverage, cnn_log = {}, {}, [], []
     for year in config['years']:
         groups, audit = annual_fold(development, year)
         if audit != next(f for f in walk_report['folds'] if f['year'] == year)['audit']:
             raise ValueError(f'Annual populations changed: {year}')
         groups['evaluation'] = groups['evaluation'].drop(columns=['target', 'label_status'])
-        score, log = stacked_scores(maps, images, extra, groups['train'], year, config['cnn'], device)
+        score, log, device = stacked_scores(maps, cache, groups['train'], year, config['cnn'], output/f'cnn_job_{year}')
+        for name in ['labels.npy', 'usable.npy', 'harp.npy', 'in_train.npy', 'scores.npy']:
+            (output/f'cnn_job_{year}'/name).unlink()
         cnn_log += log
         pd.DataFrame({'harp': maps.harp, 't_rec': maps.t_rec, 'cnn_logit': score}).dropna().to_parquet(
             output/f'cnn_scores_{year}.parquet', index=False)
@@ -213,7 +155,7 @@ def run(config_path, output):
         print(f'{year}: thresholds {chosen}', flush=True)
         del groups, contexts
         gc.collect()
-    del images
+    shutil.rmtree(cache)
     (output/'thresholds.json').write_text(json.dumps(thresholds, indent=2)+'\n')
     pd.DataFrame(coverage).to_csv(output/'map_coverage.csv', index=False)
     pd.DataFrame(cnn_log).to_csv(output/'cnn_training.csv', index=False)
@@ -270,7 +212,7 @@ def run(config_path, output):
               'acceptance': summary, 'cnn_fits': len(cnn_log),
               'constituent_fits': len(config['years'])*len(CANDIDATES)*2,
               'reserved_test_accessed': False, 'model_promoted': False,
-              'artifact_hashes': {p.name: sha(p) for p in sorted(output.iterdir())}}
+              'artifact_hashes': {p.name: sha(p) for p in sorted(output.iterdir()) if p.is_file()}}
     (output/'report.json').write_text(json.dumps(result, indent=2)+'\n')
     return result, table_out
 

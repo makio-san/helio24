@@ -1,10 +1,14 @@
+import importlib.util
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import numpy as np
 import pandas as pd
+import pytest
 
-from scripts.audit_image_features import CANDIDATES, CONTEXT, attach_maps, map_labels, score_cnn, train_cnn
+from scripts.audit_image_features import CANDIDATES, CONTEXT, attach_maps, map_labels
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -34,15 +38,22 @@ def test_map_labels_cover_the_following_48_hours_of_training_windows_only():
     assert labels[0] == 0 and labels[1] == 1 and np.isnan(labels[2])
 
 
-def test_cnn_trains_and_scores_on_a_tiny_stack():
-    rng = np.random.default_rng(0)
-    images = (rng.normal(size=(16, 128, 256))*100).astype(np.float16)
-    extra = np.zeros((16, 3), dtype=np.float32)
-    labels = np.array([0, 1]*8, dtype=float)
-    settings = {'epochs': 1, 'batch': 8, 'learning_rate': 0.001, 'weight_decay': 0.0001, 'dropout': 0.3}
-    model, loss = train_cnn(images, extra, labels, settings, 24, 'cpu')
-    scores = score_cnn(model, images, extra, np.arange(16), 'cpu')
-    assert np.isfinite(loss) and scores.shape == (16,) and np.isfinite(scores).all()
+def test_cnn_trains_and_scores_in_a_fresh_process():
+    if importlib.util.find_spec('torch') is None:
+        pytest.skip('Optional neural dependency not installed')
+    code = """
+import numpy as np
+from helio24.map_model import score_cnn, train_cnn
+rng = np.random.default_rng(0)
+images = (rng.normal(size=(16, 128, 256))*100).astype(np.float16)
+extra = np.zeros((16, 3), dtype=np.float32)
+settings = {'epochs': 1, 'batch': 8, 'learning_rate': 0.001, 'weight_decay': 0.0001, 'dropout': 0.3}
+model, loss = train_cnn(images, extra, np.array([0, 1]*8, dtype=float), settings, 24, 'cpu')
+scores = score_cnn(model, images, extra, np.arange(16), 'cpu')
+assert np.isfinite(loss) and scores.shape == (16,) and np.isfinite(scores).all()
+"""
+    result = subprocess.run([sys.executable, '-c', code], capture_output=True, text=True, timeout=120, cwd=ROOT)
+    assert result.returncode == 0, result.stderr
 
 
 def test_protocol_is_frozen_with_the_lagged_rule_as_primary():
