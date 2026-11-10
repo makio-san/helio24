@@ -1,0 +1,33 @@
+{
+  "id": "cycle25-diagnostic-v1",
+  "status": "frozen_before_any_result",
+  "date": "2026-11-10",
+  "purpose": "Explain why the frozen baseline ranks evaluation windows worse in solar cycle 25 (2022, 2023: AP 0.2800 and 0.2206) than in cycle 24 (2014, 2015, 2017: AP 0.5079, 0.4924, 0.8117). Diagnostic description only: no candidate model, no acceptance rule, no promotion.",
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "frozen_shards": "artifacts/v2_development_features_20261025_r2",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "base_protocol": "config/walk-forward-v1.json",
+    "watch_tier_thresholds": "artifacts/operating_point_review_20261109_r1/deployable_thresholds.json",
+    "watch_tier_thresholds_sha256": "bd4594e2ab0e5ebcdc58cc438b59f7a213828fa3dfdd5b5dfb9c7fcb0df3d6c0"
+  },
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "eras": {"cycle24": [2014, 2015, 2016, 2017], "cycle25": [2022, 2023]},
+  "measures": {
+    "D1_composition": "Per evaluation year: windows, HARPs, flaring HARPs (at least one positive window), positive windows, positive runs, positive share, median windows per flaring HARP, median USFLUX__last of positive windows and of all windows, share of positive windows whose USFLUX__last is below the cycle-24 median of positive windows, mean missing_fraction.",
+    "D2_decomposition": "Per evaluation year with the stored baseline probability: overall window AP; region AP (max probability per HARP against whether the HARP has any positive window: the 'which region' problem); within-flaring-HARP window AP (windows of flaring HARPs only: the 'when' problem); share of FP windows at the recall-0.90 watch threshold that come from HARPs with no positive window in the year.",
+    "D3_single_feature_ceiling": "Per evaluation year: AP of each of the 96 summaries and of its negation as a raw ranking; the best feature and its AP; the AP of USFLUX__last as a fixed capacity proxy. If the best raw feature's AP falls across eras like the model's AP, the information in the summaries fell.",
+    "D4_within_era_fit": "Per era: HARP-grouped 5-fold cross-validation (sklearn GroupKFold on HARP number, folds assigned in HARP order) of the unchanged walk-forward-v1 logistic and xgboost recipes on the era's evaluation windows; out-of-fold raw probabilities combined 0.45/0.55; AP per year. An era-internal fit sees the era's own future, so it is a ceiling for what the summaries carry in that era, never a deployable model. 2 eras x 5 folds x 2 models = 20 fits."
+  },
+  "reading": {
+    "R1_information_fell": "D4 within-era AP in 2022 and 2023 exceeds the walk-forward AP by less than 0.10 in both years: the summaries carry less rankable information in cycle 25; drift of the training distribution is not the main cause and a cycle-25-aware training protocol is not justified by this evidence.",
+    "R2_drift": "D4 within-era AP exceeds the walk-forward AP by at least 0.10 in both 2022 and 2023: the training distribution differs from cycle 25; a separate frozen protocol for cycle-25-aware training would be justified.",
+    "R3_timing_dominates": "D2 region AP is at least 0.50 while within-flaring-HARP AP is below 0.30 in a year: the model finds the regions but not the day; features about timing, not capacity, would be needed.",
+    "mixed": "Any other pattern is reported as is, with no further reading added after results."
+  },
+  "budget": {"fits": 20, "hyperparameter_search": 0, "feature_changes": 0},
+  "scope": "Already inspected years, adaptive development description, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares.",
+  "prohibitions": ["No model or threshold change", "No reserved 2024-2025 test access", "No new measures or readings after seeing results", "No presentation of a within-era fit as deployable"],
+  "reserved_test_accessed": false
+}
