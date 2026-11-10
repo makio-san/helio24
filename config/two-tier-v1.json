@@ -1,0 +1,44 @@
+{
+  "id": "two-tier-v1",
+  "status": "frozen_before_any_result",
+  "date": "2026-11-10",
+  "purpose": "Measure what a two-tier operating point delivers on the frozen baseline: an alert tier whose threshold is chosen for precision on the prior calibration year, and a watch tier that keeps the project operating point of config/operating-point-v2.json (prior calibration year, window recall 0.90). Decision aid for redefining the project target. No model, feature or probability changes; zero fits.",
+  "why": "Ten routes left precision at the recall-0.90 operating point in the 0.04-0.21 band, and accuracy below the always-negative accuracy in every year. Accuracy above always-negative is equivalent to precision above 0.50 (TP greater than FP). The baseline's evaluation-year oracle reaches precision 0.50 only at recall 0.48 (2014), 0.48 (2015), 0.33 (2016), 0.80 (2017), 0.15 (2022) and 0.07 (2023). The question is what a prior-year precision rule delivers, since the oracle is not deployable.",
+  "evidence": {
+    "predictions": "artifacts/temporal_years_20261101_r1",
+    "predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "baseline_artifact": "artifacts/walk_forward_20261028_r1",
+    "baseline_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+    "frozen_shards_report": "artifacts/v2_development_features_20261025_r2/report.json",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "watch_tier_thresholds": "artifacts/operating_point_review_20261109_r1/deployable_thresholds.json",
+    "watch_tier_thresholds_sha256": "bd4594e2ab0e5ebcdc58cc438b59f7a213828fa3dfdd5b5dfb9c7fcb0df3d6c0"
+  },
+  "arm": "baseline (original 96-summary ensemble), stage-one inference only with the stored frozen models; zero fits",
+  "tiers": {
+    "watch": {
+      "rule": "helio24.calibration.recall_threshold on the prior calibration year at window recall 0.90; must reproduce the stored 0.9 threshold of the watch_tier_thresholds file bit for bit.",
+      "recall_target": 0.90
+    },
+    "alert": {
+      "rule": "helio24.two_tier.precision_threshold on the prior calibration year: among candidate thresholds of helio24.modeling.threshold_curve whose calibration-year window recall is at least the recall floor, take those whose calibration-year window precision is at least the precision target and choose the one with the highest recall (ties: lowest threshold). If no candidate reaches the target, choose the candidate with the highest precision (ties: highest recall, then lowest threshold) and mark the year as fallback.",
+      "precision_targets": [0.30, 0.50],
+      "primary_precision_target": 0.50,
+      "recall_floor": 0.10,
+      "recall_floor_reason": "A threshold that alarms on a handful of calibration windows is a count fluke, not a rule; 0.10 of the calibration-year positive windows is the smallest set judged stable before any result was seen."
+    }
+  },
+  "reported_per_tier_and_year": ["threshold", "calibration_recall", "calibration_precision", "fallback", "tp", "fp", "fn", "tn", "recall", "precision", "accuracy", "always_negative_accuracy", "alarm_windows", "episodes", "episode_precision", "positive_runs", "positive_runs_alarmed", "missed_positive_runs", "precision_interval", "recall_interval"],
+  "intervals": "helio24.calibration.cluster_intervals, full-HARP bootstrap, 1000 draws, seed 24, on evaluation-year windows at the chosen threshold.",
+  "oracle": "For each precision target, the highest evaluation-year recall at which any threshold reaches it (scripts.audit_operating_point.recall_for_precision). Not deployable; an upper bound only.",
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "order_of_operations": "Thresholds for both tiers, all targets and all years are written to disk and hashed before any evaluation label is read.",
+  "reading": {
+    "year_meets_primary": "alert tier at the primary target delivers evaluation-year precision >= 0.50, which is the same as accuracy above the always-negative accuracy, and is not a fallback year",
+    "redefinition_supported_if": "year_meets_primary holds in at least four of six years and the watch tier is identical to the operating-point-v2 result in every year",
+    "meaning": "Support justifies writing config/operating-point-v3.json with the two tiers for development reporting. It never changes alerts, dashboard thresholds or models; the reserved 2024-2025 test stays closed."
+  },
+  "scope": "Adaptive development description on already inspected years, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares. Precision at a low-recall tier is measured on few alarm windows in quiet years and its interval must be read with the point.",
+  "prohibitions": ["No model or probability change", "No reserved 2024-2025 test access", "No new precision targets, recall floors or tie rules after seeing results", "No presentation of an oracle point as deployable"],
+  "reserved_test_accessed": false
+}
