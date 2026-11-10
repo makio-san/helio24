@@ -47,7 +47,7 @@ def load_maps(directory, expected_sha):
     if table.t_rec.ge(pd.Timestamp('2024-01-01', tz='UTC')).any():
         raise ValueError('Reserved period map present')
     table = table.sort_values(['t_rec', 'harp']).reset_index(drop=True)
-    images = np.stack([np.load(directory/path) for path in table.map])
+    images = np.stack([np.load(directory/path) for path in table['map']])
     keep = np.abs(images).reshape(len(images), -1).max(axis=1) > 0
     table = table[keep].reset_index(drop=True)
     extra = np.column_stack([np.log(table.width/500), np.log(table.height/250), table.nan_fraction]).astype(np.float32)
