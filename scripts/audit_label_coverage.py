@@ -119,7 +119,7 @@ def run(config_path, output):
     hek = hek_match(sgas, pd.read_csv(hek_path))
     hek = hek[hek.year.isin(config['years'])]
     best_status = best.set_index(['peak_time', 'goes_class', 'noaa']).status
-    hek['sgas_status'] = [None if i is None else best_status.get((sgas.peak_time[i], sgas.goes_class[i], sgas.noaa[i]), 'unmapped')
+    hek['sgas_status'] = [None if pd.isna(i) else best_status.get((sgas.peak_time[int(i)], sgas.goes_class[int(i)], sgas.noaa[int(i)]), 'unmapped')
                           for i in hek.sgas_index]
     output.mkdir(parents=True)
     rows = []
