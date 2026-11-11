@@ -1,0 +1,44 @@
+{
+  "id": "operating-point-v3",
+  "status": "proposal_frozen_2026-11-12_not_adopted",
+  "supersedes_if_adopted": "config/operating-point-v2.json",
+  "proposal": {
+    "development_basis": "The relabelled development table artifacts/relabelled_development_20261111_r1 (config/relabel-v1.json: V2 attachments kept, V2-unassigned GOES M/X events attached through NOAA SGAS region numbers and JSOC NOAA_ARS, fail-closed exclusions for the 133 events that stay unassigned) replaces artifacts/v2_development_features_20261025_r2 as the basis of development reporting and future development protocols.",
+    "models": "The frozen walk-forward recipes of config/walk-forward-v1.json refitted on the relabelled table (artifacts/relabel_walk_forward_20261111_r1, arm relabelled_models).",
+    "tiers": {
+      "watch": "Threshold selected on the prior relabelled calibration year at window recall 0.90 with helio24.calibration.recall_threshold, applied unchanged to the next year (the rule of operating-point-v2).",
+      "alert": "Threshold selected on the prior relabelled calibration year with helio24.two_tier.precision_threshold at precision target 0.50 and recall floor 0.10; when no threshold reaches the target the best-precision threshold is used and the year is reported as a fallback year (the rule of two-tier-v1)."
+    }
+  },
+  "basis": {
+    "label_coverage_audit": "docs/label-coverage-20261110.md",
+    "relabelling": "docs/relabel-20261111.md",
+    "two_tier_on_relabelled_table": "docs/two-tier-relabelled-20261111.md",
+    "finding": "Only 29.6% (2022) and 28.9% (2023) of NOAA_ARS-mapped M/X flares reached a positive label under the frozen contract. Relabelling recovers 489 of 622 unassigned events and 5899 positive windows, leaves every frozen window identical, and raises 2022 and 2023 average precision from 0.2800 and 0.2206 to 0.4622 and 0.3626, into the cycle-24 range. The two-tier rule on the relabelled table meets precision 0.50 in 2014, 2015 and 2017 and misses it in 2022 (0.4727, fallback year) and 2023 (0.4263) by less than 0.08."
+  },
+  "expected_development_performance": {
+    "years": [2014, 2015, 2016, 2017, 2022, 2023],
+    "watch_precision": [0.1922, 0.1473, 0.1045, 0.1868, 0.1452, 0.1874],
+    "watch_delivered_recall": [0.8810, 0.9555, 0.9393, 0.9170, 0.9242, 0.9032],
+    "watch_missed_positive_runs": [6, 1, 0, 1, 5, 10],
+    "alert_precision": [0.6825, 0.5439, 0.4631, 0.8676, 0.4727, 0.4263],
+    "alert_delivered_recall": [0.2824, 0.3730, 0.4393, 0.6679, 0.4822, 0.3879],
+    "alert_fallback_years": [2022],
+    "alert_missed_positive_runs": [66, 27, 3, 3, 32, 68],
+    "positive_runs": [88, 57, 8, 6, 72, 159],
+    "note": "Observed on already inspected development years with relabelled labels; expectations for reporting, not guarantees. The alert tier reaches accuracy above always-negative in 2014, 2015 and 2017 only."
+  },
+  "what_this_is_not": "Not an adopted operating point and not a performance improvement of the model: the probabilities change only because the training labels change. The production model, the dashboard alert threshold (app.py) and any deployed alert are unchanged by this file. The relabelled labels are an association by NOAA and JSOC, not ground truth.",
+  "adoption_requires": [
+    "A decision by the project owner recorded in this file's status",
+    "A frozen protocol that rebuilds the production training pipeline from the relabelled table and reproduces artifacts/relabel_walk_forward_20261111_r1",
+    "Reports that state the development basis changed on adoption and keep the frozen-label results visible for comparison",
+    "No reserved 2024-2025 test access until a single final candidate is declared"
+  ],
+  "reporting_rules_if_adopted": [
+    "State precision together with delivered recall and missed positive runs for every year and tier",
+    "Mark fallback years of the alert tier",
+    "State that the development basis is the relabelled table and why"
+  ],
+  "reserved_test_accessed": false
+}
