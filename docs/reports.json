@@ -502,5 +502,12 @@
     "source_sha256": "fcb0ba3e98a178651b25ace9df5fd7a85a2d3211d0fbe281a2b46f67082f0c03",
     "en": "relabel-20261111.md",
     "tr": "relabel-20261111.tr.md"
+  },
+  {
+    "id": "two-tier-relabelled-20261111",
+    "source_language": "en",
+    "source_sha256": "62e8e8aa73e59210ee3cbb9f38a20cb1bc79945fef7ebd3d7728141e55b38223",
+    "en": "two-tier-relabelled-20261111.md",
+    "tr": "two-tier-relabelled-20261111.tr.md"
   }
 ]

@@ -161,3 +161,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Etiket kapsamı denetimi / Label coverage audit | [Türkçe](label-coverage-20261110.tr.md) | [English](label-coverage-20261110.md) |
 
 | Bağımsız M/X ilişkilendirmesiyle yeniden etiketleme / Relabelling with an independent M/X association | [Türkçe](relabel-20261111.tr.md) | [English](relabel-20261111.md) |
+
+| Yeniden etiketlenmiş tabloda iki kademeli çalışma noktası / Two-tier operating point on the relabelled table | [Türkçe](two-tier-relabelled-20261111.tr.md) | [English](two-tier-relabelled-20261111.md) |
