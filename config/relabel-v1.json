@@ -1,0 +1,70 @@
+{
+  "id": "relabel-v1",
+  "status": "frozen_before_any_result",
+  "date": "2026-11-11",
+  "purpose": "Recover the GOES M/X events that SWAN-SF V2 attached to no HARP through an independent association (NOAA SGAS region number joined to the definitive JSOC NOAA_ARS keyword), rebuild the development table with the recovered labels from the verified V2 archives, and rerun the frozen walk-forward recipes on the relabelled table. Development evidence only: no model promotion, no dashboard threshold change, no reserved test access.",
+  "why": "The label coverage audit (docs/label-coverage-20261110.md) found that only 29.6% (2022) and 28.9% (2023) of the NOAA_ARS-mapped SGAS M/X events reach a positive label, against 87-95% in 2014-2017, because V2 attached 174 and 293 M/X events of those years to no HARP and the fail-closed rule excludes the windows that contain them. Flaring HARPs therefore keep only negative windows in both training and evaluation, and such HARPs produce 38.6% and 57.2% of the watch-tier false alarms.",
+  "evidence": {
+    "source_manifest": "config/swan_sf_v2_sources.verified.json",
+    "source_manifest_sha256": "4da23877d22c2676ab76950c69c016bbe8eaacd8049fc806dad078752feafa3d",
+    "role_protocol": "config/experiment5-v5.json",
+    "inventory_audit": "artifacts/v2_label_inventory_recovery_20261108_r1",
+    "hek_unassigned_events": "artifacts/v2_label_inventory_recovery_20261108_r1/unassigned_major_events.csv",
+    "hek_unassigned_events_sha256": "e584b58fbea9f1e03f025df75edae9312303f0dafd82db04347a5ba7fc71be8f",
+    "sgas_directory": "data/activity_summaries_20261109_r1",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "frozen_shards": "artifacts/v2_development_features_20261025_r2",
+    "frozen_shards_report_sha256": "62a64b3d94b9f7ec1624e5596fc86e636922a0e696968259b55ff0c8739c5f82",
+    "frozen_walk_forward": "artifacts/walk_forward_20261028_r1",
+    "frozen_walk_forward_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+    "frozen_predictions": "artifacts/temporal_years_20261101_r1",
+    "frozen_predictions_report_sha256": "e85c7d9eec4a82e2c472f8f17f1a060cd426babe04894ce82425b32e849dc5a2",
+    "watch_tier_thresholds": "artifacts/operating_point_review_20261109_r1/deployable_thresholds.json",
+    "watch_tier_thresholds_sha256": "bd4594e2ab0e5ebcdc58cc438b59f7a213828fa3dfdd5b5dfb9c7fcb0df3d6c0",
+    "recipes": "config/walk-forward-v1.json"
+  },
+  "association": {
+    "scope": "Only the M/X events of the frozen HEK inventory that V2 attached to no HARP. Events V2 attached with an accepted confidence keep V2's HARP; the independent association never overrides V2.",
+    "sgas_match": "A HEK unassigned event matches the SGAS section-A rows with the same GOES class whose peak time differs by at most 5 minutes. The matched rows' region numbers (4-digit numbers below 5000 are raised by 10000) are the candidate NOAA regions.",
+    "harp_lookup": "Each candidate region is looked up in NOAA_ARS on the SGAS peak date (data/harp_noaa_mapping_20261109_r1). The event's candidate HARPs are the union over its candidate regions.",
+    "outcomes": {
+      "recovered": "Exactly one candidate HARP: the event is attached to it at the HEK peak time.",
+      "ambiguous": "More than one candidate HARP: fail closed; windows of every candidate HARP that contain the peak are excluded as excluded_ambiguous_harp unless they are positive for another reason.",
+      "unmapped": "Candidate regions exist but none maps to a HARP on that date: the event stays unassigned.",
+      "no_region": "The SGAS rows carry no region number: the event stays unassigned.",
+      "no_sgas_match": "No SGAS row matches: the event stays unassigned."
+    }
+  },
+  "labels": {
+    "rule": "Apply the frozen V2 contract (helio24.v2_contract.label_windows) with the unassigned inventory reduced to the events that stay unassigned, then mark every window of a recovered HARP with forecast_time <= peak < prediction_end as positive and every such window of an ambiguous event's candidate HARPs as excluded_ambiguous_harp. Precedence: positive, excluded_ambiguous_harp, excluded_unassigned_major_event, negative, as in the frozen contract.",
+    "kept_columns": "The frozen development schema plus label_status_v2, the status of the window under the frozen contract, kept for the consistency check and the transition counts.",
+    "consistency": "Every window of the frozen shards must appear in the relabelled table with identical features and its frozen label_status equal to label_status_v2; every window absent from the frozen shards must have an excluded label_status_v2. The materialisation fails otherwise."
+  },
+  "materialisation": {
+    "source": "The four verified SWAN-SF V2 archives streamed again through helio24.v2_archive (about 5.0 GB, checked against the frozen manifest hashes). Roles, stride, cadence and leap-second rules are those of config/experiment5-v5.json and helio24.v2_features.",
+    "output": "artifacts/relabelled_development_20261111_r1"
+  },
+  "walk_forward": {
+    "folds": "helio24.walk_forward.annual_fold on the relabelled table for every year of config/walk-forward-v1.json (2014-2023); years whose training or calibration role lacks both classes are skipped as in the frozen run.",
+    "arms": {
+      "frozen_models_old_labels": "The frozen walk-forward ensemble scored on the frozen labels (artifacts/temporal_years_20261101_r1, column baseline). Reference, copied not recomputed.",
+      "frozen_models_new_labels": "The frozen per-year models and calibrators (artifacts/walk_forward_20261028_r1/<year>/models.joblib) applied to the relabelled evaluation windows with their frozen thresholds: the label effect alone.",
+      "relabelled_models": "The config/walk-forward-v1.json recipes (0.45 logistic + 0.55 XGBoost, sigmoid calibration) refitted on the relabelled expanding training role, calibrated on the relabelled previous year: label and model effect together."
+    },
+    "operating_points": {
+      "recall_0.95": "The frozen walk-forward rule: previous-year calibration threshold at window recall 0.95 (frozen value for the frozen models, recomputed on the relabelled calibration year for the relabelled models).",
+      "recall_0.90": "The operating-point-v2 watch rule: previous-year calibration threshold at window recall 0.90 (artifacts/operating_point_review_20261109_r1/deployable_thresholds.json for the frozen models, recomputed for the relabelled models)."
+    },
+    "metrics": "Per year, arm and operating point: windows, positives, tp, fp, fn, tn, precision, recall, accuracy, always-negative accuracy, average precision, and 95% HARP-cluster bootstrap intervals (1000 draws, seed 24) for precision and recall.",
+    "output": "artifacts/relabel_walk_forward_20261111_r1"
+  },
+  "reading": {
+    "R1_labels_explain_cycle25": "In both 2022 and 2023 the relabelled_models precision at recall_0.90 exceeds the frozen_models_old_labels precision and its bootstrap lower bound lies above that frozen value: the missing labels were a main cause of the cycle-25 weakness.",
+    "R2_accuracy_goal": "Reported as a count: evaluation years with positives in which the relabelled_models accuracy at recall_0.90 is at least the always-negative accuracy, against the same count for frozen_models_old_labels. Precision above 0.50 is equivalent.",
+    "R3_label_versus_model": "Reported, not judged: whether frozen_models_new_labels or relabelled_models has the higher precision at recall_0.90 in 2022 and 2023, separating the label effect from the refit.",
+    "R4_no_gain": "The condition of R1 fails in 2022 or 2023: the recovered labels do not explain the weakness; reported as is."
+  },
+  "scope": "Development years only; the reserved 2024-2025 test is not read. SGAS region numbers and NOAA_ARS are associations made by NOAA and JSOC, not ground truth; disagreement with V2 is not measured here because V2 attached these events to no HARP. The relabelled table is development evidence: adopting it for the production model, the operating point or the dashboard is a separate decision.",
+  "prohibitions": ["No override of V2 attachments", "No model promotion or dashboard threshold change", "No reserved 2024-2025 test access", "No new readings after seeing results", "No overwrite of the frozen shards or frozen experiments"],
+  "reserved_test_accessed": false
+}
