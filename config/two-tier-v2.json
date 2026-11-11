@@ -1,0 +1,45 @@
+{
+  "id": "two-tier-v2",
+  "status": "frozen_before_any_result",
+  "date": "2026-11-11",
+  "supersedes_for_this_question": "config/two-tier-v1.json",
+  "purpose": "Apply the frozen two-tier operating point of config/two-tier-v1.json, unchanged in every rule, to the relabelled development table and the relabelled walk-forward models (config/relabel-v1.json). Decision aid only: zero fits, no model, probability or dashboard change.",
+  "why": "On the frozen labels the alert tier met the primary precision target of 0.50 in 2014, 2015 and 2017 but not in 2022 and 2023, where the evaluation-year oracle reached precision 0.50 only at recall 0.15 and 0.07. Relabelling raised the 2022 and 2023 average precision from 0.2800 and 0.2206 to 0.4622 and 0.3626, into the cycle-24 range (0.37-0.81), so the same prior-year precision rule may now hold in cycle 25. The question is whether it does; the rules are inherited, not retuned.",
+  "evidence": {
+    "relabel_protocol": "config/relabel-v1.json",
+    "relabelled_table": "artifacts/relabelled_development_20261111_r1",
+    "relabelled_table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "relabelled_walk_forward": "artifacts/relabel_walk_forward_20261111_r1",
+    "relabelled_walk_forward_report_sha256": "ad1f8dc95e26586cca728013570f711640a3321c718b5a2d4be0b3051e6496aa",
+    "frozen_two_tier": "artifacts/two_tier_20261110_r1",
+    "frozen_two_tier_report_sha256": "05f960ebc15ac4bb23142568e259786f08d99f8b3b7466a72b325ef8bbc6d6f6"
+  },
+  "arm": "relabelled_models of config/relabel-v1.json (frozen recipes refitted on the relabelled table), stage-one inference only with the stored per-year models; zero fits",
+  "tiers": {
+    "watch": {
+      "rule": "helio24.calibration.recall_threshold on the relabelled prior calibration year at window recall 0.90; must reproduce the stored relabelled_models recall_0.90 threshold of each year bit for bit.",
+      "recall_target": 0.90
+    },
+    "alert": {
+      "rule": "helio24.two_tier.precision_threshold on the relabelled prior calibration year, exactly as in config/two-tier-v1.json.",
+      "precision_targets": [0.30, 0.50],
+      "primary_precision_target": 0.50,
+      "recall_floor": 0.10
+    }
+  },
+  "reported_per_tier_and_year": ["threshold", "calibration_recall", "calibration_precision", "fallback", "tp", "fp", "fn", "tn", "recall", "precision", "accuracy", "always_negative_accuracy", "alarm_windows", "episodes", "episode_precision", "positive_runs", "positive_runs_alarmed", "missed_positive_runs", "precision_interval", "recall_interval"],
+  "intervals": "helio24.calibration.cluster_intervals, full-HARP bootstrap, 1000 draws, seed 24, on relabelled evaluation-year windows at the chosen threshold.",
+  "oracle": "For each precision target, the highest relabelled evaluation-year recall at which any threshold reaches it. Not deployable; an upper bound only.",
+  "comparison": "The frozen two-tier result (artifacts/two_tier_20261110_r1/results.csv) is copied beside each year and tier as the old-label reference; both runs are reported with the same columns.",
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "order_of_operations": "Thresholds for both tiers, all targets and all years are written to disk and hashed before any evaluation label is read.",
+  "reading": {
+    "year_meets_primary": "alert tier at the primary target delivers relabelled evaluation-year precision >= 0.50 (accuracy above always-negative) and is not a fallback year",
+    "cycle25_now_met": "year_meets_primary holds in both 2022 and 2023",
+    "redefinition_supported_if": "year_meets_primary holds in at least four of six years and the watch tier reproduces the relabelled_models recall_0.90 result of config/relabel-v1.json in every year",
+    "meaning": "Support justifies a frozen proposal for config/operating-point-v3.json with the two tiers on the relabelled table for development reporting. It never changes alerts, dashboard thresholds or models; the reserved 2024-2025 test stays closed."
+  },
+  "scope": "Adaptive development description on already inspected years, not an independent test. The relabelled labels are an association, not ground truth. Counts are overlapping forecast windows and groupings of them, not physical flares.",
+  "prohibitions": ["No model or probability change", "No reserved 2024-2025 test access", "No new precision targets, recall floors or tie rules", "No presentation of an oracle point as deployable"],
+  "reserved_test_accessed": false
+}
