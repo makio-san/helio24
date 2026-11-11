@@ -159,3 +159,5 @@ their technical names. Numeric tables retain the source document's number notati
 | 25. döngü sıralama teşhisi / Cycle-25 ranking diagnostic | [Türkçe](cycle25-diagnostic-20261110.tr.md) | [English](cycle25-diagnostic-20261110.md) |
 
 | Etiket kapsamı denetimi / Label coverage audit | [Türkçe](label-coverage-20261110.tr.md) | [English](label-coverage-20261110.md) |
+
+| Bağımsız M/X ilişkilendirmesiyle yeniden etiketleme / Relabelling with an independent M/X association | [Türkçe](relabel-20261111.tr.md) | [English](relabel-20261111.md) |
