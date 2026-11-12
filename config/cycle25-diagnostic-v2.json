@@ -1,0 +1,35 @@
+{
+  "id": "cycle25-diagnostic-v2",
+  "status": "frozen_before_any_result",
+  "date": "2026-11-12",
+  "purpose": "Repeat the cycle-25 ranking diagnostic of config/cycle25-diagnostic-v1.json on the adopted development basis (relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json). The first diagnostic read 'information fell' on frozen labels that covered under 30% of the mapped 2022-2023 M/X flares; this run asks whether that reading survives the label correction and where the remaining 2022-2023 alert-tier gap (precision 0.4727 and 0.4263 against the 0.50 target) sits. Diagnostic description only: no candidate model, no acceptance rule, no promotion.",
+  "evidence": {
+    "predictions": "artifacts/walk_forward_v2_20261112_r1",
+    "predictions_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "probability_column": "ensemble",
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "base_protocol": "config/walk-forward-v1.json",
+    "watch_tier_thresholds": "<predictions>/<year>/thresholds.json, key watch.threshold (covered by the predictions report hash)"
+  },
+  "frozen_label_reference": {
+    "diagnostic": "artifacts/cycle25_diagnostic_20261110_r1",
+    "diagnostic_report_sha256": "b4f0cdb55b67062497fe89a421fcb1450301d13a47c3514da9e2117fabeb9693",
+    "use": "The frozen-label results are copied unchanged beside the relabelled results; nothing is recomputed on frozen labels."
+  },
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "eras": {"cycle24": [2014, 2015, 2016, 2017], "cycle25": [2022, 2023]},
+  "measures": {
+    "inherited": "D1_composition, D2_decomposition, D3_single_feature_ceiling and D4_within_era_fit exactly as defined in config/cycle25-diagnostic-v1.json and implemented in scripts/audit_cycle25.py (functions composition, decomposition, single_feature_ceiling, within_era_fit), with the relabelled target, the stored walk-forward-v2 ensemble probability and the watch threshold of each year. 2 eras x 5 folds x 2 models = 20 fits.",
+    "D5_alert_false_positive_origin": "Per evaluation year at the stored alert threshold of walk-forward-v2: alert windows, FP windows, the share of FP windows from HARPs with no positive window in the year, and the share of FP windows that lie in a flaring HARP within 72 hours before the start or after the end of one of its positive runs (near misses in time). No fit."
+  },
+  "reading": {
+    "inherited": "R1_information_fell, R2_drift, R3_timing_dominates and mixed exactly as in config/cycle25-diagnostic-v1.json, with the same 0.10, 0.50 and 0.30 limits, applied to the relabelled results.",
+    "label_effect": "Reported as is: the change of each measure from the frozen-label diagnostic to the relabelled one. If the best single feature's AP and the within-era AP in 2022 and 2023 both rise to at least the lowest cycle-24 value among 2014, 2015 and 2017, the 'information fell' statement of the first diagnostic is attributed to label coverage; otherwise it stands.",
+    "D5": "Descriptive only; no limit and no reading."
+  },
+  "budget": {"fits": 20, "hyperparameter_search": 0, "feature_changes": 0},
+  "scope": "Already inspected years, adaptive development description, not an independent test. Counts are overlapping forecast windows and groupings of them, not physical flares. Relabelled labels are an association by NOAA and JSOC, not ground truth.",
+  "prohibitions": ["No model or threshold change", "No reserved 2024-2025 test access", "No new measures or readings after seeing results", "No presentation of a within-era fit as deployable"],
+  "reserved_test_accessed": false
+}
