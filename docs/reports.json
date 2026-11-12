@@ -509,5 +509,12 @@
     "source_sha256": "62e8e8aa73e59210ee3cbb9f38a20cb1bc79945fef7ebd3d7728141e55b38223",
     "en": "two-tier-relabelled-20261111.md",
     "tr": "two-tier-relabelled-20261111.tr.md"
+  },
+  {
+    "id": "operating-point-v3-adoption-20261112",
+    "source_language": "en",
+    "source_sha256": "0cfbc0ca2e3ab97012daa7b1a35f7d2c8abbfab61be4221f87c9e760d0a1473c",
+    "en": "operating-point-v3-adoption-20261112.md",
+    "tr": "operating-point-v3-adoption-20261112.tr.md"
   }
 ]

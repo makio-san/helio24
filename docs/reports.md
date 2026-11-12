@@ -163,3 +163,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Bağımsız M/X ilişkilendirmesiyle yeniden etiketleme / Relabelling with an independent M/X association | [Türkçe](relabel-20261111.tr.md) | [English](relabel-20261111.md) |
 
 | Yeniden etiketlenmiş tabloda iki kademeli çalışma noktası / Two-tier operating point on the relabelled table | [Türkçe](two-tier-relabelled-20261111.tr.md) | [English](two-tier-relabelled-20261111.md) |
+
+| Çalışma noktası v3 benimsemesi ve hattın yeniden kurulması / Operating point v3 adoption and pipeline rebuild | [Türkçe](operating-point-v3-adoption-20261112.tr.md) | [English](operating-point-v3-adoption-20261112.md) |
