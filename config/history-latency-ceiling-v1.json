@@ -1,0 +1,60 @@
+{
+  "id": "history-latency-ceiling-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-12",
+  "goal": "Decide, without any download, whether acquiring a near-real-time flare or X-ray source is worth its cost: measure the alert-tier precision of the adopted pipeline when regional flare history is given at zero publication latency (an optimistic ceiling), against the control and against the causal SGAS history of config/activity-history-v2.json.",
+  "why": "The causal SGAS history (docs/activity-history-relabelled-20261112.md) did not raise alert precision. SGAS is issued once a day at about 0245 UTC and lists the previous UT day, so at forecast time the newest usable event is between about 3 and 51 hours old, and the last hours before the forecast, where timing information would sit, are never visible. Two explanations remain: the latency hides the useful part, or a region's flare history does not carry the missing timing information at all. Sources that would remove the latency (GOES XRS 1-minute flux, about 150 MB for 2010-2023; real-time event lists with unverifiable archive times; GOES-R flare locations, 2017 onwards only) cost a download and a provenance audit. This ceiling uses the event times already present in the local SGAS files and separates the two explanations first.",
+  "source_scan": {
+    "goes15_xrs_1min_science": "https://www.ncei.noaa.gov/data/goes-space-environment-monitor/access/science/xrs/goes15/xrsf-l2-avg1m_science/sci_xrsf-l2-avg1m_g15_s20100407_e20200304_v2-2-1.nc (31 MB, 2010-04-07 to 2020-03-04, full-disk, no region)",
+    "goes16_xrs_1min_science": "https://data.ngdc.noaa.gov/platforms/solar-space-observing-satellites/goes/goes16/l2/data/xrsf-l2-avg1m_science/ annual files y2020 to y2023 (28, 30, 32, 32 MB, full-disk, no region); the mission file also holds the reserved 2024-2025 period and must not be used",
+    "goes16_flare_location": "xrsf-l2-flloc_science mission file (595 KB), 2017-02-09 onwards only: no cycle-24 training years, and it holds 2024-2025",
+    "swpc_event_reports": "Region numbers and minute times, but only an archive :Created: time 39 to 76 hours after the report day (docs/history-publication-probe-20261107.md): availability unverified",
+    "already_tested_negative": ["96 SHARP summaries variants", "24/48-hour raw histories", "TCN on 12-minute sequences", "issued SRS context", "issued SGAS history (frozen and relabelled labels)", "daily Br-map CNN score", "own probability trajectory and region age"],
+    "nothing_downloaded": true
+  },
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "causal_history": "artifacts/activity_history_relabelled_20261112_r1",
+    "causal_history_report_sha256": "8dab6e44102f3bc3a0817013fa728cff85e376ed46d0f3b03877a1e34e49bad4",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "base_protocol": "config/walk-forward-v1.json",
+    "sgas_directory": "data/activity_summaries_20261109_r1",
+    "sgas_manifest_sha256": "bc41aee04ac893da9278ed1b4fd3f97b90e90e28a956f93b0e1125a5dd1eb91d",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "mapping_manifest_sha256": "01b8f7cd0489233a49d06af33d5768ee7d256d8ca02dc05618e2b0dd86a27bf8"
+  },
+  "event_times": "Each SGAS section A row gives Begin, Max and End as HHMM on the UT day before the issue date. The event time is End (Max, then Begin, when End is blank); a time earlier than Begin is moved to the next day. Rows without a NOAA number count for the disk only.",
+  "availability_rule": "NOT the deployable rule. A window at forecast time t uses every event whose event time is at or before t minus 30 minutes, whatever the issue time of the product that lists it. This assumes that the event, its X-ray class and its NOAA number were known 30 minutes after the event ended; no archived product proves that. Labels use GOES peaks at or after t, so no feature event lies inside the label window. Regional events are those whose NOAA number is in the HARP's NOAA_ARS on the forecast date. A HARP without a NOAA number has event_available = 0 and missing regional values.",
+  "features": ["event_available", "reg_mx_6h", "reg_mx_12h", "reg_mx_24h", "reg_mx_72h", "reg_c_24h", "reg_c_72h", "reg_events_24h", "reg_max_logflux_24h", "reg_max_logflux_72h", "reg_hours_since_mx", "reg_hours_since_event", "reg_mx_life", "reg_max_logflux_life", "disk_mx_24h", "disk_max_logflux_24h"],
+  "feature_notes": "Counts over (t - 30 min - span, t - 30 min]. reg_hours_since_mx and reg_hours_since_event are hours from the newest regional M/X event or any regional event to t, missing when there is none. Maxima are log10 of the X-ray peak flux, missing when there is no classed event.",
+  "candidates": [
+    {"id": "control", "definition": "Stored ensemble probabilities and thresholds of artifacts/walk_forward_v2_20261112_r1. No refit."},
+    {"id": "history", "definition": "Stored probabilities and thresholds of the causal SGAS history candidate in artifacts/activity_history_relabelled_20261112_r1. No refit."},
+    {"id": "event_time", "definition": "Refit of the unchanged walk-forward-v1 recipes on the 96 summaries plus the 16 zero-latency features."}
+  ],
+  "training": "As in config/activity-history-v2.json: annual folds on the relabelled table equal to those of the control, unchanged recipes, prior-year sigmoid calibration, weight 0.45/0.55, watch and alert thresholds selected on calibration-year probabilities by the rules of config/walk-forward-v2.json, written and hashed before any evaluation label is read.",
+  "budget": {"candidate_recipes": 1, "years": 6, "constituent_fits": 12, "hyperparameter_search": 0, "feature_sets_after_results": 0},
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {"precision_higher_than_control": true, "missed_positive_runs_not_above_control": true, "window_recall_drop_at_most": 0.02},
+    "all_year_primary": "per_year_primary holds in all six years",
+    "cycle25_primary": "per_year_primary holds in both 2022 and 2023",
+    "also_reported": [
+      "Years with alert precision at least 0.50 per candidate",
+      "Watch-tier metrics, AP, within-flaring-HARP AP, alert FP origin, precision at the control's delivered recall",
+      "Paired HARP-cluster bootstrap intervals (1000 draws, seed 24) of the alert precision difference event_time minus control and event_time minus history",
+      "Feature coverage per year and role"
+    ]
+  },
+  "reading": {
+    "L1_latency_binding": "event_time meets all_year_primary, or meets cycle25_primary with a paired bootstrap lower bound against control above 0 in both 2022 and 2023: timely regional flare history can raise alert precision. This justifies asking for the GOES XRS download and a provenance audit of a real-time regional event source; it is not a deployable result.",
+    "L2_no_gain_at_zero_latency": "Otherwise: even at zero latency regional flare history does not raise alert precision by the frozen rule. Acquiring a faster flare-history or full-disk X-ray source for this purpose is not justified by this evidence, and the flare-history route is closed for the alert tier."
+  },
+  "limits": "Optimistic and not deployable: real-time knowledge of class and region number is assumed. SGAS lists energetic events, not every C-class flare. Thirteen days have no SGAS file and one has no issue time; their events are absent and are not encoded. NOAA_ARS is the definitive retrospective association. The relabelled M/X labels were recovered from the same SGAS rows, so past regional M/X features are past labels of the same region seen without delay. Already inspected years: adaptive development, not an independent test.",
+  "prohibitions": ["No evaluation labels in any feature, fit or threshold", "No event at or after t - 30 minutes in any feature", "No feature or hyperparameter change after results", "No download", "No model promotion, threshold or dashboard change", "No reserved 2024-2025 test access", "No presentation of event_time results as achievable performance"],
+  "reserved_test_accessed": false
+}
