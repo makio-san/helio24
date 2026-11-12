@@ -169,3 +169,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Benimsenen hatta 25. döngü sıralama teşhisi / Cycle-25 ranking diagnostic on the adopted pipeline | [Türkçe](cycle25-diagnostic-relabelled-20261112.tr.md) | [English](cycle25-diagnostic-relabelled-20261112.md) |
 
 | Benimsenen hatta SGAS patlama geçmişi / SGAS flare history on the adopted pipeline | [Türkçe](activity-history-relabelled-20261112.tr.md) | [English](activity-history-relabelled-20261112.md) |
+
+| Zamanlama kaynağı taraması ve gecikmesiz geçmiş tavanı / Timing-source scan and zero-latency history ceiling | [Türkçe](history-latency-ceiling-20261112.tr.md) | [English](history-latency-ceiling-20261112.md) |
