@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_alert_false_positive_origin_separates_never_flaring_from_near_misses():
-    t = pd.Timestamp('2023-01-01')
+    t = pd.Timestamp('2023-01-01', tz='UTC')
     hours = [0, 24, 200, 0, 24, 0]
     frame = pd.DataFrame({'harp': [1, 1, 1, 2, 2, 3], 'forecast_time': [t+pd.Timedelta(hours=h) for h in hours],
                           'target': [1, 0, 0, 0, 0, 0], 'probability': [.9, .8, .7, .6, .1, .2]})

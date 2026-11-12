@@ -21,11 +21,12 @@ def alert_false_positive_origin(frame, threshold, near=NEAR):
     fp = frame[alarm & frame.target.eq(0)]
     flaring = set(frame.harp[frame.target.eq(1)])
     close = np.zeros(len(fp), dtype=bool)
-    positive_times = {harp: part.forecast_time.to_numpy() for harp, part in frame[frame.target.eq(1)].groupby('harp')}
-    for i, (harp, time) in enumerate(zip(fp.harp, fp.forecast_time.to_numpy())):
+    nanoseconds = pd.to_datetime(frame.forecast_time, utc=True).astype('datetime64[ns, UTC]').astype('int64')
+    positive_times = {harp: part.to_numpy() for harp, part in nanoseconds[frame.target.eq(1)].groupby(frame.harp)}
+    for i, (harp, time) in enumerate(zip(fp.harp, nanoseconds[fp.index].to_numpy())):
         times = positive_times.get(harp)
         if times is not None:
-            close[i] = np.abs(times-time).min() <= near.to_timedelta64()
+            close[i] = np.abs(times-time).min() <= near.value
     return dict(alert_windows=int(alarm.sum()), alert_fp_windows=len(fp),
                 alert_fp_share_never_flaring_harps=float((~fp.harp.isin(flaring)).mean()) if len(fp) else None,
                 alert_fp_share_within_72h_of_positive=float(close.mean()) if len(fp) else None)
