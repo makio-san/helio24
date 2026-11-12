@@ -1,0 +1,55 @@
+{
+  "id": "activity-history-v2",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-12",
+  "goal": "Test whether the causal SGAS flare-history features of config/activity-history-v1.json, added to the fixed 96 magnetic summaries, raise alert-tier precision on the adopted development basis (relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json).",
+  "why": "The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md) found that 71% and 76% of alert-tier FP windows in 2022 and 2023 lie within 72 hours of a positive window of the same HARP: the alert tier finds the regions and misses the day. A region's own recent flares are timing information. The first test of these features (docs/activity-history-20261109.md) was negative, but it was run on frozen labels that left most cycle-25 flaring HARPs with negative windows only, so a region's flare history could not be learnt as a positive signal there, and it was judged at the watch tier. Neither condition holds on the adopted basis. The features, their availability rule and their code are unchanged.",
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "base_protocol": "config/walk-forward-v1.json",
+    "sgas_directory": "data/activity_summaries_20261109_r1",
+    "sgas_manifest_sha256": "bc41aee04ac893da9278ed1b4fd3f97b90e90e28a956f93b0e1125a5dd1eb91d",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "mapping_manifest_sha256": "01b8f7cd0489233a49d06af33d5768ee7d256d8ca02dc05618e2b0dd86a27bf8",
+    "frozen_label_reference": "artifacts/activity_history_20261109_r1 (docs/activity-history-20261109.md), copied not recomputed"
+  },
+  "availability_rule": "Exactly that of config/activity-history-v1.json, implemented by scripts.audit_activity_history.attach_history: a window at forecast time t uses only SGAS products issued at or before t minus 30 minutes; regional events are those whose NOAA number is in the HARP's NOAA_ARS on the forecast date; absence is never encoded as quiet.",
+  "features": "The 3 flag features and the 15 history features of config/activity-history-v1.json, unchanged (scripts.audit_activity_history.FLAG and HISTORY).",
+  "candidates": [
+    {"id": "control", "definition": "Stored ensemble probabilities and stored per-year thresholds of artifacts/walk_forward_v2_20261112_r1. No refit."},
+    {"id": "flag", "definition": "Refit of the unchanged walk-forward-v1 recipes on the 96 summaries plus history_available, reports_3d, hours_since_issue. Isolates refitting and availability from content."},
+    {"id": "history", "definition": "Same refit on the 96 summaries plus all 15 history features."}
+  ],
+  "training": "Annual folds of helio24.walk_forward.annual_fold on the relabelled table; fold audits must equal those of the control artifact. Models, hyperparameters, sigmoid calibration on the prior year and the 0.45/0.55 weight are those of config/walk-forward-v1.json. Per candidate and year the watch threshold (prior-year window recall 0.90) and the alert threshold (prior-year precision 0.50, recall floor 0.10, fallback flag) are selected on calibration-year probabilities with the rules of config/walk-forward-v2.json, written to disk and hashed before any evaluation label is read.",
+  "budget": {"candidate_recipes": 2, "years": 6, "constituent_fits": 24, "hyperparameter_search": 0, "feature_sets_after_results": 0},
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {"precision_higher_than_control": true, "missed_positive_runs_not_above_control": true, "window_recall_drop_at_most": 0.02},
+    "all_year_primary": "per_year_primary holds in all six years for the same candidate",
+    "cycle25_primary": "per_year_primary holds in both 2022 and 2023 for the same candidate",
+    "goal_count": "Reported, not judged: years in which the candidate's alert precision is at least 0.50 (equivalently, alert accuracy at least always-negative accuracy), against the same count for control (3: 2014, 2015, 2017).",
+    "attribution": "A pass of history that flag does not share is attributed to flare-history content.",
+    "also_reported": [
+      "Watch-tier tp, fp, recall, precision, missed positive runs",
+      "Average precision and within-flaring-HARP average precision (scripts.audit_cycle25.decomposition)",
+      "Alert FP origin (scripts.audit_cycle25_relabelled.alert_false_positive_origin)",
+      "precision_at_control_recall: the candidate's precision at the evaluation-year threshold that delivers the control's alert recall; an oracle-matched description that uses evaluation labels and is never deployable",
+      "Paired HARP-cluster bootstrap interval (1000 draws, seed 24) of the alert precision difference candidate minus control",
+      "History feature coverage per year and role"
+    ],
+    "result_meaning": "A pass justifies only a separate prospective protocol and, at the end, the single reserved-test decision. It never changes alerts, thresholds, the dashboard or the adopted pipeline."
+  },
+  "reading": {
+    "R1_history_helps": "history meets all_year_primary, or meets cycle25_primary with a paired bootstrap lower bound above 0 in both 2022 and 2023, and flag does not: flare-history content raises alert precision on the adopted basis.",
+    "R2_refit_only": "flag meets the same condition as history: the gain is not attributed to flare-history content.",
+    "R3_no_gain": "Neither condition holds: negative result on the adopted basis as well; reported as is, with the also_reported measures showing where it falls short."
+  },
+  "limits": "SGAS lists energetic events, not every C-class flare; archived text may differ from the bytes first issued; NOAA_ARS is the definitive JSOC association and was fixed after the fact. The relabelled labels were recovered through the same SGAS products and NOAA_ARS mapping; the features use only events listed in products issued before the forecast time while labels use peaks after it, so the two do not overlap in time, but they share the source's region assignment errors. Already inspected years: adaptive development, not an independent test.",
+  "prohibitions": ["No evaluation labels in any feature, fit or threshold", "No feature or hyperparameter change after results", "No SGAS issued after t - 30 minutes", "No model promotion, threshold or dashboard change", "No reserved 2024-2025 test access", "No new readings after seeing results"],
+  "reserved_test_accessed": false
+}
