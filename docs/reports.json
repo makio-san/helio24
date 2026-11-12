@@ -516,5 +516,12 @@
     "source_sha256": "0cfbc0ca2e3ab97012daa7b1a35f7d2c8abbfab61be4221f87c9e760d0a1473c",
     "en": "operating-point-v3-adoption-20261112.md",
     "tr": "operating-point-v3-adoption-20261112.tr.md"
+  },
+  {
+    "id": "cycle25-diagnostic-relabelled-20261112",
+    "source_language": "en",
+    "source_sha256": "d13eb2af527b1aee3a85cb6163dfd8bc217576e4b3d5f394445a1af2a9587360",
+    "en": "cycle25-diagnostic-relabelled-20261112.md",
+    "tr": "cycle25-diagnostic-relabelled-20261112.tr.md"
   }
 ]
