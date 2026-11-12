@@ -1,7 +1,15 @@
 {
   "id": "operating-point-v3",
-  "status": "proposal_frozen_2026-11-12_not_adopted",
-  "supersedes_if_adopted": "config/operating-point-v2.json",
+  "status": "adopted_2026-11-12",
+  "adoption": {
+    "date": "2026-11-12",
+    "decided_by": "project owner, recorded in this file on the day of the decision",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "pipeline_runner": "scripts/rebuild_walk_forward_v2.py",
+    "report": "docs/operating-point-v3-adoption-20261112.md",
+    "effective_for": "development reporting and future development protocols; the dashboard alert threshold (app.py) and any deployed alert remain unchanged and need a separate decision"
+  },
+  "supersedes": "config/operating-point-v2.json",
   "proposal": {
     "development_basis": "The relabelled development table artifacts/relabelled_development_20261111_r1 (config/relabel-v1.json: V2 attachments kept, V2-unassigned GOES M/X events attached through NOAA SGAS region numbers and JSOC NOAA_ARS, fail-closed exclusions for the 133 events that stay unassigned) replaces artifacts/v2_development_features_20261025_r2 as the basis of development reporting and future development protocols.",
     "models": "The frozen walk-forward recipes of config/walk-forward-v1.json refitted on the relabelled table (artifacts/relabel_walk_forward_20261111_r1, arm relabelled_models).",

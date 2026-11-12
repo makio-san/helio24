@@ -1,6 +1,7 @@
 {
   "id": "operating-point-v2",
   "status": "project_target_redefined_2026-11-09",
+  "superseded_by": "config/operating-point-v3.json (adopted 2026-11-12); the recall-0.90 rule continues as the watch tier of the relabelled table, and the frozen-label results of this file stay visible for comparison",
   "supersedes": "The development target 'precision 0.30 at window recall >= 0.95'",
   "decision": "The project operating point for the annual V2 baseline is a threshold selected on the prior calibration year at window recall 0.90 with helio24.calibration.recall_threshold, applied unchanged to the next year.",
   "basis": {

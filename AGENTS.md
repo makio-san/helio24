@@ -15,6 +15,11 @@
 - Keep all numerical findings and scope distinctions identical across languages.
   Technical metric identifiers may remain unchanged. Never translate model IDs,
   field names, commands or hashes.
+- Development reports written after 2026-11-12 rest on the relabelled table and
+  the adopted operating point (`config/operating-point-v3.json`,
+  `config/walk-forward-v2.json`): state the development basis, give precision
+  with delivered recall and missed positive runs per year and tier, mark alert
+  fallback years, and keep frozen-label results visible for comparison.
 - Commit completed work in clear, concise English conventional commits ending
   with a period. Keep datasets, model files and generated artifacts out of Git.
 - The user's local Streamlit branding changes in `app.py` must remain uncommitted.

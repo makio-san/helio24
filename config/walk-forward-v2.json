@@ -1,0 +1,49 @@
+{
+  "id": "walk-forward-v2",
+  "status": "adoption_contract_frozen_2026-11-12",
+  "date": "2026-11-12",
+  "supersedes_for_development": "config/walk-forward-v1.json",
+  "purpose": "Rebuild the project development pipeline (expanding annual walk-forward with the frozen walk-forward-v1 recipes) from the relabelled table of config/relabel-v1.json, so that the adopted operating point config/operating-point-v3.json rests on a pipeline that is reproducible from source table, protocol and code hashes alone. Fits are the recipes of config/walk-forward-v1.json unchanged; the only differences are the source table and the thresholds written beside each model.",
+  "source": "artifacts/relabelled_development_20261111_r1",
+  "source_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+  "source_protocol": "config/relabel-v1.json",
+  "recipes": "config/walk-forward-v1.json",
+  "operating_point": "config/operating-point-v3.json",
+  "evaluation_years": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023],
+  "tiers": {
+    "watch": {"rule": "helio24.calibration.recall_threshold on the prior relabelled calibration year", "recall_target": 0.90},
+    "alert": {"rule": "helio24.two_tier.precision_threshold on the prior relabelled calibration year; best-precision threshold and fallback flag when the target is unreachable", "precision_target": 0.50, "recall_floor": 0.10},
+    "comparison_recall_0.95": {"rule": "helio24.calibration.recall_threshold at 0.95, kept visible for comparison with earlier work as config/operating-point-v2.json requires", "recall_target": 0.95}
+  },
+  "must_reproduce": {
+    "relabelled_walk_forward": "artifacts/relabel_walk_forward_20261111_r1",
+    "relabelled_walk_forward_report_sha256": "ad1f8dc95e26586cca728013570f711640a3321c718b5a2d4be0b3051e6496aa",
+    "arm": "relabelled_models",
+    "two_tier_relabelled": "artifacts/two_tier_relabelled_20261111_r1",
+    "two_tier_relabelled_report_sha256": "9733c3eb740504316ab6c64ca3785308c30e2b8613661ec6ba28608b8d20b0b3",
+    "checks": [
+      "Per evaluation year, the calibrated ensemble probability of every evaluation window equals the stored relabelled_models column of the relabelled walk-forward predictions, bit for bit (np.array_equal); a non-identical year fails the rebuild.",
+      "Per evaluation year, the recall-0.95 and recall-0.90 thresholds equal the stored relabelled_models thresholds.",
+      "Per evaluation year, the alert threshold, its calibration recall and precision and its fallback flag equal the stored alert_0.5 entry of the relabelled two-tier thresholds.",
+      "Per evaluation year and tier, tp, fp, fn, tn, positive_runs and missed_positive_runs equal the relabelled two-tier results."
+    ]
+  },
+  "frozen_label_reference": {
+    "walk_forward": "artifacts/walk_forward_20261028_r1",
+    "walk_forward_report_sha256": "6f11b3208dcad94ae5c5898ad02aa976b8ea3e351b01f2bf1fe2a0745597a69c",
+    "two_tier": "artifacts/two_tier_20261110_r1",
+    "two_tier_report_sha256": "05f960ebc15ac4bb23142568e259786f08d99f8b3b7466a72b325ef8bbc6d6f6",
+    "rule": "Copied beside each year and tier as the frozen-label reference; different window sets, no pooling."
+  },
+  "outputs": "<year>/models.joblib (models, calibrators, thresholds of all three tiers, features, ensemble weights), <year>/thresholds.json, <year>/predictions.parquet (metadata, logistic, xgboost, ensemble, baseline, alarm flags per tier), <year>/split.json, metrics.csv, reproduction.csv, report.json with reading",
+  "order_of_operations": "Per year, all thresholds are selected on the prior relabelled calibration year and written to disk before any evaluation label is read.",
+  "policy": "Expanding training, previous calendar year calibration, next year evaluation (helio24.walk_forward.annual_fold). Skip folds lacking both classes in training or calibration or with no evaluable positives. No model selection or threshold retuning on evaluation years.",
+  "reading": {
+    "pipeline_reproduced": "every check of must_reproduce holds in every evaluated year",
+    "years_meeting_alert_target": "alert tier delivers evaluation-year precision >= 0.50 and is not a fallback year",
+    "adoption_effective": "pipeline_reproduced holds; the operating point becomes the development basis regardless of the number of years meeting the alert target, which is reported, not required"
+  },
+  "scope": "Development pipeline on already inspected years. Not an independent test, not a performance improvement and not a dashboard or deployed-alert change; app.py and any deployed alert threshold are unchanged. The relabelled labels are an association by NOAA SGAS and JSOC NOAA_ARS, not ground truth.",
+  "prohibitions": ["No reserved 2024-2025 test access", "No change to recipes, seeds, weights, targets or floors", "No dashboard, app.py or deployed alert change", "No overwrite of frozen artifacts"],
+  "reserved_test_accessed": false
+}
