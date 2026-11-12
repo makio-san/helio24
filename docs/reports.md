@@ -167,3 +167,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Çalışma noktası v3 benimsemesi ve hattın yeniden kurulması / Operating point v3 adoption and pipeline rebuild | [Türkçe](operating-point-v3-adoption-20261112.tr.md) | [English](operating-point-v3-adoption-20261112.md) |
 
 | Benimsenen hatta 25. döngü sıralama teşhisi / Cycle-25 ranking diagnostic on the adopted pipeline | [Türkçe](cycle25-diagnostic-relabelled-20261112.tr.md) | [English](cycle25-diagnostic-relabelled-20261112.md) |
+
+| Benimsenen hatta SGAS patlama geçmişi / SGAS flare history on the adopted pipeline | [Türkçe](activity-history-relabelled-20261112.tr.md) | [English](activity-history-relabelled-20261112.md) |

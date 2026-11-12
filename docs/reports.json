@@ -523,5 +523,12 @@
     "source_sha256": "d13eb2af527b1aee3a85cb6163dfd8bc217576e4b3d5f394445a1af2a9587360",
     "en": "cycle25-diagnostic-relabelled-20261112.md",
     "tr": "cycle25-diagnostic-relabelled-20261112.tr.md"
+  },
+  {
+    "id": "activity-history-relabelled-20261112",
+    "source_language": "en",
+    "source_sha256": "0ba7c32b6203e378a986c33a6bf8684b1344dd78c0efea49ef4a154747ed50d9",
+    "en": "activity-history-relabelled-20261112.md",
+    "tr": "activity-history-relabelled-20261112.tr.md"
   }
 ]
