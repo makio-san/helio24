@@ -537,5 +537,12 @@
     "source_sha256": "84fd94df91ec25debe3ba68debf65e176b2b9ffa44111eb607bce6b24e049e33",
     "en": "history-latency-ceiling-20261112.md",
     "tr": "history-latency-ceiling-20261112.tr.md"
+  },
+  {
+    "id": "horizon-72h-20261116",
+    "source_language": "en",
+    "source_sha256": "cbe9d27980c4cdcabb3e08ca7781d08721d2402cf2e964dea8b674121c0cc439",
+    "en": "horizon-72h-20261116.md",
+    "tr": "horizon-72h-20261116.tr.md"
   }
 ]
