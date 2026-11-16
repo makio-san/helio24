@@ -1,0 +1,47 @@
+{
+  "id": "horizon-72h-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-16",
+  "goal": "Measure what the adopted pipeline delivers when the forecast target is widened from 'a GOES M/X flare in the next 24 hours' to 'a GOES M/X flare in the next 72 hours' for the same HARP, using the unchanged features, recipes, calibration and tier rules. This is a different product, not a better score of the same product.",
+  "why": "The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md) found that 0.7139 and 0.7561 of the alert false-positive windows of 2022 and 2023 lie within 72 hours of a positive window of the same HARP: the alert tier finds the region and misses the day. Five families of extra information and a zero-latency ceiling did not move this (docs/history-latency-ceiling-20261112.md). A wider horizon removes the day-level timing requirement instead of trying to learn it. The user asked for the 72-hour window to be tried.",
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "base_protocol": "config/walk-forward-v1.json",
+    "control_24h": "artifacts/walk_forward_v2_20261112_r1",
+    "control_24h_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "control_24h_results": "artifacts/activity_history_relabelled_20261112_r1/results.csv"
+  },
+  "label_construction": {
+    "principle": "The relabelled table holds one window per HARP per hour with a 24-hour label. A GOES M/X event inside [t, t+72h) lies inside [s, s+24h) for some window start s in [t, t+48h], and every such window interval lies inside [t, t+72h). The 72-hour label of the window at t is therefore the OR of the 24-hour targets of the table windows with forecast time in [t, t+48h]; no event list is reread.",
+    "hour_key": "Forecast times are rounded to the nearest hour (the table carries sub-minute offsets and leap-second jitter); two windows of one HARP in the same hour stop the build.",
+    "knowability": "The label is known only when the window at t+48h exists and no two consecutive existing windows in [t, t+48h] are more than 24 hours apart, so that the intervals of the existing windows cover [t, t+72h) without a hole. This depends only on which windows exist, never on the label value, so partial coverage cannot turn into positives. Windows of the 24-hour table were already removed when an ambiguous or unassigned M/X event lay in their interval; such an event cannot lie in a covered range, so the OR is exact.",
+    "removed": "Windows whose label is not known are removed from every role. Row counts, positive counts and the removed shares per year and role are reported.",
+    "prediction_end": "forecast_time plus 72 hours, so that helio24.walk_forward.annual_fold purges windows whose label horizon reaches the next role. Windows whose horizon would reach 2024 are purged by the same rule; the reserved 2024-2025 period is not read.",
+    "target24": "The original 24-hour target is kept as target24 for the m24 reference candidate."
+  },
+  "candidates": [
+    {"id": "m24", "definition": "Unchanged recipes of config/walk-forward-v1.json trained and calibrated on the 24-hour target24 of the retained windows; scored against the 72-hour target. Its alert and watch thresholds are selected on the prior calibration year against the 72-hour target. This is the 24-hour model asked a 72-hour question."},
+    {"id": "m72", "definition": "The same recipes trained and calibrated on the 72-hour target. Thresholds selected on the prior calibration year against the 72-hour target."}
+  ],
+  "features": "The 96 SHARP summaries only; no context, history or sequence features.",
+  "training": "Expanding annual walk-forward with helio24.walk_forward.annual_fold on the 72-hour table: train before the calibration year, calibration on the prior calendar year, evaluation on the year. Sigmoid calibration, ensemble weight 0.45 logistic and 0.55 XGBoost, no hyperparameter search, 2 candidates x 6 years x 2 models = 24 constituent fits. Watch (prior-year window recall 0.90) and alert (prior-year precision 0.50, recall floor 0.10, fallback flag) thresholds follow config/walk-forward-v2.json, are written and hashed before any evaluation label is read.",
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "years_note": "The years evaluated by the adopted pipeline. 2018-2021 are skipped there because the 24-hour table has no evaluable positives or lacks a class in calibration; they stay out of this experiment so that the comparison set is unchanged.",
+  "measures": [
+    "Alert and watch tier: TP, FP, FN, TN, recall, precision, F1 = 2TP/(2TP+FP+FN), accuracy, always-negative accuracy, positive share of the evaluation windows, lift = precision / positive share, missed positive runs, HARP-cluster precision and recall intervals, fallback flag.",
+    "AP, within-flaring-HARP AP.",
+    "Best-threshold F1 on the evaluation year (oracle, uses evaluation labels, descriptive).",
+    "Row and positive counts of the 24-hour and 72-hour tables per year and role."
+  ],
+  "reading": {
+    "W1_goal_met_on_72h": "For m72, in all six years the alert tier has precision at least 0.50, is not a fallback year, and has accuracy above the always-negative accuracy. The 24-hour goal of the project is then met by the 72-hour product, and only by it.",
+    "W2_partial": "Otherwise, m72 has alert precision at least 0.50 in more years than the 24-hour control (3 of 6: 2014, 2015, 2017).",
+    "W3_no_gain": "Otherwise: widening the horizon does not bring the alert tier to the precision target in more years than the 24-hour control."
+  },
+  "comparability": "72-hour precision, accuracy and F1 are not comparable with 24-hour values: the positive share is several times larger, so precision and F1 rise with the definition alone. Lift over the positive share and AP are reported beside them. The 24-hour control values are shown only as a reference.",
+  "limits": "Overlapping windows: consecutive hourly windows share most of their 72-hour interval, so counts are not independent events. Windows near the end of a HARP's observed life are removed because their label horizon is not covered; the removed share is reported. Already inspected years: adaptive development evidence, not an independent test. The relabelled labels are an association by NOAA SGAS and JSOC NOAA_ARS, not ground truth. A 72-hour alarm says 'flare expected within three days', not 'tomorrow'.",
+  "prohibitions": ["No evaluation labels in any fit or threshold", "No change to recipes, features, weights or tier rules after results", "No download", "No model promotion, threshold or dashboard change", "No reserved 2024-2025 access", "No presentation of 72-hour numbers as a 24-hour improvement"],
+  "reserved_test_accessed": false
+}
