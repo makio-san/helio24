@@ -4,9 +4,11 @@ Usage: python3 agents/bin/protocol_status.py [--json] [--pending]
 
 For every config/*.json with an id: its status, date, the reports that cite it, a ledger
 line if any, and whether every evidence path it names exists in the owner's checkout or the
-agent evidence store. Standard library only; reads nothing outside those places.
+agent evidence store, and for Hale proposals whether the owner approved the exact file
+with `hale approve --gate protocol`. Standard library only; reads nothing outside those places.
 """
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -37,6 +39,22 @@ def present(path):
     return parts[0] == 'artifacts' and len(parts) > 1 and (STORE / Path(*parts[1:])).exists()
 
 
+def hale_approvals():
+    """(path, sha256) pairs the owner approved with `hale approve --gate protocol`."""
+    approved = set()
+    for record in sorted((OWNER / 'artifacts/hale_approvals').glob('*.json')):
+        try:
+            payload = json.loads(record.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict) or payload.get('gate') != 'protocol':
+            continue
+        for row in payload.get('files') or []:
+            if isinstance(row, dict) and isinstance(row.get('path'), str):
+                approved.add((row['path'], row.get('sha256')))
+    return approved
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--json', action='store_true')
@@ -55,6 +73,7 @@ def main():
     ledger_path = repo / 'agents/state/protocol-ledger.md'
     ledger = ledger_path.read_text() if ledger_path.exists() else ''
 
+    approvals = hale_approvals()
     rows = []
     for path in sorted((repo / 'config').glob('*.json')):
         try:
@@ -70,13 +89,21 @@ def main():
         needed = sorted(set(evidence_paths(config.get('evidence', {}))))
         missing = [p for p in needed if not present(p)]
         in_ledger = f'| {cid} |' in ledger
-        legacy = not isinstance(config.get('date'), str) or config['date'] < AGENTS_START
+        rel = f'config/{path.name}'
+        # A Hale proposal (status design_proposed, with supersedes) runs only after the owner
+        # approved this exact file with `hale approve --gate protocol`, whatever its date.
+        hale_proposal = config.get('status') == 'design_proposed' and 'supersedes' in config
+        hale_approved = (rel, hashlib.sha256(path.read_bytes()).hexdigest()) in approvals
+        legacy = not hale_proposal and (not isinstance(config.get('date'), str) or config['date'] < AGENTS_START)
         rows.append(dict(
             file=f'config/{path.name}', id=cid, status=config.get('status'), date=config.get('date'),
             reserved_test_accessed=config.get('reserved_test_accessed'),
             cited_by=cited_en, in_ledger=in_ledger, legacy=legacy,
+            hale_proposal=hale_proposal, hale_approved=hale_approved,
+            awaiting_owner_approval=hale_proposal and not hale_approved and not in_ledger,
+            acceptance_rule=config.get('acceptance_rule'),
             executed=in_ledger or any('protocol' not in n for n in cited_en),
-            executable=not legacy and not in_ledger,
+            executable=not legacy and not in_ledger and (hale_approved or not hale_proposal),
             evidence_missing=missing,
         ))
     if args.pending:
@@ -88,7 +115,8 @@ def main():
         if 'error' in r:
             print(f"{r['file']}: unreadable ({r['error']})")
             continue
-        state = 'legacy' if r['legacy'] else 'executed' if r['in_ledger'] else 'pending'
+        state = ('legacy' if r['legacy'] else 'executed' if r['in_ledger']
+                 else 'awaiting hale approve' if r['awaiting_owner_approval'] else 'pending')
         miss = f", missing {len(r['evidence_missing'])} inputs" if r['evidence_missing'] else ''
         print(f"{r['file']}: {r['status']}, {state}{miss}")
 
