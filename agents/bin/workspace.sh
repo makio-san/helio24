@@ -17,7 +17,7 @@ REF="origin/${HELIO24_REF:-main}"  # another branch only when testing agents bef
 
 mkdir -p "$ROOT/work" "$ROOT/logs" "$ROOT/evidence" "$ROOT/tmp"
 if [ ! -d "$BASE/.git" ]; then
-  git clone -q https://github.com/svarts/helio24.git "$BASE"
+  git clone -q https://github.com/makio-san/helio24.git "$BASE"
 fi
 git -C "$BASE" fetch -q --prune origin
 git -C "$BASE" worktree prune
