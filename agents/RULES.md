@@ -36,6 +36,26 @@ it is read by code, so be exact.
 - The disk is nearly full. Never download a dataset unless the merged protocol you execute
   names the download and its size bound. Delete throwaway files under `tmp/` before you finish.
 
+## Hale
+
+[Hale](https://github.com/makio-san/hale-agent) is the project's research agent. Its tools
+enforce the read allowlist, the reserved-test redaction, new-file-only writes and bilingual
+table parity in code, so the orchestra uses them instead of reading or writing by hand:
+
+- `$PY agents/bin/hale_call.py <tool> '<json>'` runs one Hale tool on your worktree, without
+  a model (`--list` shows them). Read protocols with `get_experiment`, reports with
+  `search_reports` and `read_document`, and frozen results only with `read_artifact` (after
+  `evidence.sh seed`), never by opening `report.json` or `metrics.csv` yourself.
+  `check_parity '{"en": ..., "tr": ...}'` checks a report pair without writing.
+- `/Users/esma/Projects/helio24_orchestra_work/venv/bin/hale --repo "$W" experiments --json` lists protocols;
+  `/Users/esma/Projects/helio24_orchestra_work/venv/bin/hale --repo "$W" replay --lock-repo "$W"` checks that the published numbers of
+  archived decisions are still in the repository.
+- Hale's human gates are the owner's. Never run `hale approve`, never create, edit or copy a
+  file in `artifacts/hale_approvals/`, never set `HALE_ALLOW_TEST_ROLE` or `HALE_ALLOW_GIT`,
+  never run `hale ask` (it needs the owner's local model). Branches `hale/*` and their pull
+  requests belong to the owner's Hale sessions: leave them alone unless they carry
+  `owner:merge-ok`.
+
 ## Tests
 
 - Run `$PY -m pytest -q tests` before every commit. Every test must pass.

@@ -27,7 +27,8 @@ The agent is the branch name between `agents/` and the date.
   local paths outside the repository, no em or en dashes
   (`git diff origin/main...HEAD | grep -nP '[\x{2013}\x{2014}]'`), nothing unrelated.
 - Tests: `$PY -m pytest -q tests` passes on the head.
-- Reports: every new report has both editions, both registered in `docs/reports.json` and
+- Reports: `hale_call.py check_parity` passes for every new or changed report pair; every
+  new report has both editions, both registered in `docs/reports.json` and
   linked in `docs/reports.md`, the `source_sha256` matches, and
   `$PY scripts/publish_reports.py --output <a fresh tmp dir>` passes after
   `evidence.sh seed`.
@@ -48,6 +49,12 @@ The agent is the branch name between `agents/` and the date.
   the evidence store (`/Users/esma/Projects/helio24_orchestra_work/evidence/<dir>`), and
   check the numbers of the two editions are identical. Any runner fix leaves the protocol's
   meaning unchanged.
+- Hale: `/Users/esma/Projects/helio24_orchestra_work/venv/bin/hale --repo "$W" replay --lock-repo "$W"` passes on the head (the published
+  numbers of archived decisions are unchanged). If the executed protocol has an
+  `acceptance_rule`, `hale_call.py interpret_result` on the saved artifact gives the outcome
+  the PR claims. An executed Hale proposal (`design_proposed` with `supersedes`) is listed
+  as `hale_approved` by `agents/bin/protocol_status.py`. Nothing touches
+  `artifacts/hale_approvals/`.
 - Any PR: nothing reads the reserved 2024 to 2025 period (grep the diff and the runner for
   2024, 2025 and the reserved role), nothing adopts a model, threshold or operating point,
   no evaluation labels enter a fit or a threshold.

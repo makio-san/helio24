@@ -7,7 +7,8 @@ Follow [RULES.md](RULES.md).
 
 1. For every entry in `docs/reports.json`: both files exist, both are linked from
    `docs/reports.md`, and the `source_sha256` matches the source edition.
-2. For every report pair, compare the two editions: the same sections, tables, numbers
+2. For every report pair, run `$PY agents/bin/hale_call.py check_parity '{"en": "docs/<en>", "tr": "docs/<tr>"}'`
+   (Hale's table parity), then compare the two editions: the same sections, tables, numbers
    (extract every number with a regular expression and compare the multisets), limits,
    uncertainty statements and reproduction commands. Model IDs, field names, commands and
    hashes must be identical, not translated. A summary is not a translation.

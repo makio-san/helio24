@@ -45,6 +45,25 @@ A runner bug found during execution may be fixed in the execution PR as a separa
 says (inputs, candidates, measures, reading). The PR body explains it. Anything else needs a
 new protocol version and a new protocol PR; the old protocol stays as it is.
 
+## Protocols from Hale
+
+The owner also proposes protocols with Hale: `propose_protocol` writes
+`config/<id>-v<n>.json` with `status: design_proposed`, a `supersedes` link and a frozen
+`acceptance_rule` (one metric, an operator and a value). Such a protocol may be executed by
+the experimenter only when it is on `main` and the owner approved that exact file with
+`hale approve --gate protocol <path>` (the approval in the owner's
+`artifacts/hale_approvals/` binds its sha256). `agents/bin/protocol_status.py` checks this;
+an unapproved proposal is listed as awaiting the owner and is never run.
+
+The protocol-author uses `propose_protocol` too when an idea is a revision of an existing
+protocol; that revision then waits for the owner's approval like any Hale proposal. A new
+protocol that is decided by one metric also carries an `acceptance_rule` in Hale's format
+next to its `reading` rules, so that `interpret_result` can decide it mechanically.
+
+Whenever a protocol has an `acceptance_rule`, its outcome is what Hale's
+`interpret_result` returns on the run's artifact. A report may explain the result; it may
+never overrule that decision.
+
 ## Reserved period
 
 The 2024 to 2025 period is reserved as the final independent test. No agent reads, loads,

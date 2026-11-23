@@ -42,11 +42,29 @@ plans the run, and writes the run log.
 6. `release-merger` merges approved PRs and copies their evidence into the owner's
    `artifacts/` without overwriting anything.
 
+## Hale
+
+The agents work through [Hale](https://github.com/makio-san/hale-agent), the project's
+research agent, installed in their Python environment from a clean clone. They call its
+tools without a model (`agents/bin/hale_call.py`), so Hale's policy guards every read of a
+frozen artifact, every new report pair and every protocol revision. The two meet in both
+directions:
+
+- A protocol the owner proposes with Hale and approves with
+  `hale approve --gate protocol <path>` is executed by the orchestra once it is on `main`.
+- A protocol revision the orchestra writes with Hale's `propose_protocol` waits for the same
+  approval. The run summary names the exact command.
+- `hale replay` is a review gate: a PR that changes a published number of an archived
+  decision is rejected.
+
+Hale's gates stay with the owner: no agent approves, merges `hale/*` branches without
+`owner:merge-ok`, lifts the test-role redaction or calls a model through Hale.
+
 ## Paths each agent may change
 
 The reviewer rejects and the merger skips any PR that touches a path outside its agent's
 list. No agent may change `AGENTS.md`, `agents/*.md`, `agents/bin/**`, `.gitignore`,
-`app.py`, or modify an existing `config/*.json`.
+`app.py`, anything in `artifacts/hale_approvals/`, or modify an existing `config/*.json`.
 
 | Agent | Paths |
 |---|---|
