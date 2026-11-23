@@ -38,7 +38,7 @@ it is read by code, so be exact.
 
 ## Hale
 
-[Hale](https://github.com/makio-san/hale-agent) is the project's research agent. Its tools
+[Hale](https://github.com/makio-san/hale_agent) is the project's research agent. Its tools
 enforce the read allowlist, the reserved-test redaction, new-file-only writes and bilingual
 table parity in code, so the orchestra uses them instead of reading or writing by hand:
 

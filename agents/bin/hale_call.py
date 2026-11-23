@@ -4,7 +4,7 @@ Usage: $PY agents/bin/hale_call.py <tool> ['<json arguments>']
        $PY agents/bin/hale_call.py --list
        $PY agents/bin/hale_call.py check_parity '{"en": "docs/x.md", "tr": "docs/x.tr.md"}'
 
-Hale (https://github.com/makio-san/hale-agent) enforces the read allowlist, the
+Hale (https://github.com/makio-san/hale_agent) enforces the read allowlist, the
 reserved-test redaction, new-file-only writes and bilingual numeric parity in code.
 The orchestra agents use it as their interface to protocols, reports and frozen
 artifacts. Prints Hale's JSON envelope {"ok": ..., "result" | "error": ...} and exits 1

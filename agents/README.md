@@ -44,7 +44,7 @@ plans the run, and writes the run log.
 
 ## Hale
 
-The agents work through [Hale](https://github.com/makio-san/hale-agent), the project's
+The agents work through [Hale](https://github.com/makio-san/hale_agent), the project's
 research agent, installed in their Python environment from a clean clone. They call its
 tools without a model (`agents/bin/hale_call.py`), so Hale's policy guards every read of a
 frozen artifact, every new report pair and every protocol revision. The two meet in both
