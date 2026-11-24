@@ -1,0 +1,105 @@
+{
+  "id": "alert-cooldown-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-24",
+  "goal": "Two parts on the stored predictions of the adopted pipeline, with zero model fits. Descriptive part: split the alert-tier false-positive windows by direction relative to the positive windows of the same HARP (early, lingering, between, flaring-HARP other, never-flaring HARP). Tested part: decide whether a fixed causal cooldown, which ends an alert episode after 24 or 48 consecutive alert hours until the probability drops below the stored alert threshold once, raises alert precision without losing positive runs.",
+  "why": "Idea issue #2. The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md, D5) found that 0.7139 and 0.7561 of the alert false-positive windows of 2022 and 2023 lie within 72 hours of a positive window of the same HARP, but its 72-hour span is symmetric and has no direction: it does not say whether those alarms come before the flaring (early) or stay on after it (lingering). Park et al. 2020 (ApJ 890, 124) report that operational forecasts tend to stay high the day after flaring stops. Extra information (docs/activity-history-relabelled-20261112.md, docs/history-latency-ceiling-20261112.md) and a wider horizon (docs/horizon-72h-20261116.md) did not raise alert precision. A cooldown needs no new information: it uses only the model's own past outputs. Earlier persistence and multiplier rules (config/alarm-persistence-v1.json, config/threshold-tradeoff-v1.json) were tested on the frozen-label basis at recall 0.95, not at the alert tier, and no cooldown was tested.",
+  "evidence": {
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "operating_point": "config/operating-point-v3.json",
+    "acceptance_source": "config/activity-history-v2.json",
+    "probability_column": "ensemble",
+    "stored_files": "Per year <control>/<year>/predictions.parquet and <control>/<year>/thresholds.json; each must match its sha256 in artifact_hashes of the control report.json. models.joblib is never opened."
+  },
+  "population": {
+    "definition": "The evaluation windows of the control artifact, one per HARP and hour, as stored. Rows and positive windows per year are counts of the input, taken before any candidate existed; the runner stops when they differ.",
+    "windows": {"2014": 78351, "2015": 70554, "2016": 43142, "2017": 19843, "2022": 65593, "2023": 96991},
+    "positive_windows": {"2014": 2436, "2015": 1461, "2016": 214, "2017": 265, "2022": 2190, "2023": 4091},
+    "labels": "The target of every evaluation window is read from the shards of the relabelled table (each shard checked against the table report) and must equal the target stored with the control predictions. Positive windows and positive runs are those of this evaluation population in the same year; no window outside the evaluation year is read, so nothing at or after 2024-01-01 is touched.",
+    "time_grid": "Two windows of one HARP are consecutive when their forecast times differ by exactly one hour, as in helio24.events.alarm_episodes and scripts.audit_alarm_persistence. Any other difference is a gap."
+  },
+  "candidates": [
+    {"id": "control", "definition": "Alert when the stored ensemble probability is at or above the stored alert threshold of the year. Must reproduce the stored alert_alarm column exactly. No refit, no new threshold."},
+    {"id": "cooldown_24h", "cooldown_hours": 24, "definition": "For one HARP, let the run length of a window be the number of consecutive hourly windows ending at it whose stored ensemble probability is at or above the stored alert threshold. The alert is on when the probability is at or above the threshold and the run length is at most 24. From the 25th consecutive hour on the alert is suppressed until a window has a probability below the threshold; the next crossing starts a new episode with run length 1."},
+    {"id": "cooldown_48h", "cooldown_hours": 48, "definition": "The same rule with 48 hours."}
+  ],
+  "candidate_rules": {
+    "causal": "The alert state of a window depends only on the stored probabilities of the current and earlier windows of the same HARP and on the stored threshold of the year. No label, flare history, later window or other HARP is used.",
+    "gap": "A gap in the hourly windows of a HARP ends the run: the first window after a gap has run length 1 when it is at or above the threshold, so a gap also ends a suppression.",
+    "tier": "Only the alert tier changes. The watch tier of every candidate is the stored watch tier of the control and is reported once.",
+    "implementation": "scripts.audit_alert_cooldown.cooldown_alarm, built on scripts.audit_alarm_persistence.persistent_alarm (the alert is on when above the threshold and not persistent for cooldown_hours + 1).",
+    "order": "The alert states of control and both candidates and the stored thresholds are written to disk and hashed (selections.json) before any evaluation label is read."
+  },
+  "descriptive": {
+    "status": "Frozen with the protocol. It has no reading rule, decides nothing and never feeds a candidate rule.",
+    "near_hours": 72,
+    "classes": {
+      "never_flaring_harp": "The HARP has no positive window in the evaluation population of the year.",
+      "early": "A positive window of the same HARP lies more than 0 and at most 72 hours after the false-positive window, and none lies more than 0 and at most 72 hours before it.",
+      "lingering": "A positive window of the same HARP lies more than 0 and at most 72 hours before the false-positive window, and none lies more than 0 and at most 72 hours after it.",
+      "between": "Positive windows of the same HARP lie within 72 hours on both sides.",
+      "flaring_harp_other": "The HARP has a positive window in the year, but none within 72 hours on either side."
+    },
+    "class_notes": "Every alert false-positive window falls in exactly one class. The windows of early, lingering and between together are the windows that scripts.audit_cycle25_relabelled.alert_false_positive_origin counts as within 72 hours of a positive window; the runner checks this equality for every candidate and year. A positive window at s means a GOES M/X flare of the HARP in [s, s+24h); a false-positive window at t has none in [t, t+24h).",
+    "reported": [
+      "Per year and candidate (control, cooldown_24h, cooldown_48h): false-positive windows, share of the alert false-positive windows and number of HARPs per class; for the candidates also the control false-positive windows of each class that the cooldown removed.",
+      "Hour offsets per year and candidate for false-positive windows of flaring HARPs: hours since the last positive window, hours to the next positive window and hours to the nearest positive window, as quantiles (0, 0.10, 0.25, 0.50, 0.75, 0.90, 1) and as counts in the bins (0,6], (6,12], (12,24], (24,48], (48,72], (72,120], above 120.",
+      "One row per alert false-positive window of the control with its class, both offsets and whether each candidate keeps the alert."
+    ]
+  },
+  "budget": {"model_fits": 0, "constituent_fits": 0, "candidate_rules": 2, "new_thresholds": 0, "hyperparameter_search": 0, "downloads": 0, "rules_after_results": 0},
+  "years": [2014, 2015, 2016, 2017, 2022, 2023],
+  "alert_fallback_years": [2022],
+  "years_note": "The years evaluated by the adopted pipeline. 2022 is an alert fallback year: its stored alert threshold comes from the fallback rule of config/walk-forward-v2.json and is marked as such in every table. The runner stops when the stored fallback flags differ from this list.",
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {"precision_higher_than_control": true, "missed_positive_runs_not_above_control": true, "window_recall_drop_at_most": 0.02},
+    "per_year_primary_source": "Identical to acceptance.per_year_primary of config/activity-history-v2.json and computed by the same function (scripts.audit_activity_history_relabelled.acceptance). A candidate year without any alert window has no precision and does not meet it.",
+    "all_year_primary": "per_year_primary holds in all six years for the same candidate",
+    "cycle25_primary": "per_year_primary holds in both 2022 and 2023 for the same candidate",
+    "bootstrap": "Paired HARP-cluster bootstrap of the alert precision difference candidate minus control, 1000 draws, seed 24, 2.5 and 97.5 percent quantiles (scripts.audit_activity_history_relabelled.paired_precision_bootstrap). A missing interval counts as not above 0.",
+    "goal": "A candidate meets the goal when all_year_primary holds, or when cycle25_primary holds and the bootstrap lower bound is above 0 in both 2022 and 2023.",
+    "secondary": "Reported, not judged: years in which the alert precision is at least 0.50, against the control (2014, 2015, 2017 per docs/activity-history-relabelled-20261112.md).",
+    "also_reported": [
+      "Per year, candidate and tier: TP, FP, FN, TN, precision with delivered window recall, HARP-cluster intervals, positive runs, alarmed and missed positive runs, accuracy and always-negative accuracy, fallback flag",
+      "Alert episodes, hit episodes, episode precision, median and maximum alert delay in hours from the start of a positive run to its first alert window",
+      "Alert windows, TP windows and FP windows removed by each cooldown against the control",
+      "The descriptive direction split and offset distributions"
+    ],
+    "result_meaning": "A met goal justifies only an owner decision on a separate adoption protocol. It never changes alerts, thresholds, the operating point, the dashboard or the adopted pipeline."
+  },
+  "reading": {
+    "C1_goal_met": "At least one of cooldown_24h and cooldown_48h meets the goal. Every candidate that meets it is named; none is selected. Outcome label result:goal-met.",
+    "C2_partial": "Otherwise, at least one candidate meets cycle25_primary (per_year_primary in both 2022 and 2023) without the bootstrap condition: the direction is right in cycle 25 but not established. Outcome label result:partial.",
+    "C3_no_gain": "Otherwise: a fixed causal cooldown does not raise alert precision by the frozen rule. Reported as is, with the direction split showing where the false positives sit. Outcome label result:no-gain.",
+    "exclusive": "The rules are applied in this order; the first that holds is the reading, so every result falls in exactly one."
+  },
+  "acceptance_rule": {
+    "description": "Accept when at least one of the two cooldown candidates meets the goal (reading C1_goal_met); reject otherwise (C2_partial or C3_no_gain).",
+    "metric_path": "decision.candidates_meeting_goal",
+    "op": ">=",
+    "value": 1
+  },
+  "measures": [
+    "Alert tier per year and candidate, watch tier per year for the control: the measures listed under acceptance.also_reported.",
+    "Direction split and hour offsets as listed under descriptive.reported."
+  ],
+  "development_basis": "Relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json. Frozen-label results of the adopted reports stay visible in the report for comparison; nothing is recomputed on frozen labels.",
+  "limits": "A cooldown only removes alert windows: window recall cannot rise, missed positive runs cannot fall and the alert delay cannot shorten, so the only possible gain is precision. Consecutive hourly windows overlap in 23 of their 24 hours and HARPs repeat, so counts are windows and positive runs, never independent events, and intervals are HARP-clustered. The direction classes use evaluation labels and are censored at the edges of the evaluation population (the start and end of a HARP's stored windows and of the year), so a flare just outside can make a window look unrelated. Classes are relative to positive windows, not to flare peak times. The relabelled labels are an association by NOAA SGAS and JSOC NOAA_ARS, not ground truth. Two cooldown lengths were fixed in advance; no other length is tried. Already inspected years: adaptive development evidence, not an independent test.",
+  "prohibitions": [
+    "No model fit, refit or calibration",
+    "No threshold selection or retuning: only the stored thresholds",
+    "No evaluation label, flare history or direction class in any candidate rule",
+    "No future window in the alert state of a window",
+    "No cooldown length, candidate, class or reading added or dropped after results",
+    "No download",
+    "No overwrite of an existing output directory",
+    "No model promotion, threshold, operating point or dashboard change",
+    "No reserved 2024-2025 access: no year after 2023 and no timestamp at or after 2024-01-01"
+  ],
+  "reserved_test_accessed": false
+}
