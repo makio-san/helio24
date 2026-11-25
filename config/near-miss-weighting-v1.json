@@ -1,0 +1,190 @@
+{
+  "id": "near-miss-weighting-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-25",
+  "goal": "Test whether giving more training weight to the near-miss negatives of flaring HARPs (negative training windows within 72 hours of a positive training window of the same HARP) raises alert-tier precision of the unchanged recipes on the adopted development basis (relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json) without losing positive runs, and whether it does so beyond an equal total reweighting of all training negatives.",
+  "why": "Idea issue #3. The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md) found region AP 0.8315 and 0.8655 against within-flaring-HARP AP 0.4968 and 0.4057 in 2022 and 2023, and that 0.7139 and 0.7561 of the alert false-positive windows lie within 72 hours of a positive window of the same HARP: the alert tier finds the region and ranks the hours inside it poorly. Extra flare-history features did not change this (docs/activity-history-relabelled-20261112.md, reading R3_no_gain, near-miss share with history 0.6607 and 0.7719). The earlier weighting experiment (docs/hard-negative-years-20261029.md) used teacher-mined hard negatives on the frozen-label basis with a recall 0.95 gate, retrained only XGBoost, and did not define its negatives by near-miss membership or judge the alert tier. Weighting the near-miss negatives asks the unchanged recipes to separate the flare day from the neighbouring days; no feature, model or tier rule changes.",
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "pipeline_protocol_sha256": "d6e08a575193162afe59e068c568b51dee5e34c3950dcb5b6ed98b817e63d3bb",
+    "base_protocol": "config/walk-forward-v1.json",
+    "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+    "operating_point": "config/operating-point-v3.json",
+    "acceptance_source": "config/activity-history-v2.json",
+    "stored_files": "Per year <control>/<year>/predictions.parquet and <control>/<year>/thresholds.json; each must match its sha256 in artifact_hashes of the control report.json. models.joblib is never opened.",
+    "labels": "Training, calibration and evaluation labels come from the relabelled table. The target column stored beside the control probabilities must equal the table label for every evaluation window, or the run stops."
+  },
+  "population": {
+    "source": "Counted from the relabelled table with helio24.walk_forward.annual_fold and helio24.near_miss.near_miss_weights before any fit, with every label at or after the evaluation year hidden. Label counts of training and calibration roles only; nothing here depends on a prediction. Rows and positives equal the fold audits of the control report. The runner recomputes train_rows, train_positives, train_negatives and near_miss_negatives and stops when one differs.",
+    "2014": {
+      "train_rows": 150935,
+      "train_positives": 3161,
+      "train_negatives": 147774,
+      "near_miss_negatives": 7344,
+      "flaring_training_harps": 60,
+      "calibration_rows": 76710,
+      "calibration_positives": 1455,
+      "evaluation_rows": 78351
+    },
+    "2015": {
+      "train_rows": 228635,
+      "train_positives": 4616,
+      "train_negatives": 224019,
+      "near_miss_negatives": 11185,
+      "flaring_training_harps": 93,
+      "calibration_rows": 78351,
+      "calibration_positives": 2436,
+      "evaluation_rows": 70554
+    },
+    "2016": {
+      "train_rows": 307980,
+      "train_positives": 7129,
+      "train_negatives": 300851,
+      "near_miss_negatives": 16421,
+      "flaring_training_harps": 138,
+      "calibration_rows": 70554,
+      "calibration_positives": 1461,
+      "evaluation_rows": 43142
+    },
+    "2017": {
+      "train_rows": 379962,
+      "train_positives": 8638,
+      "train_negatives": 371324,
+      "near_miss_negatives": 19634,
+      "flaring_training_harps": 167,
+      "calibration_rows": 43142,
+      "calibration_positives": 214,
+      "evaluation_rows": 19843
+    },
+    "2022": {
+      "train_rows": 466206,
+      "train_positives": 9141,
+      "train_negatives": 457065,
+      "near_miss_negatives": 20530,
+      "flaring_training_harps": 174,
+      "calibration_rows": 29887,
+      "calibration_positives": 377,
+      "evaluation_rows": 65593
+    },
+    "2023": {
+      "train_rows": 496391,
+      "train_positives": 9518,
+      "train_negatives": 486873,
+      "near_miss_negatives": 21974,
+      "flaring_training_harps": 186,
+      "calibration_rows": 65593,
+      "calibration_positives": 2190,
+      "evaluation_rows": 96991
+    }
+  },
+  "control": {
+    "id": "control",
+    "definition": "Stored ensemble probabilities and stored per-year watch and alert thresholds of artifacts/walk_forward_v2_20261112_r1. No refit, no new threshold."
+  },
+  "candidates": [
+    {
+      "id": "near_miss_w3",
+      "definition": "Refit of the unchanged walk-forward-v1 recipes on the 96 summaries. Training negatives of a HARP that have a positive training window of the same HARP within 72 hours before or after get sample weight 3; every other training row, positives included, gets weight 1."
+    },
+    {
+      "id": "uniform_matched",
+      "definition": "The same refit. Every training negative gets sample weight 1 + 2 * near_miss_negatives / train_negatives of its fold, positives weight 1, so the total negative weight equals that of near_miss_w3 and only the placement of the extra weight differs. This is the weight control."
+    }
+  ],
+  "weighting": {
+    "factor": 3,
+    "span_hours": 72,
+    "fixed": "The factor 3 and the span 72 hours are fixed here before any result. No grid, no second value.",
+    "membership": "helio24.near_miss.near_miss_mask on the training role of each fold, after helio24.walk_forward.annual_fold purged boundary windows and removed shared HARPs: a negative training window is a near miss when the absolute difference between its forecast_time and the forecast_time of at least one positive training window of the same HARP is at most 72 hours (boundary included, as in scripts.audit_cycle25_relabelled.alert_false_positive_origin). Only rows and labels of the training role enter; a positive window of the same HARP in the calibration or evaluation period never makes a training window a near miss.",
+    "where_weights_act": "The sample weight is passed to the final estimator of each constituent (LogisticRegression and XGBClassifier, both refitted). The median imputer and the standard scaler stay unweighted. Calibration and evaluation rows are never weighted: sigmoid calibration, threshold selection and every measure are unweighted."
+  },
+  "features": "The 96 SHARP summaries only (helio24.data.FEATURE_COLUMNS); no context, history or sequence features.",
+  "training": "Expanding annual walk-forward with helio24.walk_forward.annual_fold on the relabelled table: training before the calibration year, calibration on the prior calendar year, evaluation on the year. Models and hyperparameters of config/walk-forward-v1.json unchanged, unweighted sigmoid calibration on the prior year, ensemble 0.45 logistic and 0.55 XGBoost, no hyperparameter search. Per candidate and year the watch threshold (prior-year window recall 0.90) and the alert threshold (prior-year precision 0.50, recall floor 0.10, fallback flag) are selected on calibration-year probabilities with scripts.rebuild_walk_forward_v2.select_thresholds and the tiers of config/walk-forward-v2.json.",
+  "order_of_operations": "Phase 1: for each year every label at or after the evaluation year is hidden before the fold is built; weights, fits, calibration and thresholds follow. thresholds.json, weights.csv and probabilities_<year>.parquet (evaluation keys and candidate probabilities, no label) are written and their sha256 recorded in phase1.json. Phase 2: only then are evaluation labels read. After phase 2 the phase 1 files must still have the recorded hashes, or the run fails.",
+  "budget": {
+    "candidate_recipes": 2,
+    "years": 6,
+    "constituents": 2,
+    "constituent_fits": 24,
+    "hyperparameter_search": 0,
+    "weight_factors": 1,
+    "spans": 1,
+    "new_thresholds": "2 tiers x 2 candidates x 6 years, each selected once on the prior year",
+    "downloads": 0,
+    "candidates_after_results": 0,
+    "stop_rule": "The runner counts constituent fits and stops when the count would exceed or does not equal 24."
+  },
+  "years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2022,
+    2023
+  ],
+  "alert_fallback_years": [
+    2022
+  ],
+  "years_note": "The years evaluated by the adopted pipeline. 2022 is an alert fallback year of the control: its stored alert threshold is the best-precision fallback because prior-year precision 0.50 was unreachable. The runner stops when the stored fallback flags differ from this list. Fallback flags of the candidates' own alert thresholds are reported per year and marked in the report. 2018 to 2021 are skipped by the adopted pipeline and stay out.",
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {
+      "precision_higher_than_control": true,
+      "missed_positive_runs_not_above_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "per_year_primary_source": "Identical to acceptance.per_year_primary of config/activity-history-v2.json and computed by the same function (scripts.audit_activity_history_relabelled.acceptance). A candidate year without any alert window has no precision and does not meet it.",
+    "all_year_primary": "per_year_primary against control holds in all six years for the same candidate",
+    "cycle25_primary": "per_year_primary against control holds in both 2022 and 2023 for the same candidate",
+    "bootstrap": "Paired HARP-cluster bootstrap of the alert precision difference candidate minus control, 1000 draws, seed 24, 2.5 and 97.5 percent quantiles (scripts.audit_activity_history_relabelled.paired_precision_bootstrap). A missing interval counts as not above 0.",
+    "goal_against_control": "A candidate meets the goal against control by the all-year path (all_year_primary) or by the cycle-25 path (cycle25_primary with the bootstrap lower bound above 0 in both 2022 and 2023).",
+    "beats_uniform": "In a year, near_miss_w3 beats uniform_matched when per_year_primary holds with uniform_matched in the place of control: alert precision higher, missed positive runs not above, window recall at most 0.02 lower. Each candidate uses its own prior-year thresholds.",
+    "specific_goal": "near_miss_w3 meets the goal against control by a path and beats uniform_matched in every year of that same path (all six years for the all-year path, 2022 and 2023 for the cycle-25 path).",
+    "secondary": "Reported, not judged: years in which alert precision is at least 0.50 per candidate, against the control (3: 2014, 2015, 2017 per docs/activity-history-relabelled-20261112.md).",
+    "also_reported": [
+      "Per year, candidate and tier (watch and alert): TP, FP, FN, TN, precision with delivered window recall, HARP-cluster intervals, positive runs, missed positive runs, accuracy and always-negative accuracy, fallback flag",
+      "Average precision, region AP and within-flaring-HARP AP (scripts.audit_cycle25.decomposition), descriptive",
+      "Alert FP origin: share from never-flaring HARPs and share within 72 hours of a positive window of the same HARP (scripts.audit_cycle25_relabelled.alert_false_positive_origin), descriptive",
+      "precision_at_control_recall: the candidate's precision at the evaluation-year threshold that delivers the control's alert recall; an oracle-matched description that uses evaluation labels and is never deployable",
+      "Paired HARP-cluster bootstrap interval of the alert precision difference near_miss_w3 minus uniform_matched, descriptive",
+      "Per year: training rows, positives, negatives, near-miss negatives, flaring training HARPs, the uniform negative weight and the total negative weight of both candidates"
+    ],
+    "result_meaning": "A met goal justifies only an owner decision on a separate adoption protocol. It never changes alerts, thresholds, the operating point, the dashboard or the adopted pipeline."
+  },
+  "reading": {
+    "N1_near_miss_helps": "near_miss_w3 meets specific_goal: up-weighting near-miss negatives raises alert precision by the frozen rule, beyond an equal total negative reweighting. Outcome label result:goal-met.",
+    "N2_reweighting_only": "Otherwise, near_miss_w3 or uniform_matched meets goal_against_control: there is a gain over the stored pipeline that is not attributed to near-miss membership (the weight control shares it, or near_miss_w3 does not beat it). Every candidate that meets the goal is named; none is selected. Outcome label result:partial.",
+    "N3_no_gain": "Otherwise: neither weighting raises alert precision by the frozen rule. Reported as is, with the secondary and descriptive measures showing where it falls short. Outcome label result:no-gain.",
+    "exclusive": "The rules are applied in this order; the first that holds is the reading, so every result falls in exactly one."
+  },
+  "acceptance_rule": {
+    "description": "Accept when near_miss_w3 meets specific_goal (reading N1_near_miss_helps); reject otherwise (N2_reweighting_only or N3_no_gain).",
+    "metric_path": "decision.near_miss_w3_goal_met_and_beats_uniform",
+    "op": ">=",
+    "value": 1
+  },
+  "measures": [
+    "Alert and watch tier per year for control, near_miss_w3 and uniform_matched: the measures listed under acceptance.also_reported.",
+    "The per-year acceptance flags against control for both candidates and against uniform_matched for near_miss_w3, with the paired bootstrap intervals."
+  ],
+  "development_basis": "Relabelled table, config/walk-forward-v2.json and config/operating-point-v3.json. The report gives precision with delivered recall and missed positive runs per year and tier, marks alert fallback years, and keeps the frozen-label result of docs/hard-negative-years-20261029.md visible for comparison (copied, not recomputed; a different basis and tier, never pooled).",
+  "limits": "The control is the stored pipeline and is not refitted; uniform_matched is the refit and weight control. Near-miss negatives are a small share of the training negatives, so the matched uniform weight is close to 1 (see population) and uniform_matched is expected to stay close to the control. Weighted training changes the raw scores; calibration on the prior year is unweighted, so the candidates' thresholds move with them and each candidate is judged at its own prior-year thresholds. One factor and one span were fixed in advance; a null result says nothing about other values. Near-miss membership uses window labels, not flare peak times, and is censored at the edges of the training role (a flare just after the training period cannot mark a training window). Consecutive hourly windows overlap in 23 of their 24 hours and HARPs repeat, so counts are windows and positive runs, never independent events, and intervals are HARP-clustered. The relabelled labels are an association by NOAA SGAS and JSOC NOAA_ARS, not ground truth. Already inspected years: adaptive development evidence, not an independent test.",
+  "prohibitions": [
+    "No evaluation label in any weight, fit, calibration or threshold",
+    "No calibration-role or evaluation-role label in near-miss membership: training role only",
+    "No weight on calibration or evaluation rows",
+    "No weight factor other than 3 and no span other than 72 hours",
+    "No candidate, year, measure or reading added or dropped after results",
+    "No hyperparameter, feature or recipe change, and no more than 24 constituent fits",
+    "No refit of the control and no change to its stored thresholds",
+    "No download",
+    "No overwrite of an existing output directory",
+    "No model promotion, threshold, operating point or dashboard change",
+    "No reserved 2024-2025 access: no year after 2023 and no timestamp at or after 2024-01-01"
+  ],
+  "reserved_test_accessed": false
+}
