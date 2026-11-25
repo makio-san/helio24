@@ -43,3 +43,44 @@ def test_comparison_rejects_tampered_metrics(tmp_path):
     app = AppTest.from_function(render, args=(str(tmp_path),)).run()
     assert not app.exception
     assert not app.metric
+
+
+def unavailable(app):
+    return [m.value for m in app.info if m.value.startswith('Verified final comparison unavailable')]
+
+
+def test_missing_evidence_message_names_relative_source_without_local_path(tmp_path):
+    folder = fixture(tmp_path)
+    (folder/'report.json').unlink()
+    with pytest.raises(OSError):
+        load_comparison(tmp_path)
+    app = AppTest.from_function(render, args=(str(tmp_path),)).run()
+    assert not app.exception
+    assert not app.metric
+    assert unavailable(app) == ['Verified final comparison unavailable: comparison evidence not found in artifacts/final']
+    assert str(tmp_path) not in unavailable(app)[0]
+    assert 'Errno' not in unavailable(app)[0]
+    assert not any(part.startswith('/') for part in unavailable(app)[0].split())
+
+
+def test_missing_config_message_has_no_local_path(tmp_path):
+    app = AppTest.from_function(render, args=(str(tmp_path),)).run()
+    assert not app.exception
+    assert unavailable(app) == ['Verified final comparison unavailable: config/dashboard-comparison-v1.json could not be read']
+    assert str(tmp_path) not in unavailable(app)[0]
+
+
+def test_absolute_config_source_is_not_shown(tmp_path):
+    (tmp_path/'config').mkdir()
+    (tmp_path/'config/dashboard-comparison-v1.json').write_text(json.dumps({'source':str(tmp_path/'missing'), 'report_sha256':'0'}))
+    app = AppTest.from_function(render, args=(str(tmp_path),)).run()
+    assert not app.exception
+    assert unavailable(app) == ['Verified final comparison unavailable: comparison evidence not found']
+
+
+def test_hash_failure_message_is_kept(tmp_path):
+    folder = fixture(tmp_path)
+    with (folder/'metrics.csv').open('a') as stream:
+        stream.write('\nchanged')
+    app = AppTest.from_function(render, args=(str(tmp_path),)).run()
+    assert unavailable(app) == ['Verified final comparison unavailable: Comparison evidence failed its hash check']

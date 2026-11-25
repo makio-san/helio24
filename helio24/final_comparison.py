@@ -7,6 +7,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+COMPARISON_CONFIG = 'config/dashboard-comparison-v1.json'
+
 
 def verified_bytes(path, expected):
     if path.stat().st_flags & 0x40000000:
@@ -19,7 +21,7 @@ def verified_bytes(path, expected):
 
 def load_comparison(root):
     root = Path(root)
-    config = json.loads((root/'config/dashboard-comparison-v1.json').read_text())
+    config = json.loads((root/COMPARISON_CONFIG).read_text())
     folder = (root/config['source']).resolve()
     if not folder.is_relative_to(root.resolve()):
         raise ValueError('Invalid comparison source')
@@ -31,11 +33,25 @@ def load_comparison(root):
     return report, tables
 
 
+def missing_evidence_message(root):
+    """Name the missing evidence by its repository-relative source, never by a local path."""
+    try:
+        source = json.loads((Path(root)/COMPARISON_CONFIG).read_text())['source']
+    except (OSError, ValueError, KeyError, TypeError):
+        return f'{COMPARISON_CONFIG} could not be read'
+    if not isinstance(source, str) or Path(source).is_absolute() or '..' in Path(source).parts:
+        return 'comparison evidence not found'
+    return f'comparison evidence not found in {source}'
+
+
 def render_final_comparison(root):
     st.subheader('Final annual comparison')
     try:
         report, tables = load_comparison(root)
-    except (OSError, ValueError, KeyError) as error:
+    except OSError:
+        st.info(f'Verified final comparison unavailable: {missing_evidence_message(root)}')
+        return
+    except (ValueError, KeyError) as error:
         st.info(f'Verified final comparison unavailable: {error}')
         return
     gate = tables['comparisons.csv'].query("candidate == 'chronological' and control == 'baseline'").iloc[0]
