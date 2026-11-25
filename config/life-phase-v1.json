@@ -1,0 +1,284 @@
+{
+  "id": "life-phase-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-25",
+  "goal": "Test whether causal features that place the current window inside the stored life of its own HARP (current value against the running maximum and the running mean of earlier windows, hours since the running maximum, and change against 24, 48 and 72 hours earlier, for six key summaries) raise alert-tier precision of the unchanged recipes on the adopted development basis (relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json) without losing positive runs, and whether they do so beyond a refit that only knows the age of the record.",
+  "why": "Idea issue #11. Every feature of the adopted pipeline describes the last 12 hours, so the model cannot tell a region that is still growing from one past its peak. The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md) found within-flaring-HARP AP 0.4968 and 0.4057 in 2022 and 2023 and that 0.7139 and 0.7561 of the alert false-positive windows lie within 72 hours of a positive window of the same HARP: the alert tier finds the region and ranks the hours inside it poorly, and the report names the change of the summaries over the preceding days as a candidate direction. Earlier work does not answer it: docs/precision-long-history-20261028.md used 24 and 48 hour means, deviations and endpoint changes on frozen labels, one split and a recall 0.95 gate, without a lifetime reference; docs/precision-context-results-20261109.md used age and the model's own probability trajectory in a second stage, not the position of the summaries in the region's life.",
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "pipeline_protocol_sha256": "d6e08a575193162afe59e068c568b51dee5e34c3950dcb5b6ed98b817e63d3bb",
+    "base_protocol": "config/walk-forward-v1.json",
+    "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+    "operating_point": "config/operating-point-v3.json",
+    "acceptance_source": "config/activity-history-v2.json",
+    "stored_files": "Per year <control>/<year>/predictions.parquet and <control>/<year>/thresholds.json; each must match its sha256 in artifact_hashes of the control report.json. models.joblib is never opened.",
+    "labels": "Training, calibration and evaluation labels come from the relabelled table. The target column stored beside the control probabilities must equal the table label for every evaluation window, or the run stops.",
+    "other_inputs": "None. No event list, no flare time, no SGAS or HEK file, no download."
+  },
+  "leak_question": {
+    "question": "Issue #11 asks whether the lifetime statistics and window counts can be computed over all stored windows regardless of label status, because a gap in the table can carry label information.",
+    "finding": "They cannot. scripts/materialize_relabelled_development.py drops every window whose label_status starts with excluded_ before a shard is written, and helio24.v2_training.load_development refuses a table that still holds one. The table report (artifacts/relabelled_development_20261111_r1/report.json, label_status_before_exclusion) counts 18204 excluded_unassigned_major_event and 129 excluded_ambiguous_harp windows beside 643176 negative and 15799 positive ones: 18333 quality-retained windows are absent because of their label status, and their measurements are stored nowhere among the allowed inputs.",
+    "mechanism": "A window is excluded when an unassigned M/X peak (anywhere on the Sun) or an ambiguous peak of its HARP lies in its 24-hour prediction interval, unless the window is positive, which takes precedence (helio24.v2_contract.label_windows, helio24.relabel.relabel_windows). For a stored negative window every excluded earlier window of its HARP points at a peak before the forecast time: past flare information that comes from the event inventory, not from the measurements. For a stored positive window an unassigned peak inside its own prediction interval removes up to 24 hours of the windows just before it while the window itself stays. A count of recent earlier windows, or a flag that the window exactly 24, 48 or 72 hours earlier is absent, is therefore a function of label status and, for positive windows, of events after the forecast time.",
+    "decision": "The count feature of the issue (number of earlier windows in the last 72 hours) is dropped from both candidates. The 24, 48 and 72 hour changes are taken against the latest stored earlier window at or before the lag instead of the window exactly at the lag, so they are missing only when the stored record of the HARP is younger than the lag, which the age feature of both candidates already states; no feature and no missing-value indicator states whether a particular earlier window exists. The 72-hour gap flag is computed for reporting only and is never a model input.",
+    "residual_risk": "Running maximum, mean and standard deviation, the hours since the maximum, the lag reference and the age still rest on the stored earlier windows only, so an excluded stretch changes their values slightly (a stale lag reference, statistics over fewer windows, an age counted from a later first window). This channel is indirect and is not removed; it is bounded by the complete-history description under acceptance.also_reported and stated under limits. Removing it needs a measurement-only table of all windows regardless of label status, which is a new materialisation from the V2 archives and not part of this protocol."
+  },
+  "population": {
+    "source": "Counted from the relabelled table with helio24.walk_forward.annual_fold and helio24.life_phase.life_phase_features before any fit, with every label at or after the evaluation year hidden. Label counts of training and calibration roles only; the three coverage counts use no label; nothing here depends on a prediction. Rows and positives equal the fold audits of the control report. The runner recomputes all eight counts per year and stops when one differs.",
+    "coverage_counts": "train_recent_gap_72h and evaluation_recent_gap_72h: windows with a spacing above 1.5 hours between consecutive stored windows of the HARP in the last 72 hours (gaps come from label-status exclusions and from quality and cadence rejections; the two cannot be told apart in the table). evaluation_younger_than_72h: evaluation windows whose HARP has no stored window at least 72 hours earlier, so the 72-hour change is missing.",
+    "2014": {
+      "train_rows": 150935,
+      "train_positives": 3161,
+      "calibration_rows": 76710,
+      "calibration_positives": 1455,
+      "evaluation_rows": 78351,
+      "train_recent_gap_72h": 27432,
+      "evaluation_recent_gap_72h": 18877,
+      "evaluation_younger_than_72h": 31437
+    },
+    "2015": {
+      "train_rows": 228635,
+      "train_positives": 4616,
+      "calibration_rows": 78351,
+      "calibration_positives": 2436,
+      "evaluation_rows": 70554,
+      "train_recent_gap_72h": 41882,
+      "evaluation_recent_gap_72h": 14648,
+      "evaluation_younger_than_72h": 29127
+    },
+    "2016": {
+      "train_rows": 307980,
+      "train_positives": 7129,
+      "calibration_rows": 70554,
+      "calibration_positives": 1461,
+      "evaluation_rows": 43142,
+      "train_recent_gap_72h": 60765,
+      "evaluation_recent_gap_72h": 8294,
+      "evaluation_younger_than_72h": 18972
+    },
+    "2017": {
+      "train_rows": 379962,
+      "train_positives": 8638,
+      "calibration_rows": 43142,
+      "calibration_positives": 214,
+      "evaluation_rows": 19843,
+      "train_recent_gap_72h": 75419,
+      "evaluation_recent_gap_72h": 3299,
+      "evaluation_younger_than_72h": 8263
+    },
+    "2022": {
+      "train_rows": 466206,
+      "train_positives": 9141,
+      "calibration_rows": 29887,
+      "calibration_positives": 377,
+      "evaluation_rows": 65593,
+      "train_recent_gap_72h": 90404,
+      "evaluation_recent_gap_72h": 16677,
+      "evaluation_younger_than_72h": 26771
+    },
+    "2023": {
+      "train_rows": 496391,
+      "train_positives": 9518,
+      "calibration_rows": 65593,
+      "calibration_positives": 2190,
+      "evaluation_rows": 96991,
+      "train_recent_gap_72h": 95330,
+      "evaluation_recent_gap_72h": 21883,
+      "evaluation_younger_than_72h": 37863
+    }
+  },
+  "control": {
+    "id": "control",
+    "definition": "Stored ensemble probabilities and stored per-year watch and alert thresholds of artifacts/walk_forward_v2_20261112_r1. No refit, no new threshold."
+  },
+  "candidates": [
+    {
+      "id": "age_only",
+      "definition": "Refit of the unchanged walk-forward-v1 recipes on the 96 summaries plus life__log1p_hours_since_first_window (97 features). Matched control for the refit and for the length of the stored record."
+    },
+    {
+      "id": "life_phase",
+      "definition": "age_only plus the 36 life-phase features of features.added.life_phase (133 features): six statistics for each of the six measurements."
+    }
+  ],
+  "features": {
+    "base": "The 96 SHARP summaries (helio24.data.FEATURE_COLUMNS), unchanged, in both candidates.",
+    "measurements": [
+      "USFLUX",
+      "TOTUSJH",
+      "TOTPOT",
+      "SAVNCPP",
+      "R_VALUE",
+      "MEANSHR"
+    ],
+    "source_columns": [
+      "USFLUX__mean",
+      "TOTUSJH__mean",
+      "TOTPOT__mean",
+      "SAVNCPP__mean",
+      "R_VALUE__mean",
+      "MEANSHR__mean"
+    ],
+    "lags_hours": [
+      24,
+      48,
+      72
+    ],
+    "added": {
+      "age_only": [
+        "life__log1p_hours_since_first_window"
+      ],
+      "life_phase": [
+        "life__log1p_hours_since_first_window",
+        "life__USFLUX__ratio_to_running_max",
+        "life__USFLUX__running_z",
+        "life__USFLUX__hours_since_running_max",
+        "life__USFLUX__change_24h",
+        "life__USFLUX__change_48h",
+        "life__USFLUX__change_72h",
+        "life__TOTUSJH__ratio_to_running_max",
+        "life__TOTUSJH__running_z",
+        "life__TOTUSJH__hours_since_running_max",
+        "life__TOTUSJH__change_24h",
+        "life__TOTUSJH__change_48h",
+        "life__TOTUSJH__change_72h",
+        "life__TOTPOT__ratio_to_running_max",
+        "life__TOTPOT__running_z",
+        "life__TOTPOT__hours_since_running_max",
+        "life__TOTPOT__change_24h",
+        "life__TOTPOT__change_48h",
+        "life__TOTPOT__change_72h",
+        "life__SAVNCPP__ratio_to_running_max",
+        "life__SAVNCPP__running_z",
+        "life__SAVNCPP__hours_since_running_max",
+        "life__SAVNCPP__change_24h",
+        "life__SAVNCPP__change_48h",
+        "life__SAVNCPP__change_72h",
+        "life__R_VALUE__ratio_to_running_max",
+        "life__R_VALUE__running_z",
+        "life__R_VALUE__hours_since_running_max",
+        "life__R_VALUE__change_24h",
+        "life__R_VALUE__change_48h",
+        "life__R_VALUE__change_72h",
+        "life__MEANSHR__ratio_to_running_max",
+        "life__MEANSHR__running_z",
+        "life__MEANSHR__hours_since_running_max",
+        "life__MEANSHR__change_24h",
+        "life__MEANSHR__change_48h",
+        "life__MEANSHR__change_72h"
+      ]
+    },
+    "clip": {
+      "ratio_to_running_max": 100.0,
+      "running_z": 100.0
+    },
+    "gap_flag": {
+      "name": "recent_gap_72h",
+      "spacing_hours": 1.5,
+      "span_hours": 72,
+      "model_input": false
+    },
+    "definitions": {
+      "earlier_windows": "For a window with forecast time t: the stored windows of the same HARP with forecast_time strictly before t, whatever their role or label. Only their forecast_time and their <measurement>__mean summary are read (helio24.life_phase.life_phase_features refuses a frame that carries target, label_status, label_status_v2 or role).",
+      "life__log1p_hours_since_first_window": "log(1 + hours between t and the forecast time of the first stored window of the HARP). The first stored window is not the emergence of the region.",
+      "ratio_to_running_max": "Current __mean divided by the maximum __mean of the earlier windows, clipped to at most 100. Missing when there is no earlier window or the maximum is not above 0.",
+      "running_z": "Current __mean minus the mean of the earlier windows, divided by their population standard deviation, clipped to the range -100 to 100. Missing with fewer than two earlier windows or a zero standard deviation.",
+      "hours_since_running_max": "Hours between t and the first earlier window that attained the maximum of the earlier windows. Missing when there is no earlier window.",
+      "change_24h, change_48h, change_72h": "Current __mean minus the __mean of the latest stored earlier window with forecast_time at or before t minus the lag. Missing only when the HARP has no stored window that old.",
+      "missing_values": "Left missing; the median imputer with missing indicators of the unchanged recipes handles them, as it does for the 96 summaries."
+    },
+    "fixed": "Measurements, statistics, lags and clips are fixed here before any result. The clips were set from label-free magnitudes of the features over the table (R_VALUE__mean is exactly zero in many windows, and ratios and z-scores against near-zero references exceed the float32 range without a bound); no label and no prediction was read for them. No feature is added or dropped after results.",
+    "dropped_from_issue": "The number of earlier windows in the last 72 hours (both candidates), and the rule that a lagged value is missing when the window exactly at the lag is absent. See leak_question."
+  },
+  "training": "Expanding annual walk-forward with helio24.walk_forward.annual_fold on the relabelled table: training before the calibration year, calibration on the prior calendar year, evaluation on the year. Models and hyperparameters of config/walk-forward-v1.json unchanged (scripts.audit_activity_history_relabelled.fit_probabilities), sigmoid calibration on the prior year, ensemble 0.45 logistic and 0.55 XGBoost, no hyperparameter search. Life features are computed once over all stored windows before the folds are built. Per candidate and year the watch threshold (prior-year window recall 0.90) and the alert threshold (prior-year precision 0.50, recall floor 0.10, fallback flag) are selected on calibration-year probabilities with scripts.rebuild_walk_forward_v2.select_thresholds and the tiers of config/walk-forward-v2.json.",
+  "order_of_operations": "Life features are computed from forecast keys and six measurement summaries without any label column. Phase 1: for each year every label at or after the evaluation year is hidden before the fold is built; fits, calibration and thresholds follow. thresholds.json, features.json, life_coverage.csv and probabilities_<year>.parquet (evaluation keys, candidate probabilities and the reporting gap flag, no label) are written and their sha256 recorded in phase1.json. Phase 2: only then are evaluation labels read. After phase 2 the phase 1 files must still have the recorded hashes, or the run fails.",
+  "budget": {
+    "candidate_recipes": 2,
+    "years": 6,
+    "constituents": 2,
+    "constituent_fits": 24,
+    "hyperparameter_search": 0,
+    "added_features": {
+      "age_only": 1,
+      "life_phase": 37
+    },
+    "new_thresholds": "2 tiers x 2 candidates x 6 years, each selected once on the prior year",
+    "downloads": 0,
+    "candidates_after_results": 0,
+    "stop_rule": "The runner counts constituent fits and stops when the count would exceed or does not equal 24."
+  },
+  "years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2022,
+    2023
+  ],
+  "alert_fallback_years": [
+    2022
+  ],
+  "years_note": "The years evaluated by the adopted pipeline. 2022 is an alert fallback year of the control: its stored alert threshold is the best-precision fallback because prior-year precision 0.50 was unreachable. The runner stops when the stored fallback flags differ from this list. Fallback flags of the candidates' own alert thresholds are reported per year and marked in the report. 2018 to 2021 are skipped by the adopted pipeline and stay out.",
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {
+      "precision_higher_than_control": true,
+      "missed_positive_runs_not_above_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "per_year_primary_source": "Identical to acceptance.per_year_primary of config/activity-history-v2.json and computed by the same function (scripts.audit_activity_history_relabelled.acceptance). A candidate year without any alert window has no precision and does not meet it.",
+    "all_year_primary": "per_year_primary against control holds in all six years for the same candidate",
+    "cycle25_primary": "per_year_primary against control holds in both 2022 and 2023 for the same candidate",
+    "bootstrap": "Paired HARP-cluster bootstrap of the alert precision difference candidate minus control, 1000 draws, seed 24, 2.5 and 97.5 percent quantiles (scripts.audit_activity_history_relabelled.paired_precision_bootstrap). A missing interval counts as not above 0.",
+    "goal_against_control": "A candidate meets the goal against control by the all-year path (all_year_primary) or by the cycle-25 path (cycle25_primary with the bootstrap lower bound above 0 in both 2022 and 2023).",
+    "beats_age_only": "In a year, life_phase beats age_only when per_year_primary holds with age_only in the place of control: alert precision higher, missed positive runs not above, window recall at most 0.02 lower. Each candidate uses its own prior-year thresholds.",
+    "specific_goal": "life_phase meets the goal against control by a path and beats age_only in every year of that same path (all six years for the all-year path, 2022 and 2023 for the cycle-25 path).",
+    "secondary": "Reported, not judged: years in which alert precision is at least 0.50 per candidate, against the control (3: 2014, 2015, 2017 per docs/activity-history-relabelled-20261112.md).",
+    "also_reported": [
+      "Per year, candidate and tier (watch and alert): TP, FP, FN, TN, precision with delivered window recall, HARP-cluster intervals, positive runs, missed positive runs, accuracy and always-negative accuracy, fallback flag",
+      "Average precision, region AP and within-flaring-HARP AP (scripts.audit_cycle25.decomposition), descriptive",
+      "Alert FP origin: share from never-flaring HARPs and share within 72 hours of a positive window of the same HARP (scripts.audit_cycle25_relabelled.alert_false_positive_origin), descriptive",
+      "precision_at_control_recall: the candidate's precision at the evaluation-year threshold that delivers the control's alert recall; an oracle-matched description that uses evaluation labels and is never deployable",
+      "Paired HARP-cluster bootstrap interval of the alert precision difference life_phase minus age_only, descriptive",
+      "complete_history.csv, descriptive: per year and candidate the alert TP, FP, FN, precision and recall on the evaluation windows without a stored-window gap in the last 72 hours, with the share of windows and of positives in that subset and the positive rate of windows with and without a gap. It shows how much label information the gaps carry and whether a difference between the candidates survives where no gap can act within 72 hours",
+      "life_coverage.csv: per year and role the rows, the windows with a recent gap and the missing count of every added feature"
+    ],
+    "result_meaning": "A met goal justifies only an owner decision on a separate adoption protocol. It never changes alerts, thresholds, the operating point, the dashboard or the adopted pipeline."
+  },
+  "reading": {
+    "L1_life_phase_helps": "life_phase meets specific_goal: the position of the summaries in the HARP's stored life raises alert precision by the frozen rule, beyond a refit that knows only the age of the record. Outcome label result:goal-met.",
+    "L2_refit_or_age_only": "Otherwise, life_phase or age_only meets goal_against_control: there is a gain over the stored pipeline that is not attributed to the life-phase features (age_only shares it, or life_phase does not beat it). Every candidate that meets the goal is named; none is selected. Outcome label result:partial.",
+    "L3_no_gain": "Otherwise: neither candidate raises alert precision by the frozen rule. Reported as is, with the secondary and descriptive measures showing where it falls short. Outcome label result:no-gain.",
+    "exclusive": "The rules are applied in this order; the first that holds is the reading, so every result falls in exactly one."
+  },
+  "acceptance_rule": {
+    "description": "Accept when life_phase meets specific_goal (reading L1_life_phase_helps); reject otherwise (L2_refit_or_age_only or L3_no_gain).",
+    "metric_path": "decision.life_phase_goal_met_and_beats_age_only",
+    "op": ">=",
+    "value": 1
+  },
+  "measures": [
+    "Alert and watch tier per year for control, age_only and life_phase: the measures listed under acceptance.also_reported.",
+    "The per-year acceptance flags against control for both candidates and against age_only for life_phase, with the paired bootstrap intervals."
+  ],
+  "development_basis": "Relabelled table, config/walk-forward-v2.json and config/operating-point-v3.json. The report gives precision with delivered recall and missed positive runs per year and tier, marks alert fallback years, and keeps the frozen-label result of docs/precision-long-history-20261028.md visible for comparison (copied, not recomputed; a different basis, split and gate, never pooled).",
+  "limits": "The control is the stored pipeline and is not refitted; age_only is the refit and record-length control. The stored record of a HARP starts at its first stored window, not at the emergence of the region (a HARP can rotate onto the disk already mature), so the running maximum is a maximum of what was observed. Many windows are young: in every evaluated year a large part of the evaluation windows has no stored window 72 hours earlier (population, evaluation_younger_than_72h), where the 72-hour change is missing and the running statistics rest on few windows. Stored windows are label-status filtered (leak_question): the count feature was dropped and no feature states whether a particular earlier window exists, but the values of the life features still rest on the stored earlier windows only; a gain confined to windows with a recent gap would be read as suspect, which complete_history.csv describes and the reading does not judge. Gaps also come from quality and cadence rejections. Six measurements, three lags and two clips were fixed in advance; a null result says nothing about other choices. Consecutive hourly windows overlap in 11 of their 12 observation hours and HARPs repeat, so counts are windows and positive runs, never independent events, and intervals are HARP-clustered. The relabelled labels are an association by NOAA SGAS and JSOC NOAA_ARS, not ground truth. Already inspected years: adaptive development evidence, not an independent test.",
+  "prohibitions": [
+    "No label, label status or role in any life feature",
+    "No window count and no gap flag as a model input",
+    "No measurement of a later window of the HARP and no measurement of another HARP in any life feature",
+    "No evaluation label in any fit, calibration or threshold",
+    "No feature, measurement, lag or clip other than the frozen list",
+    "No candidate, year, measure or reading added or dropped after results",
+    "No hyperparameter or recipe change, and no more than 24 constituent fits",
+    "No refit of the control and no change to its stored thresholds",
+    "No event list, flare time or download",
+    "No overwrite of an existing output directory",
+    "No model promotion, threshold, operating point or dashboard change",
+    "No reserved 2024-2025 access: no year after 2023 and no timestamp at or after 2024-01-01"
+  ],
+  "reserved_test_accessed": false
+}
