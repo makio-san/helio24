@@ -6,3 +6,4 @@ or delete a line.
 
 | Date (UTC) | Protocol | Main commit | Evidence | report.json sha256 (12) | Reading | Report |
 |---|---|---|---|---|---|---|
+| 2026-11-25 | alert-cooldown-v1 | 746de33 | artifacts/alert_cooldown_20261125_r1 | f3e45dde103a | C3_no_gain | docs/alert-cooldown-20261125.md |

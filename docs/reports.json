@@ -544,5 +544,12 @@
     "source_sha256": "cbe9d27980c4cdcabb3e08ca7781d08721d2402cf2e964dea8b674121c0cc439",
     "en": "horizon-72h-20261116.md",
     "tr": "horizon-72h-20261116.tr.md"
+  },
+  {
+    "id": "alert-cooldown-20261125",
+    "source_language": "en",
+    "source_sha256": "591043c33cf871f6bc8a05b895e9c1e0d9ab6c937556c95e83853cd85a3acdd7",
+    "en": "alert-cooldown-20261125.md",
+    "tr": "alert-cooldown-20261125.tr.md"
   }
 ]

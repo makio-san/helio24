@@ -173,3 +173,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Zamanlama kaynağı taraması ve gecikmesiz geçmiş tavanı / Timing-source scan and zero-latency history ceiling | [Türkçe](history-latency-ceiling-20261112.tr.md) | [English](history-latency-ceiling-20261112.md) |
 
 | Benimsenen hatta 72 saatlik tahmin ufku / 72-hour forecast horizon on the adopted pipeline | [Türkçe](horizon-72h-20261116.tr.md) | [English](horizon-72h-20261116.md) |
+
+| Benimsenen hatta alarm soğuma süresi ve alarm yanlış pozitiflerinin yönü / Alert cooldown and direction of alert false positives on the adopted pipeline | [Türkçe](alert-cooldown-20261125.tr.md) | [English](alert-cooldown-20261125.md) |
