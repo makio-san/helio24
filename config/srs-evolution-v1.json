@@ -1,0 +1,280 @@
+{
+  "id": "srs-evolution-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-26",
+  "goal": "Test whether the 24-hour change of a region's issued NOAA SRS description (change of the McIntosh and magnetic class ranks, of the area and of the spot count against the SRS issued one day earlier, for the same NOAA numbers) raises alert-tier precision of the unchanged recipes on the adopted development basis (relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json) without losing positive runs, and whether it does so beyond the static SRS description of the same day.",
+  "why": "Idea issue #10. The issued SRS context was tested only as a static snapshot and only on the frozen labels at the recall 0.95 gate (config/region-context-v1.json, docs/region-context-results-20261109.md): the 13 static features (candidate context) met the primary rule in 1 of 6 years and the availability-only refit (candidate flag) in 4 of 6, so the only thing that passed was refitting and availability, not content. No change feature was in that protocol. The issue cites McCloskey, Gallagher and Bloomfield 2016 and 2018, who report that flaring rates rise when a sunspot group evolves upward in McIntosh class over 24 hours and fall when it evolves downward. The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md) found that 0.7139 and 0.7561 of the alert false-positive windows of 2022 and 2023 lie within 72 hours of a positive window of the same HARP: the alert tier finds the region and misses the day, and growth or decay of the issued region description is a timing signal inside a region. Neither the adopted basis nor the alert tier was used in the earlier SRS test.",
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "pipeline_protocol_sha256": "d6e08a575193162afe59e068c568b51dee5e34c3950dcb5b6ed98b817e63d3bb",
+    "base_protocol": "config/walk-forward-v1.json",
+    "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+    "operating_point": "config/operating-point-v3.json",
+    "acceptance_source": "config/activity-history-v2.json",
+    "static_feature_source": "config/region-context-v1.json",
+    "srs_directory": "data/region_summaries_20261109_r1",
+    "srs_manifest_sha256": "36c9ba1c475e32cf171b199a4905225d5525fdda21d9ccbaff25610e1eac3c49",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "mapping_manifest_sha256": "01b8f7cd0489233a49d06af33d5768ee7d256d8ca02dc05618e2b0dd86a27bf8",
+    "stored_files": "Per year <control>/<year>/predictions.parquet and <control>/<year>/thresholds.json; each must match its sha256 in artifact_hashes of the control report.json. models.joblib is never opened. Every SRS and mapping file must match its sha256 in its manifest (scripts.audit_region_context_sources.load_srs and load_mapping).",
+    "labels": "Training, calibration and evaluation labels come from the relabelled table. The target column stored beside the control probabilities must equal the table label for every evaluation window, or the run stops.",
+    "other_inputs": "None. No event list, no flare time, no SGAS or HEK file, no download.",
+    "frozen_label_reference": "docs/region-context-results-20261109.md (static SRS context on frozen labels at the recall 0.95 gate), copied not recomputed"
+  },
+  "srs_issue_dates_before": "2024-01-01",
+  "availability_rule": {
+    "source": "That of config/region-context-v1.json, unchanged, for the SRS used: a window at forecast time t uses the latest SRS whose issue time is at or before t minus 30 minutes, and only the SRS rows whose NOAA number is in the HARP's NOAA_ARS on the forecast date (scripts.audit_region_context_features.attach_context).",
+    "both_products": "The earlier SRS of a difference is the latest SRS issued 12 to 36 hours before the SRS used, so its issue time is also at or before t minus 30 minutes. The runner checks both issue times of every window against t minus 30 minutes and stops when one is later (scripts.audit_srs_evolution.check_availability).",
+    "absence": "A HARP with no matched row in the SRS used has srs_available 0 and every other static and evolution value missing. Missing values pass through the median imputer with missing indicators of the unchanged recipes; absence is never encoded as quiet and a missing earlier row is never encoded as no change.",
+    "reserved": "SRS products and HARP to NOAA months are read only with dates before 2024-01-01: the runner reads both manifests first and stops before any product file is opened when one lists a product dated or issued at or after 2024-01-01, and stops again when a parsed issue time is at or after that date."
+  },
+  "population": {
+    "source": "Counted from the relabelled table, the SRS directory and the mapping directory with helio24.walk_forward.annual_fold and scripts.audit_srs_evolution.srs_features before any fit, with every label at or after the evaluation year hidden. Label counts of training and calibration roles only; the four coverage counts use no label; nothing here depends on a prediction. Rows and positives equal the fold audits of the control report. The runner recomputes all nine counts per year and stops when one differs.",
+    "coverage_counts": "train_srs_available and evaluation_srs_available: windows with at least one matched row in the SRS used (srs_available 1). train_evolution_available and evaluation_evolution_available: windows where at least one matched NOAA number is also listed in the earlier SRS, so the six changes are present.",
+    "2014": {
+      "train_rows": 150935,
+      "train_positives": 3161,
+      "calibration_rows": 76710,
+      "calibration_positives": 1455,
+      "evaluation_rows": 78351,
+      "train_srs_available": 69264,
+      "evaluation_srs_available": 32082,
+      "train_evolution_available": 58302,
+      "evaluation_evolution_available": 27707
+    },
+    "2015": {
+      "train_rows": 228635,
+      "train_positives": 4616,
+      "calibration_rows": 78351,
+      "calibration_positives": 2436,
+      "evaluation_rows": 70554,
+      "train_srs_available": 106001,
+      "evaluation_srs_available": 27965,
+      "train_evolution_available": 89338,
+      "evaluation_evolution_available": 23672
+    },
+    "2016": {
+      "train_rows": 307980,
+      "train_positives": 7129,
+      "calibration_rows": 70554,
+      "calibration_positives": 1461,
+      "evaluation_rows": 43142,
+      "train_srs_available": 138742,
+      "evaluation_srs_available": 17181,
+      "train_evolution_available": 117669,
+      "evaluation_evolution_available": 14130
+    },
+    "2017": {
+      "train_rows": 379962,
+      "train_positives": 8638,
+      "calibration_rows": 43142,
+      "calibration_positives": 214,
+      "evaluation_rows": 19843,
+      "train_srs_available": 167677,
+      "evaluation_srs_available": 9255,
+      "train_evolution_available": 142252,
+      "evaluation_evolution_available": 7896
+    },
+    "2022": {
+      "train_rows": 466206,
+      "train_positives": 9141,
+      "calibration_rows": 29887,
+      "calibration_positives": 377,
+      "evaluation_rows": 65593,
+      "train_srs_available": 203687,
+      "evaluation_srs_available": 29343,
+      "train_evolution_available": 171797,
+      "evaluation_evolution_available": 24594
+    },
+    "2023": {
+      "train_rows": 496391,
+      "train_positives": 9518,
+      "calibration_rows": 65593,
+      "calibration_positives": 2190,
+      "evaluation_rows": 96991,
+      "train_srs_available": 217710,
+      "evaluation_srs_available": 41627,
+      "train_evolution_available": 183223,
+      "evaluation_evolution_available": 36235
+    }
+  },
+  "control": {
+    "id": "control",
+    "definition": "Stored ensemble probabilities and stored per-year watch and alert thresholds of artifacts/walk_forward_v2_20261112_r1. No refit, no new threshold."
+  },
+  "candidates": [
+    {
+      "id": "srs_static",
+      "definition": "Refit of the unchanged walk-forward-v1 recipes on the 96 summaries plus the 13 context features of config/region-context-v1.json, unchanged (109 features). Matched control: it separates the refit, the availability and the static content from the new content."
+    },
+    {
+      "id": "srs_evolution",
+      "definition": "srs_static plus the 7 evolution features of features.added.srs_evolution (116 features): a flag that the earlier SRS lists the region and six changes against it."
+    }
+  ],
+  "features": {
+    "base": "The 96 SHARP summaries (helio24.data.FEATURE_COLUMNS), unchanged, in both candidates.",
+    "changed_fields": [
+      "zurich_rank",
+      "penumbra_rank",
+      "compact_rank",
+      "mag_rank",
+      "area_log",
+      "spots_log"
+    ],
+    "added": {
+      "srs_static": [
+        "srs_available",
+        "hours_since_issue",
+        "n_regions",
+        "mag_rank",
+        "has_delta",
+        "has_gamma",
+        "zurich_rank",
+        "penumbra_rank",
+        "compact_rank",
+        "area_log",
+        "spots_log",
+        "extent_max",
+        "srs_history_days"
+      ],
+      "srs_evolution": [
+        "srs_available",
+        "hours_since_issue",
+        "n_regions",
+        "mag_rank",
+        "has_delta",
+        "has_gamma",
+        "zurich_rank",
+        "penumbra_rank",
+        "compact_rank",
+        "area_log",
+        "spots_log",
+        "extent_max",
+        "srs_history_days",
+        "evo__earlier_listed",
+        "evo__zurich_rank_change",
+        "evo__penumbra_rank_change",
+        "evo__compact_rank_change",
+        "evo__mag_rank_change",
+        "evo__area_log_change",
+        "evo__spots_log_change"
+      ]
+    },
+    "earlier_product_hours": {
+      "min": 12,
+      "max": 36
+    },
+    "safety_margin_minutes": 30,
+    "reporting_flag": {
+      "name": "evolution_available",
+      "model_input": false
+    },
+    "definitions": {
+      "static": "The 13 features and ordinal encodings of config/region-context-v1.json, computed by scripts.audit_region_context_features.attach_context and srs_feature_table without change.",
+      "srs_used": "The latest SRS issued at or before the forecast time minus 30 minutes, as in the static features.",
+      "earlier_srs": "The latest SRS whose issue time lies 12 to 36 hours before the issue time of the SRS used. The SRS is issued once a day near 00:30 UTC, so this is the product of the previous day; when that product is unavailable there is no earlier SRS and nothing older is substituted.",
+      "common_numbers": "The NOAA numbers that are in the HARP's NOAA_ARS on the forecast date and are listed in both the SRS used and the earlier SRS.",
+      "evo__earlier_listed": "1 when at least one matched NOAA number of the SRS used is also listed in the earlier SRS, 0 when an earlier SRS exists and lists none of them (a newly numbered region). Missing when the SRS used has no matched row or there is no earlier SRS.",
+      "evo__zurich_rank_change, evo__penumbra_rank_change, evo__compact_rank_change, evo__mag_rank_change": "Maximum of the rank over the common numbers in the SRS used minus the maximum over the same numbers in the earlier SRS, with the encodings of config/region-context-v1.json. Missing when there is no common number.",
+      "evo__area_log_change, evo__spots_log_change": "log(1 + sum over the common numbers in the SRS used) minus log(1 + sum over the same numbers in the earlier SRS), for the area in millionths of a hemisphere and the spot count NN. Missing when there is no common number.",
+      "missing_values": "Left missing; the median imputer with missing indicators of the unchanged recipes handles them, as it does for the 96 summaries. No earlier row means missing, never no change.",
+      "evolution_available": "Reporting flag: the six changes are present. Never a model input."
+    },
+    "fixed": "The seven evolution features, the six changed fields, the 12 to 36 hour rule for the earlier product and the 30 minute margin are fixed here before any result, from the issue and from the issue times in the SRS manifest (label-free). No feature is added or dropped after results.",
+    "disclosure": "The issue asks for the difference against the SRS issued one day earlier for the same NOAA numbers. The protocol makes two points exact: the earlier product is the one issued 12 to 36 hours before the SRS used, and a change is taken over the NOAA numbers listed in both products, so a region that is newly listed changes evo__earlier_listed or the common set and never appears as growth of an aggregate."
+  },
+  "training": "Expanding annual walk-forward with helio24.walk_forward.annual_fold on the relabelled table: training before the calibration year, calibration on the prior calendar year, evaluation on the year. Models and hyperparameters of config/walk-forward-v1.json unchanged (scripts.audit_activity_history_relabelled.fit_probabilities), sigmoid calibration on the prior year, ensemble 0.45 logistic and 0.55 XGBoost, no hyperparameter search. SRS features are computed once for all stored windows before the folds are built, from the forecast key, the issued SRS and the HARP to NOAA mapping. Per candidate and year the watch threshold (prior-year window recall 0.90) and the alert threshold (prior-year precision 0.50, recall floor 0.10, fallback flag) are selected on calibration-year probabilities with scripts.rebuild_walk_forward_v2.select_thresholds and the tiers of config/walk-forward-v2.json.",
+  "order_of_operations": "SRS features are computed from forecast keys without any label column. Phase 1: for each year every label at or after the evaluation year is hidden before the fold is built; fits, calibration and thresholds follow. thresholds.json, features.json, srs_coverage.csv and probabilities_<year>.parquet (evaluation keys, candidate probabilities and the reporting flag, no label) are written and their sha256 recorded in phase1.json. Phase 2: only then are evaluation labels read. After phase 2 the phase 1 files must still have the recorded hashes, or the run fails.",
+  "budget": {
+    "candidate_recipes": 2,
+    "years": 6,
+    "constituents": 2,
+    "constituent_fits": 24,
+    "hyperparameter_search": 0,
+    "added_features": {
+      "srs_static": 13,
+      "srs_evolution": 20
+    },
+    "new_thresholds": "2 tiers x 2 candidates x 6 years, each selected once on the prior year",
+    "downloads": 0,
+    "candidates_after_results": 0,
+    "stop_rule": "The runner counts constituent fits and stops when the count would exceed or does not equal 24."
+  },
+  "years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2022,
+    2023
+  ],
+  "alert_fallback_years": [
+    2022
+  ],
+  "years_note": "The years evaluated by the adopted pipeline. 2022 is an alert fallback year of the control: its stored alert threshold is the best-precision fallback because prior-year precision 0.50 was unreachable. The runner stops when the stored fallback flags differ from this list. Fallback flags of the candidates' own alert thresholds are reported per year and marked in the report. 2018 to 2021 are skipped by the adopted pipeline and stay out.",
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {
+      "precision_higher_than_control": true,
+      "missed_positive_runs_not_above_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "per_year_primary_source": "Identical to acceptance.per_year_primary of config/activity-history-v2.json and computed by the same function (scripts.audit_activity_history_relabelled.acceptance). A candidate year without any alert window has no precision and does not meet it.",
+    "all_year_primary": "per_year_primary against control holds in all six years for the same candidate",
+    "cycle25_primary": "per_year_primary against control holds in both 2022 and 2023 for the same candidate",
+    "bootstrap": "Paired HARP-cluster bootstrap of the alert precision difference candidate minus control, 1000 draws, seed 24, 2.5 and 97.5 percent quantiles (scripts.audit_activity_history_relabelled.paired_precision_bootstrap). A missing interval counts as not above 0.",
+    "goal_against_control": "A candidate meets the goal against control by the all-year path (all_year_primary) or by the cycle-25 path (cycle25_primary with the bootstrap lower bound above 0 in both 2022 and 2023).",
+    "beats_srs_static": "In a year, srs_evolution beats srs_static when per_year_primary holds with srs_static in the place of control: alert precision higher, missed positive runs not above, window recall at most 0.02 lower. Each candidate uses its own prior-year thresholds.",
+    "specific_goal": "srs_evolution meets the goal against control by a path and beats srs_static in every year of that same path (all six years for the all-year path, 2022 and 2023 for the cycle-25 path).",
+    "secondary": "Reported, not judged: years in which alert precision is at least 0.50 per candidate, against the control (3: 2014, 2015, 2017 per docs/activity-history-relabelled-20261112.md).",
+    "also_reported": [
+      "Per year, candidate and tier (watch and alert): TP, FP, FN, TN, precision with delivered window recall, HARP-cluster intervals, positive runs, missed positive runs, accuracy and always-negative accuracy, fallback flag",
+      "Average precision, region AP and within-flaring-HARP AP (scripts.audit_cycle25.decomposition), descriptive",
+      "Alert FP origin: share from never-flaring HARPs and share within 72 hours of a positive window of the same HARP (scripts.audit_cycle25_relabelled.alert_false_positive_origin), descriptive",
+      "precision_at_control_recall: the candidate's precision at the evaluation-year threshold that delivers the control's alert recall; an oracle-matched description that uses evaluation labels and is never deployable",
+      "Paired HARP-cluster bootstrap interval of the alert precision difference srs_evolution minus srs_static, descriptive",
+      "evolution_subset.csv, descriptive: per year and candidate the alert TP, FP, FN, precision and recall on the evaluation windows with and without a computable 24-hour change, with the share of windows and of positives in each subset. It shows whether a difference between the candidates sits where the evolution features exist",
+      "srs_coverage.csv: per year and role the rows, the windows with a matched SRS row, with a computable change, with evo__earlier_listed 1 and 0, and the missing count of every evolution feature"
+    ],
+    "result_meaning": "A met goal justifies only an owner decision on a separate adoption protocol. It never changes alerts, thresholds, the operating point, the dashboard or the adopted pipeline."
+  },
+  "reading": {
+    "S1_evolution_helps": "srs_evolution meets specific_goal: the 24-hour change of the issued SRS description raises alert precision by the frozen rule, beyond the static description of the same day. Outcome label result:goal-met.",
+    "S2_refit_or_static_only": "Otherwise, srs_evolution or srs_static meets goal_against_control: there is a gain over the stored pipeline that is not attributed to the evolution features (srs_static shares it, or srs_evolution does not beat it). Every candidate that meets the goal is named; none is selected. Outcome label result:partial.",
+    "S3_no_gain": "Otherwise: neither candidate raises alert precision by the frozen rule. Reported as is, with the secondary and descriptive measures showing where it falls short. Outcome label result:no-gain.",
+    "exclusive": "The rules are applied in this order; the first that holds is the reading, so every result falls in exactly one."
+  },
+  "acceptance_rule": {
+    "description": "Accept when srs_evolution meets specific_goal (reading S1_evolution_helps); reject otherwise (S2_refit_or_static_only or S3_no_gain).",
+    "metric_path": "decision.srs_evolution_goal_met_and_beats_srs_static",
+    "op": ">=",
+    "value": 1
+  },
+  "measures": [
+    "Alert and watch tier per year for control, srs_static and srs_evolution: the measures listed under acceptance.also_reported.",
+    "The per-year acceptance flags against control for both candidates and against srs_static for srs_evolution, with the paired bootstrap intervals."
+  ],
+  "development_basis": "Relabelled table, config/walk-forward-v2.json and config/operating-point-v3.json. The report gives precision with delivered recall and missed positive runs per year and tier, marks alert fallback years, and keeps the frozen-label result of docs/region-context-results-20261109.md visible for comparison (copied, not recomputed; a different basis and gate, never pooled).",
+  "limits": "The control is the stored pipeline and is not refitted; srs_static is the refit, availability and static-content control. The SRS is issued once a day, so at forecast time the change is up to two days old; that is a limit, not a leak. Coverage is partial: in every evaluated year fewer than half of the evaluation windows have a matched SRS row and fewer still a computable change (population), so the evolution features can act on a minority of windows and are missing elsewhere. The SRS lists only regions with sunspots; a region without spots on either day has no change. NOAA numbers come from NOAA_ARS, the definitive JSOC association fixed after the fact, as in the earlier SRS test: which SRS rows belong to a HARP is not known to be available at forecast time. Archived SRS text may differ from the bytes first issued. The relabelled labels were recovered through SGAS products and the same NOAA_ARS mapping, so features and labels share the source's region assignment errors. Seven features, one lag and one rule for the earlier product were fixed in advance; a null result says nothing about other choices, such as 48 or 72 hour changes or the full McIntosh transition. Consecutive hourly windows overlap in 11 of their 12 observation hours and HARPs repeat, and every window of a day shares one SRS, so counts are windows and positive runs, never independent events, and intervals are HARP-clustered. Already inspected years: adaptive development evidence, not an independent test.",
+  "prohibitions": [
+    "No label, label status or role in any SRS feature",
+    "No SRS product issued after the forecast time minus 30 minutes, for the SRS used or for the earlier SRS of a difference",
+    "No SRS product or HARP to NOAA month dated or issued at or after 2024-01-01",
+    "No missing earlier row encoded as no change, and no coverage flag as a model input",
+    "No evaluation label in any fit, calibration or threshold",
+    "No feature, changed field, lag or encoding other than the frozen list",
+    "No candidate, year, measure or reading added or dropped after results",
+    "No hyperparameter or recipe change, and no more than 24 constituent fits",
+    "No refit of the control and no change to its stored thresholds",
+    "No event list, flare time or download",
+    "No overwrite of an existing output directory",
+    "No model promotion, threshold, operating point or dashboard change",
+    "No reserved 2024-2025 access: no year after 2023 and no timestamp at or after 2024-01-01"
+  ],
+  "reserved_test_accessed": false
+}
