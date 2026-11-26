@@ -175,3 +175,4 @@ their technical names. Numeric tables retain the source document's number notati
 | Benimsenen hatta 72 saatlik tahmin ufku / 72-hour forecast horizon on the adopted pipeline | [Türkçe](horizon-72h-20261116.tr.md) | [English](horizon-72h-20261116.md) |
 
 | Benimsenen hatta alarm soğuma süresi ve alarm yanlış pozitiflerinin yönü / Alert cooldown and direction of alert false positives on the adopted pipeline | [Türkçe](alert-cooldown-20261125.tr.md) | [English](alert-cooldown-20261125.md) |
+| Benimsenen hatta HARP yaşam evresi özellikleri / HARP life-phase features on the adopted pipeline | [Türkçe](life-phase-20261126.tr.md) | [English](life-phase-20261126.md) |
