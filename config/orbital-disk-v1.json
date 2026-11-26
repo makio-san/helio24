@@ -1,0 +1,315 @@
+{
+  "id": "orbital-disk-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-26",
+  "goal": "Describe how the alert errors of the adopted development pipeline (relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json) depend on the UTC hour of the forecast time and on the region's distance from the central meridian, and test whether a refit of the unchanged recipes that sees the orbital phase (UTC hour harmonics at 24 and 12 hours), the causal SRS disk position, or both raises alert-tier precision without losing positive runs, with the disk position judged beyond a refit that only knows whether an SRS location exists.",
+  "why": "Idea issue #12. SHARP parameter series carry a 12 and 24 hour term from the orbital velocity of SDO and a centre-to-limb term from the region's disk position (Lee, Park and Moon 2018; Schuck et al. 2016; Hoeksema et al. 2014, as cited in the issue). Each of the 96 summaries is a statistic over 11 hours 48 minutes (helio24/data.py), close to one 12-hour period and half a 24-hour period, and no input of the adopted pipeline states the hour of day or the disk position. The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md) found that 0.7139 and 0.7561 of the alert false-positive windows of 2022 and 2023 lie within 72 hours of a positive window of the same HARP and a within-flaring-HARP AP of 0.4968 and 0.4057: part of the hour and day ranking inside a flaring HARP may be instrument, not Sun. The SRS context of config/region-context-v1.json used no location, and its flag-only refit passed more years than its content refit (docs/region-context-results-20261109.md), so availability alone can move results.",
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "pipeline_protocol_sha256": "d6e08a575193162afe59e068c568b51dee5e34c3950dcb5b6ed98b817e63d3bb",
+    "base_protocol": "config/walk-forward-v1.json",
+    "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+    "availability_protocol": "config/region-context-v1.json",
+    "availability_protocol_sha256": "8f09d2c28487e229d2cf490f93f546ead93d994aadcd7631c306363718242bdc",
+    "srs_directory": "data/region_summaries_20261109_r1",
+    "srs_manifest_sha256": "36c9ba1c475e32cf171b199a4905225d5525fdda21d9ccbaff25610e1eac3c49",
+    "mapping_directory": "data/harp_noaa_mapping_20261109_r1",
+    "mapping_manifest_sha256": "01b8f7cd0489233a49d06af33d5768ee7d256d8ca02dc05618e2b0dd86a27bf8",
+    "operating_point": "config/operating-point-v3.json",
+    "acceptance_source": "config/activity-history-v2.json",
+    "stored_files": "Per year <control>/<year>/predictions.parquet and <control>/<year>/thresholds.json; each must match its sha256 in artifact_hashes of the control report.json. models.joblib is never opened.",
+    "source_files": "Every SRS text file and every monthly mapping file must match its sha256 in its manifest (scripts.audit_region_context_sources.load_srs and load_mapping). Both manifests are checked for the period end and for any record dated at or after 2024-01-01 before a source file is opened.",
+    "labels": "Training, calibration and evaluation labels come from the relabelled table. The target column stored beside the control probabilities must equal the table label for every evaluation window, or the run stops.",
+    "other_inputs": "None. No event list, no flare time, no SGAS or HEK file, no HARP position keyword, no download."
+  },
+  "sources": {
+    "srs": "Issued NOAA SRS products 2010-05-01 to 2023-12-31, section I (regions with sunspots): NOAA number, location (latitude and central meridian distance in whole degrees, valid at 00:00 UTC of the product date as the header line 'Locations Valid at DD/2400Z' of the day before states) and area. Parsed by scripts.audit_region_context_sources.parse_srs.",
+    "mapping": "JSOC hmi.sharp_cea_720s daily HARPNUM, T_REC and NOAA_ARS 2010-05 to 2023-12, parsed by scripts.audit_region_context_sources.load_mapping.",
+    "counts": {
+      "srs_products": 4987,
+      "srs_rows": 17283,
+      "srs_problems": {
+        "unavailable": 4,
+        "no_issue_time": 2
+      },
+      "mapping_problems": {}
+    },
+    "counts_note": "Counted label-free from the two source directories before any fit. The runner recounts them and stops when one differs. One product (20100513SRS.txt) was issued at 2010-05-12 22:00 UTC with locations valid at 2010-05-13 00:00 UTC; it lists no section I row. All other products with an issue time were issued between 00:30 and 18:25 UTC of the product date with locations valid at 00:00 UTC of that date."
+  },
+  "leak_question": {
+    "question": "Issue #12 names four risks: srs_available alone moved results in the earlier SRS test; a position near the west limb also says the region is about to leave the record; a day-of-year or date feature would let the model learn the calendar of past flares; and the descriptive bands use evaluation labels.",
+    "finding": "Availability is strongly tied to the label by construction. A window can only be located when its HARP has a NOAA number in NOAA_ARS on the forecast date and that region is listed in section I of the available SRS, and the relabelled positives are associations of flares with NOAA regions (NOAA SGAS and JSOC NOAA_ARS). Counted on the training roles before any fit (population), 0.928 of the 2014 training positives (2932 of 3161) and 0.914 of the 2023 training positives (8695 of 9518) are located, against 0.459 and 0.439 of all training windows. NOAA_ARS is a definitive association written after the fact; JSOC states no availability time for it.",
+    "decision": "1. srs_flag, a refit on the 96 summaries plus disk__srs_available only, is a candidate and the matched reference of disk_position and both: a position gain counts only when the candidate also beats srs_flag by the frozen per-year rule in every year of its path. srs_flag meeting the goal is read as a refit or availability effect, never as a systematics effect. disk_position needs no separate missing-value flag beyond disk__srs_available, because the missing indicators of the unchanged imputer state exactly the same absence. 2. The absolute central meridian distance is used, not its sign; the east and west sides are reported only (by_disk.csv), so the descriptive part shows whether alert errors near the west limb differ, and the model is not told the side. 3. No date, day-of-year, month, year or season feature exists in any candidate; the orbital features are functions of the UTC time of day alone and are identical for two forecast times a whole number of days apart. The runner refuses a feature name that contains date, day, doy, month, year, calendar or season. 4. The descriptive part (UTC hour, disk band and side tables and the logit periodicity) is computed in phase 2 after thresholds are written and hashed, is never an input of fits, thresholds or the reading, and the runner refuses a protocol where descriptive.feeds_rule is not false. 5. The SRS availability rule of config/region-context-v1.json applies unchanged: the latest SRS whose issue time is at or before the forecast time minus 30 minutes, rows whose NOAA number is in the HARP's NOAA_ARS on the forecast date, and only SRS products dated before 2024-01-01.",
+    "residual_risk": "The NOAA_ARS association used for matching is fixed after the fact and is the same association the labels rest on; srs_flag bounds this channel but does not remove it from disk_position. The absolute latitude follows the solar cycle (active latitudes drift toward the equator over a cycle), so it carries some information about the cycle phase even without a date feature; this is stated, not removed. The hour of day can carry data quality information (SDO eclipse seasons cause daily data gaps near a fixed UTC hour, and quality rejections remove windows); missing_fraction is not a model input in any arm. The position is rotated at one fixed rate and ignores differential rotation and the B0 angle, so it is approximate by a few degrees over a day."
+  },
+  "population": {
+    "source": "Counted from the relabelled table with helio24.walk_forward.annual_fold and scripts.audit_orbital_disk.fold_population before any fit, with every label at or after the evaluation year hidden (scripts.audit_near_miss_weighting.blind). Label counts of training and calibration roles only; the srs_located counts use no label; nothing here depends on a prediction. Rows and positives equal the fold audits of the control report and the population of config/life-phase-v1.json. The runner recomputes all nine counts per year and stops when one differs.",
+    "coverage_counts": "<role>_srs_located: windows with disk__srs_available 1. train_positives_srs_located: training positives with disk__srs_available 1 (a training label count, shown for the leak question).",
+    "2014": {
+      "train_rows": 150935,
+      "train_positives": 3161,
+      "calibration_rows": 76710,
+      "calibration_positives": 1455,
+      "evaluation_rows": 78351,
+      "train_srs_located": 69264,
+      "calibration_srs_located": 35999,
+      "evaluation_srs_located": 32082,
+      "train_positives_srs_located": 2932
+    },
+    "2015": {
+      "train_rows": 228635,
+      "train_positives": 4616,
+      "calibration_rows": 78351,
+      "calibration_positives": 2436,
+      "evaluation_rows": 70554,
+      "train_srs_located": 106001,
+      "calibration_srs_located": 32082,
+      "evaluation_srs_located": 27965,
+      "train_positives_srs_located": 4306
+    },
+    "2016": {
+      "train_rows": 307980,
+      "train_positives": 7129,
+      "calibration_rows": 70554,
+      "calibration_positives": 1461,
+      "evaluation_rows": 43142,
+      "train_srs_located": 138742,
+      "calibration_srs_located": 27965,
+      "evaluation_srs_located": 17181,
+      "train_positives_srs_located": 6505
+    },
+    "2017": {
+      "train_rows": 379962,
+      "train_positives": 8638,
+      "calibration_rows": 43142,
+      "calibration_positives": 214,
+      "evaluation_rows": 19843,
+      "train_srs_located": 167677,
+      "calibration_srs_located": 17181,
+      "evaluation_srs_located": 9255,
+      "train_positives_srs_located": 7888
+    },
+    "2022": {
+      "train_rows": 466206,
+      "train_positives": 9141,
+      "calibration_rows": 29887,
+      "calibration_positives": 377,
+      "evaluation_rows": 65593,
+      "train_srs_located": 203687,
+      "calibration_srs_located": 13879,
+      "evaluation_srs_located": 29343,
+      "train_positives_srs_located": 8369
+    },
+    "2023": {
+      "train_rows": 496391,
+      "train_positives": 9518,
+      "calibration_rows": 65593,
+      "calibration_positives": 2190,
+      "evaluation_rows": 96991,
+      "train_srs_located": 217710,
+      "calibration_srs_located": 29343,
+      "evaluation_srs_located": 41627,
+      "train_positives_srs_located": 8695
+    }
+  },
+  "control": {
+    "id": "control",
+    "definition": "Stored ensemble probabilities and stored per-year watch and alert thresholds of artifacts/walk_forward_v2_20261112_r1. No refit, no new threshold. The stored pipeline is itself the refit of the same recipes on the same 96 summaries and folds, reproduced bit for bit (config/walk-forward-v2.json, must_reproduce), so it is the matched refit reference of orbital_phase, whose added features carry no region information."
+  },
+  "candidates": [
+    {
+      "id": "srs_flag",
+      "definition": "Refit of the unchanged walk-forward-v1 recipes on the 96 summaries plus disk__srs_available (97 features). Flag-only control for the availability of an SRS location and matched reference of disk_position and both."
+    },
+    {
+      "id": "orbital_phase",
+      "definition": "Refit on the 96 summaries plus the four orbital features of features.added.orbital_phase (100 features)."
+    },
+    {
+      "id": "disk_position",
+      "definition": "Refit on the 96 summaries plus disk__srs_available and the three position features of features.added.disk_position (100 features)."
+    },
+    {
+      "id": "both",
+      "definition": "Refit on the 96 summaries plus the orbital and the disk features together (104 features)."
+    }
+  ],
+  "features": {
+    "base": "The 96 SHARP summaries (helio24.data.FEATURE_COLUMNS), unchanged, in every candidate.",
+    "added": {
+      "srs_flag": [
+        "disk__srs_available"
+      ],
+      "orbital_phase": [
+        "orbit__sin_24h",
+        "orbit__cos_24h",
+        "orbit__sin_12h",
+        "orbit__cos_12h"
+      ],
+      "disk_position": [
+        "disk__srs_available",
+        "disk__abs_cmd_deg",
+        "disk__abs_latitude_deg",
+        "disk__cos_heliocentric_angle"
+      ],
+      "both": [
+        "orbit__sin_24h",
+        "orbit__cos_24h",
+        "orbit__sin_12h",
+        "orbit__cos_12h",
+        "disk__srs_available",
+        "disk__abs_cmd_deg",
+        "disk__abs_latitude_deg",
+        "disk__cos_heliocentric_angle"
+      ]
+    },
+    "orbital": {
+      "periods_hours": [
+        24,
+        12
+      ],
+      "definition": "h is the fractional UTC hour of day of forecast_time in [0, 24) (helio24.orbital_disk.utc_hour); orbit__sin_<P>h = sin(2 pi h / P), orbit__cos_<P>h = cos(2 pi h / P). Never missing. The calendar date is dropped."
+    },
+    "disk": {
+      "availability_safety_minutes": 30,
+      "rotation_deg_per_day": 13.2,
+      "bands": [
+        "cmd_0_30",
+        "cmd_30_60",
+        "cmd_over_60",
+        "no_srs_location"
+      ],
+      "sides": [
+        "east",
+        "west",
+        "no_srs_location"
+      ],
+      "definition": "helio24.orbital_disk.disk_position_features. For a window at forecast time t: the latest SRS issued at or before t minus 30 minutes, and its section I rows whose NOAA number is in the HARP's NOAA_ARS on the UTC date of t. With several matched rows the row with the largest area is used (ties: lowest NOAA number). Its central meridian distance (west positive) is rotated from 00:00 UTC of the SRS product date to t at 13.2 degrees per day (about the synodic Carrington rate) and clipped to -90 to 90 degrees.",
+      "disk__srs_available": "1 if a row matched, else 0.",
+      "disk__abs_cmd_deg": "Absolute rotated central meridian distance, 0 to 90 degrees. Missing without a matched row.",
+      "disk__abs_latitude_deg": "Absolute SRS latitude of the matched row, degrees. Missing without a matched row. Absolute so that the model is not told the hemisphere.",
+      "disk__cos_heliocentric_angle": "cos(latitude) times cos(rotated central meridian distance), the B0 angle neglected. Missing without a matched row.",
+      "missing_values": "Left missing; the median imputer with missing indicators of the unchanged recipes handles them, as it does for the 96 summaries."
+    },
+    "reporting_only": {
+      "columns": [
+        "disk_band",
+        "disk_side"
+      ],
+      "model_input": false
+    },
+    "fixed": "Periods, rotation rate, clip, row choice, bands and sides are fixed here before any result. The coverage counts and the SRS issue and validity times were checked label-free; no label beyond the training-role counts of population and no prediction was read for them. No feature is added or dropped after results.",
+    "changed_from_issue": "The issue's latitude is used as an absolute value (hemisphere not stated to the model); the issue's position features keep the issue's set otherwise. srs_flag is added as the flag-only refit the issue's leakage note asks for, which raises the fit budget from the issue's 36 to 48."
+  },
+  "training": "Expanding annual walk-forward with helio24.walk_forward.annual_fold on the relabelled table: training before the calibration year, calibration on the prior calendar year, evaluation on the year. Models and hyperparameters of config/walk-forward-v1.json unchanged (scripts.audit_activity_history_relabelled.fit_probabilities), sigmoid calibration on the prior year, ensemble 0.45 logistic and 0.55 XGBoost, no hyperparameter search. Orbital and disk features are computed once over all stored windows before the folds are built. Per candidate and year the watch threshold (prior-year window recall 0.90) and the alert threshold (prior-year precision 0.50, recall floor 0.10, fallback flag) are selected on calibration-year probabilities with scripts.rebuild_walk_forward_v2.select_thresholds and the tiers of config/walk-forward-v2.json.",
+  "order_of_operations": "Orbital and disk features are computed from forecast keys and the two source directories without any label column. Phase 1: for each year every label at or after the evaluation year is hidden before the fold is built; fits, calibration and thresholds follow. thresholds.json, features.json, disk_coverage.csv and probabilities_<year>.parquet (evaluation keys, candidate probabilities and the reporting-only band and side, no label) are written and their sha256 recorded in phase1.json. Phase 2: only then are evaluation labels read, the acceptance flags computed and the descriptive part written. After phase 2 the phase 1 files must still have the recorded hashes, or the run fails.",
+  "budget": {
+    "candidate_recipes": 4,
+    "years": 6,
+    "constituents": 2,
+    "constituent_fits": 48,
+    "hyperparameter_search": 0,
+    "added_features": {
+      "srs_flag": 1,
+      "orbital_phase": 4,
+      "disk_position": 4,
+      "both": 8
+    },
+    "new_thresholds": "2 tiers x 4 candidates x 6 years, each selected once on the prior year",
+    "descriptive_fits": 0,
+    "downloads": 0,
+    "candidates_after_results": 0,
+    "stop_rule": "The runner counts constituent fits and stops when the count would exceed or does not equal 48."
+  },
+  "years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2022,
+    2023
+  ],
+  "alert_fallback_years": [
+    2022
+  ],
+  "years_note": "The years evaluated by the adopted pipeline. 2022 is an alert fallback year of the control: its stored alert threshold is the best-precision fallback because prior-year precision 0.50 was unreachable. The runner stops when the stored fallback flags differ from this list. Fallback flags of the candidates' own alert thresholds are reported per year and marked in the report. 2018 to 2021 are skipped by the adopted pipeline and stay out.",
+  "descriptive": {
+    "feeds_rule": false,
+    "fits": 0,
+    "files": {
+      "by_hour.csv": "Per year, arm (control and every candidate) and UTC hour of forecast_time (0 to 23): windows, positives, alert TP, FP, FN, precision and recall.",
+      "by_disk.csv": "Per year, arm and disk_band (cmd_0_30, cmd_30_60, cmd_over_60, no_srs_location) and per disk_side (east, west, no_srs_location): the same counts.",
+      "logit_periodicity.csv": "Per year and arm: the within-HARP share of the total variance of the logit of the probability, and the share of the within-HARP variance explained by least squares on the HARP-demeaned sine and cosine of the UTC hour at 24 hours, at 12 hours, and at both together. Label-free."
+    },
+    "note": "Evaluation labels enter by_hour.csv and by_disk.csv. They are descriptive, computed after phase 1 was hashed, and never enter a fit, a threshold, the acceptance flags or the reading. Bands and hours are many small cells of overlapping windows; no interval is given and no difference between cells is judged."
+  },
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {
+      "precision_higher_than_control": true,
+      "missed_positive_runs_not_above_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "per_year_primary_source": "Identical to acceptance.per_year_primary of config/activity-history-v2.json and computed by the same function (scripts.audit_activity_history_relabelled.acceptance). A candidate year without any alert window has no precision and does not meet it.",
+    "all_year_primary": "per_year_primary against control holds in all six years for the same candidate",
+    "cycle25_primary": "per_year_primary against control holds in both 2022 and 2023 for the same candidate",
+    "bootstrap": "Paired HARP-cluster bootstrap of the alert precision difference candidate minus control, 1000 draws, seed 24, 2.5 and 97.5 percent quantiles (scripts.audit_activity_history_relabelled.paired_precision_bootstrap). A missing interval counts as not above 0.",
+    "goal_against_control": "A candidate meets the goal against control by the all-year path (all_year_primary) or by the cycle-25 path (cycle25_primary with the bootstrap lower bound above 0 in both 2022 and 2023).",
+    "beats_srs_flag": "In a year, disk_position (or both) beats srs_flag when per_year_primary holds with srs_flag in the place of control: alert precision higher, missed positive runs not above, window recall at most 0.02 lower. Each candidate uses its own prior-year thresholds.",
+    "effects": {
+      "orbital_phase": "orbital_phase meets goal_against_control.",
+      "disk_position": "disk_position meets goal_against_control by a path and beats srs_flag in every year of that same path (all six years for the all-year path, 2022 and 2023 for the cycle-25 path).",
+      "both": "both meets goal_against_control by a path and beats srs_flag in every year of that same path."
+    },
+    "secondary": "Reported, not judged: years in which alert precision is at least 0.50 per candidate, against the control (3: 2014, 2015, 2017 per docs/activity-history-relabelled-20261112.md); within-flaring-HARP AP and the alert FP share within 72 hours of a positive window of the same HARP.",
+    "also_reported": [
+      "Per year, arm and tier (watch and alert): TP, FP, FN, TN, precision with delivered window recall, HARP-cluster intervals, positive runs, missed positive runs, accuracy and always-negative accuracy, fallback flag",
+      "Average precision, region AP and within-flaring-HARP AP (scripts.audit_cycle25.decomposition), descriptive",
+      "Alert FP origin: share from never-flaring HARPs and share within 72 hours of a positive window of the same HARP (scripts.audit_cycle25_relabelled.alert_false_positive_origin), descriptive",
+      "precision_at_control_recall: the candidate's precision at the evaluation-year threshold that delivers the control's alert recall; an oracle-matched description that uses evaluation labels and is never deployable",
+      "Paired HARP-cluster bootstrap interval of the alert precision difference disk_position minus srs_flag and both minus srs_flag, descriptive",
+      "The descriptive files by_hour.csv, by_disk.csv and logit_periodicity.csv",
+      "disk_coverage.csv: per year and role the rows, the located windows, the windows per disk band and the missing count of every added feature"
+    ],
+    "result_meaning": "A met goal justifies only an owner decision on a separate adoption protocol. It never changes alerts, thresholds, the operating point, the dashboard or the adopted pipeline."
+  },
+  "reading": {
+    "S1_systematics_help": "At least one of the three effects of acceptance.effects holds: the orbital phase, the disk position beyond the availability flag, or both together beyond the flag raise alert precision by the frozen rule. Every effect that holds is named; none is selected. Outcome label result:goal-met.",
+    "S2_refit_or_flag_only": "Otherwise, at least one candidate (srs_flag, disk_position or both) meets goal_against_control: there is a gain over the stored pipeline that is not attributed to the systematics features, because srs_flag shares it or the position candidate does not beat srs_flag on its path. Every candidate that meets the goal is named; none is selected. Outcome label result:partial.",
+    "S3_no_gain": "Otherwise: no candidate raises alert precision by the frozen rule. Reported as is, with the secondary and descriptive measures showing where it falls short. A flat descriptive part with no candidate gain closes this route. Outcome label result:no-gain.",
+    "exclusive": "The rules are applied in this order; the first that holds is the reading, so every result falls in exactly one."
+  },
+  "acceptance_rule": {
+    "description": "Accept when at least one systematics effect of acceptance.effects holds (reading S1_systematics_help); reject otherwise (S2_refit_or_flag_only or S3_no_gain).",
+    "metric_path": "decision.systematics_effects_met",
+    "op": ">=",
+    "value": 1
+  },
+  "measures": [
+    "Alert and watch tier per year for control, srs_flag, orbital_phase, disk_position and both: the measures listed under acceptance.also_reported.",
+    "The per-year acceptance flags against control for every candidate and against srs_flag for disk_position and both, with the paired bootstrap intervals.",
+    "The descriptive part of descriptive.files, which no rule reads."
+  ],
+  "development_basis": "Relabelled table, config/walk-forward-v2.json and config/operating-point-v3.json. The report gives precision with delivered recall and missed positive runs per year and tier, marks alert fallback years, and keeps the frozen-label result of docs/region-context-results-20261109.md (SRS context without location on frozen labels, recall 0.95 gate, episode precision) visible for comparison (copied, not recomputed; a different basis, gate and measure, never pooled).",
+  "limits": "The control is the stored pipeline and is not refitted; it is the 96-feature refit of the same recipes. srs_flag is the availability control of the position candidates only. Disk position exists only for windows whose HARP carries a NOAA number listed in the available SRS (population, about 0.40 to 0.47 of the windows per fold role), and those windows hold more than 0.9 of the training positives; position comes from the SRS at 00:00 UTC rotated at one fixed rate, not from the HARP's own coordinates, which the allowed inputs do not hold. The issue's east to west asymmetry (a region near the west limb is about to leave the record) is reported through disk_side and not given to the model. The absolute latitude follows the cycle phase and the hour of day can carry data quality information (leak_question.residual_risk). The orbital features describe the UTC hour only; a 12 or 24 hour systematic in the summaries is not removed from them, the model is only told the phase. Periods, rate, row choice and bands were fixed in advance; a null result says nothing about other encodings, a correction of the summaries themselves or HARP coordinates. Consecutive hourly windows overlap in 11 of their 12 observation hours and HARPs repeat, so counts are windows and positive runs, never independent events, and intervals are HARP-clustered. The relabelled labels are an association by NOAA SGAS and JSOC NOAA_ARS, not ground truth. Already inspected years: adaptive development evidence, not an independent test.",
+  "prohibitions": [
+    "No label, label status or role in any orbital or disk feature",
+    "No date, day-of-year, month, year or season feature; the orbital features are identical for two forecast times a whole number of days apart",
+    "No disk band, disk side or descriptive table as a model input, a threshold input or an input of the reading",
+    "No SRS issued later than the forecast time minus 30 minutes, no SRS product dated at or after 2024-01-01 and no mapping month after 2023-12",
+    "No evaluation label in any fit, calibration or threshold",
+    "No feature, period, rotation rate, band or row choice other than the frozen ones",
+    "No candidate, year, measure or reading added or dropped after results",
+    "No hyperparameter or recipe change, and no more than 48 constituent fits",
+    "No refit of the control and no change to its stored thresholds",
+    "No event list, flare time, HARP coordinate keyword or download",
+    "No overwrite of an existing output directory",
+    "No model promotion, threshold, operating point or dashboard change",
+    "No reserved 2024-2025 access: no year after 2023 and no timestamp at or after 2024-01-01"
+  ],
+  "reserved_test_accessed": false
+}
