@@ -558,5 +558,12 @@
     "source_sha256": "a45ffd0f542afd08e492edbf9cdb65fab07004aabf58eba81b9b02d7267c07b8",
     "en": "near-miss-weighting-20261126.md",
     "tr": "near-miss-weighting-20261126.tr.md"
+  },
+  {
+    "id": "srs-evolution-20261127",
+    "source_language": "en",
+    "source_sha256": "45f852e5bf7c78d99d918000b860beb3977f0436cf66e14a8da463835011dd2b",
+    "en": "srs-evolution-20261127.md",
+    "tr": "srs-evolution-20261127.tr.md"
   }
 ]
