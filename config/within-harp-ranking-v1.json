@@ -1,0 +1,277 @@
+{
+  "id": "within-harp-ranking-v1",
+  "status": "frozen_before_any_candidate_result",
+  "date": "2026-11-27",
+  "goal": "Test whether a second score trained only on within-HARP comparisons (a pairwise ranking objective with the HARP as query group, or a binary model trained only on windows within 72 hours before a flare of the same HARP), stacked with the unchanged control score on the prior year, raises alert-tier precision on the adopted development basis (relabelled table, config/walk-forward-v2.json, config/operating-point-v3.json) without losing positive runs, beyond what restacking the control score alone does.",
+  "why": "Idea issue #19. The relabelled cycle-25 diagnostic (docs/cycle25-diagnostic-relabelled-20261112.md) found region AP 0.8315 and 0.8655 against within-flaring-HARP AP 0.4968 and 0.4057 in 2022 and 2023: the alert tier finds the flaring regions and orders the hours inside them poorly. Every model so far was trained with one pooled binary loss in which most of the gradient separates flaring from quiet regions. Reweighting that loss toward near-miss negatives (config/near-miss-weighting-v1.json, PR #16, reading N3_no_gain) left the within-flaring-HARP AP where it was, and alert cooldowns (docs/alert-cooldown-20261125.md, reading C3_no_gain) removed TP and FP windows together, with lingering windows the largest alert FP class in 2015, 2016, 2017, 2022 and 2023. This protocol changes neither the features nor the 24-hour target; it changes which comparisons the training loss makes, and keeps the control score as a separate input of a prior-year stack.",
+  "evidence": {
+    "table": "artifacts/relabelled_development_20261111_r1",
+    "table_report_sha256": "2847215ce5a5dedb9ebb93d7fa0ba1bcb7b4a7bf9fdcd80bab95e63726b9ac43",
+    "control": "artifacts/walk_forward_v2_20261112_r1",
+    "control_report_sha256": "c2b326d90253e824e9dd324158933e01c1216788653b1d284bf22850f67f76f1",
+    "pipeline_protocol": "config/walk-forward-v2.json",
+    "pipeline_protocol_sha256": "d6e08a575193162afe59e068c568b51dee5e34c3950dcb5b6ed98b817e63d3bb",
+    "base_protocol": "config/walk-forward-v1.json",
+    "base_protocol_sha256": "7c48fd7381456bee22f928b44da537880f06b4d70fd2b38b822279474c616303",
+    "operating_point": "config/operating-point-v3.json",
+    "operating_point_sha256": "8e157fba3ef3aae61e3f0226b37f7d332c8cb0d8d71ee73f5b0adf0923a9e6e7",
+    "label_construction_source": "config/horizon-72h-v1.json",
+    "label_construction_source_sha256": "a7152ada2ac353d853dfb7710721604b56d176b6475e383b2489e126555c3853",
+    "acceptance_source": "config/activity-history-v2.json",
+    "acceptance_source_sha256": "4c3da3f030a6154585c016e03277654e8ca1a86dd8275170deadd0b8d149064a",
+    "stored_files": "Per year <control>/<year>/predictions.parquet and <control>/<year>/thresholds.json; each must match its sha256 in artifact_hashes of the control report.json. models.joblib is never opened: the control scores of the calibration year come from a refit of the two control constituents that must reproduce the stored control (see control_refit).",
+    "labels": "Training, calibration and evaluation labels come from the relabelled table. The target column stored beside the control probabilities must equal the table label for every evaluation window, or the run stops. In phase 1 only the harp, forecast_time and ensemble columns of the stored predictions are read."
+  },
+  "population": {
+    "source": "Counted from the relabelled table with helio24.walk_forward.annual_fold, helio24.within_harp.ranking_rows and scripts.audit_within_harp_ranking.timing_rows before any fit, with every label at or after the evaluation year hidden. Label counts of training and calibration roles only; nothing here depends on a prediction. train_rows, calibration_rows and evaluation_rows equal the fold audits of the control report. The runner recomputes train_rows, train_positives, flaring_training_harps, ranker_rows, timing_rows and timing_positives and stops when one differs.",
+    "2014": {
+      "train_rows": 150935,
+      "train_positives": 3161,
+      "flaring_training_harps": 60,
+      "ranker_rows": 16333,
+      "ranker_positives": 3161,
+      "timing_rows": 5295,
+      "timing_positives": 2652,
+      "timing_negatives": 2643,
+      "timing_label_unknown": 53562,
+      "timing_horizon_purged": 0,
+      "calibration_rows": 76710,
+      "calibration_positives": 1455,
+      "evaluation_rows": 78351
+    },
+    "2015": {
+      "train_rows": 228635,
+      "train_positives": 4616,
+      "flaring_training_harps": 93,
+      "ranker_rows": 24977,
+      "ranker_positives": 4616,
+      "timing_rows": 7766,
+      "timing_positives": 3800,
+      "timing_negatives": 3966,
+      "timing_label_unknown": 81133,
+      "timing_horizon_purged": 0,
+      "calibration_rows": 78351,
+      "calibration_positives": 2436,
+      "evaluation_rows": 70554
+    },
+    "2016": {
+      "train_rows": 307980,
+      "train_positives": 7129,
+      "flaring_training_harps": 138,
+      "ranker_rows": 36750,
+      "ranker_positives": 7129,
+      "timing_rows": 11838,
+      "timing_positives": 5860,
+      "timing_negatives": 5978,
+      "timing_label_unknown": 109106,
+      "timing_horizon_purged": 0,
+      "calibration_rows": 70554,
+      "calibration_positives": 1461,
+      "evaluation_rows": 43142
+    },
+    "2017": {
+      "train_rows": 379962,
+      "train_positives": 8638,
+      "flaring_training_harps": 167,
+      "ranker_rows": 44528,
+      "ranker_positives": 8638,
+      "timing_rows": 14232,
+      "timing_positives": 7006,
+      "timing_negatives": 7226,
+      "timing_label_unknown": 134042,
+      "timing_horizon_purged": 0,
+      "calibration_rows": 43142,
+      "calibration_positives": 214,
+      "evaluation_rows": 19843
+    },
+    "2022": {
+      "train_rows": 466206,
+      "train_positives": 9141,
+      "flaring_training_harps": 174,
+      "ranker_rows": 46560,
+      "ranker_positives": 9141,
+      "timing_rows": 14977,
+      "timing_positives": 7389,
+      "timing_negatives": 7588,
+      "timing_label_unknown": 163598,
+      "timing_horizon_purged": 0,
+      "calibration_rows": 29887,
+      "calibration_positives": 377,
+      "evaluation_rows": 65593
+    },
+    "2023": {
+      "train_rows": 496391,
+      "train_positives": 9518,
+      "flaring_training_harps": 186,
+      "ranker_rows": 49602,
+      "ranker_positives": 9518,
+      "timing_rows": 15803,
+      "timing_positives": 7741,
+      "timing_negatives": 8062,
+      "timing_label_unknown": 174484,
+      "timing_horizon_purged": 0,
+      "calibration_rows": 65593,
+      "calibration_positives": 2190,
+      "evaluation_rows": 96991
+    }
+  },
+  "control": {
+    "id": "control",
+    "definition": "Stored ensemble probabilities and stored per-year watch and alert thresholds of artifacts/walk_forward_v2_20261112_r1. No new threshold. Its evaluation measures use the stored probabilities."
+  },
+  "control_refit": {
+    "purpose": "The stack needs the control ensemble logit on the calibration year, which the stored predictions do not hold. The two control constituents are refitted per year exactly as scripts.rebuild_walk_forward_v2 did (unchanged walk-forward-v1 recipes, unweighted sigmoid calibration on the prior year, ensemble 0.45 logistic and 0.55 XGBoost).",
+    "max_abs_difference": 1e-09,
+    "threshold_tolerance": 1e-09,
+    "checks": "Per year, before any evaluation label is read: the refitted evaluation ensemble probability of every evaluation window differs from the stored ensemble column by at most max_abs_difference, and the watch and alert thresholds selected on the refitted calibration-year ensemble equal the stored thresholds.json within threshold_tolerance with the same alert fallback flag. A year that fails stops the run; the refit is never used in place of the stored control."
+  },
+  "candidates": [
+    {
+      "id": "restack_control",
+      "definition": "Matched control for the stacking step. The calibration-year logistic stack with the control ensemble logit as its only input. It separates the effect of refitting a second stage on prior-year labels from new content. Because the stack is monotone in one input and thresholds are selected by rank on the same calibration year, its alerts are expected to stay close to the control's; alert_windows_differing_from_control is reported."
+    },
+    {
+      "id": "harp_ranker",
+      "definition": "XGBoost rank:pairwise with qid = HARP, trained per year on the training-role windows of flaring training HARPs (at least one positive training window) with the 24-hour target, the 96 summaries and the walk-forward-v1 XGBoost settings (scale_pos_weight and eval_metric dropped, since they belong to the binary objective). Never-flaring HARPs would give no pair and are left out. Its raw margin, applied to every calibration and evaluation window, and the control ensemble logit enter the stack."
+    },
+    {
+      "id": "timing_specialist",
+      "definition": "XGBoost binary:logistic with the unchanged walk-forward-v1 recipe (median imputer and XGBClassifier), trained per year only on training-role windows whose 72-hour label is positive, against the unchanged 24-hour target. It learns 'this day or one of the two days before' given that the region flares within three days. Its raw margin, applied to every calibration and evaluation window, and the control ensemble logit enter the stack."
+    }
+  ],
+  "harp_ranker": {
+    "estimator": "helio24.within_harp.ranker_model: SimpleImputer(strategy='median', add_indicator=True) then xgboost.XGBRanker with n_estimators 200, max_depth 3, learning_rate 0.04, min_child_weight 5, reg_lambda 5, gamma 0, subsample 1, colsample_bytree 1, tree_method hist, n_jobs 2, random_state 24, objective rank:pairwise, lambdarank_pair_method topk with no truncation (every pair inside a query group; pairs with equal labels carry no gradient).",
+    "query_groups": "helio24.within_harp.ranking_rows on the training role only: rows ordered by HARP and forecast time, qid = HARP number. Only training-role rows and labels enter; a positive window of the same HARP in the calibration or evaluation period never makes a HARP flaring here.",
+    "objective": {
+      "name": "rank:pairwise",
+      "lambdarank_bias_norm": "1",
+      "lambdarank_normalization": "1",
+      "lambdarank_num_pair_per_sample": "4294967295",
+      "lambdarank_pair_method": "topk",
+      "lambdarank_score_normalization": "1",
+      "lambdarank_unbiased": "0",
+      "ndcg_exp_gain": "1"
+    },
+    "objective_check": "After each fit the runner reads the objective block of the booster configuration and stops when it differs from objective (the XGBoost 3.4.1 values in the project venv)."
+  },
+  "timing_subset": {
+    "horizon_hours": 72,
+    "label_construction": "scripts.audit_horizon_72h.extend_labels, the label_construction of config/horizon-72h-v1.json, applied to the training-role rows of the fold alone: the 72-hour label of the window at t is the OR of the 24-hour targets of the training windows of the same HARP with forecast time in [t, t+48h], known only when the window at t+48h is itself a training window and the existing windows cover [t, t+72h) without a hole. Windows with an unknown 72-hour label are left out of the subset (timing_label_unknown).",
+    "purge": "prediction_end = forecast_time plus 72 hours for subset membership; a window whose 72-hour horizon reaches the calibration role is purged from the subset (timing_horizon_purged).",
+    "membership": "Training windows with a known positive 72-hour label; the fit target is their 24-hour target. Membership is used for training only and never at prediction time: the margin is applied to every window."
+  },
+  "stack": {
+    "inputs": {
+      "restack_control": [
+        "control_logit"
+      ],
+      "harp_ranker": [
+        "control_logit",
+        "ranker_margin"
+      ],
+      "timing_specialist": [
+        "control_logit",
+        "timing_margin"
+      ]
+    },
+    "control_logit": "logit of the refitted control ensemble probability clipped to [1e-9, 1-1e-9] (helio24.within_harp.control_logit); on the evaluation year the refit equals the stored control by control_refit.",
+    "logistic": {
+      "C": 1.0,
+      "solver": "lbfgs",
+      "max_iter": 2000,
+      "random_state": 24
+    },
+    "definition": "helio24.within_harp.fit_stack: StandardScaler then LogisticRegression with the settings above, fitted per year and candidate on the calibration-year rows and labels only. The stacked probability is the candidate's probability on the calibration and evaluation years. No sign constraint, no interaction, no second stack."
+  },
+  "features": "The 96 SHARP summaries only (helio24.data.FEATURE_COLUMNS); no context, history or sequence features.",
+  "training": "Expanding annual walk-forward with helio24.walk_forward.annual_fold on the relabelled table: training before the calibration year, calibration on the prior calendar year, evaluation on the year. No hyperparameter search. Per candidate and year the watch threshold (prior-year window recall 0.90) and the alert threshold (prior-year precision 0.50, recall floor 0.10, fallback flag) are selected on the calibration-year stacked probabilities with scripts.rebuild_walk_forward_v2.select_thresholds and the tiers of config/walk-forward-v2.json.",
+  "order_of_operations": "Phase 1: for each year every label at or after the evaluation year is hidden before the fold is built; query groups, timing subset, control refit and its reproduction checks, specialist fits, stacks and thresholds follow. thresholds.json, stacks.json, population.csv and probabilities_<year>.parquet (evaluation keys, control logit, specialist margins and candidate probabilities, no label) are written and their sha256 recorded in phase1.json. Phase 2: only then are evaluation labels read. After phase 2 the phase 1 files must still have the recorded hashes, or the run fails.",
+  "budget": {
+    "candidates": 3,
+    "years": 6,
+    "constituent_fits": 24,
+    "constituent_fits_detail": "per year 2 control refits (logistic and XGBoost), 1 harp_ranker and 1 timing_specialist XGBoost",
+    "stack_fits": 18,
+    "stack_fits_detail": "per year one calibration-year logistic stack for each of the 3 candidates",
+    "hyperparameter_search": 0,
+    "downloads": 0,
+    "new_thresholds": "2 tiers x 3 candidates x 6 years, each selected once on the prior year",
+    "candidates_after_results": 0,
+    "stop_rule": "The runner counts constituent fits and stack fits and stops when a count would exceed or does not equal its budget."
+  },
+  "years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2022,
+    2023
+  ],
+  "alert_fallback_years": [
+    2022
+  ],
+  "years_note": "The years evaluated by the adopted pipeline. 2022 is an alert fallback year of the control: its stored alert threshold is the best-precision fallback because prior-year precision 0.50 was unreachable. The runner stops when the stored fallback flags differ from this list. Fallback flags of the candidates' own alert thresholds are reported per year and marked in the report. 2018 to 2021 are skipped by the adopted pipeline and stay out.",
+  "acceptance": {
+    "tier": "alert",
+    "per_year_primary": {
+      "precision_higher_than_control": true,
+      "missed_positive_runs_not_above_control": true,
+      "window_recall_drop_at_most": 0.02
+    },
+    "per_year_primary_source": "Identical to acceptance.per_year_primary of config/activity-history-v2.json and computed by the same function (scripts.audit_activity_history_relabelled.acceptance). A candidate year without any alert window has no precision and does not meet it.",
+    "all_year_primary": "per_year_primary against control holds in all six years for the same candidate",
+    "cycle25_primary": "per_year_primary against control holds in both 2022 and 2023 for the same candidate",
+    "bootstrap": "Paired HARP-cluster bootstrap of the alert precision difference candidate minus control, 1000 draws, seed 24, 2.5 and 97.5 percent quantiles (scripts.audit_activity_history_relabelled.paired_precision_bootstrap). A missing interval counts as not above 0.",
+    "goal_against_control": "A candidate meets the goal against control by the all-year path (all_year_primary) or by the cycle-25 path (cycle25_primary with the bootstrap lower bound above 0 in both 2022 and 2023).",
+    "beats_restack": "In a year, harp_ranker or timing_specialist beats restack_control when per_year_primary holds with restack_control in the place of control: alert precision higher, missed positive runs not above, window recall at most 0.02 lower. Each candidate uses its own prior-year thresholds.",
+    "specific_goal": "harp_ranker or timing_specialist meets the goal against control by a path and beats restack_control in every year of that same path (all six years for the all-year path, 2022 and 2023 for the cycle-25 path). Each specialist is judged on its own; both are reported.",
+    "secondary": "Reported, not judged: years in which alert precision is at least 0.50 per candidate, against the control (3: 2014, 2015, 2017 per docs/activity-history-relabelled-20261112.md).",
+    "descriptive_named_in_advance": [
+      "Within-flaring-HARP AP of each candidate's stacked probability and of each specialist's raw margin (scripts.audit_cycle25.decomposition), per year, against the control (0.4968 and 0.4057 in 2022 and 2023 per docs/cycle25-diagnostic-relabelled-20261112.md). within_harp_route_closed_for_96_summaries is true when neither specialist's stacked probability has a within-flaring-HARP AP above the control in both 2022 and 2023; it is descriptive and never changes the reading.",
+      "Alert FP share within 72 hours of a positive window of the same HARP and share from never-flaring HARPs (scripts.audit_cycle25_relabelled.alert_false_positive_origin)",
+      "Alert FP shares of the direction classes early, lingering, between, flaring_harp_other and never_flaring_harp (scripts.audit_alert_cooldown.direction_classes)"
+    ],
+    "also_reported": [
+      "Per year, candidate and tier (watch and alert): TP, FP, FN, TN, precision with delivered window recall, HARP-cluster intervals, positive runs, missed positive runs, alert episodes, hit episodes, median alert delay in hours, accuracy and always-negative accuracy, fallback flag",
+      "Average precision and region AP, descriptive",
+      "precision_at_control_recall: the candidate's precision at the evaluation-year threshold that delivers the control's alert recall; an oracle-matched description that uses evaluation labels and is never deployable",
+      "Paired HARP-cluster bootstrap intervals of the alert precision difference of each specialist minus restack_control, descriptive",
+      "alert_windows_differing_from_control per candidate and year",
+      "Per year: the population counts above and the stack coefficients of every candidate"
+    ],
+    "result_meaning": "A met goal justifies only an owner decision on a separate adoption protocol. It never changes alerts, thresholds, the operating point, the dashboard or the adopted pipeline."
+  },
+  "reading": {
+    "S1_within_harp_helps": "harp_ranker or timing_specialist meets specific_goal: a score learned from within-HARP comparisons, stacked with the control on the prior year, raises alert precision by the frozen rule beyond restacking the control alone. Every specialist that meets it is named; none is selected. Outcome label result:goal-met.",
+    "S2_restack_or_unattributed": "Otherwise, restack_control, harp_ranker or timing_specialist meets goal_against_control: there is a gain over the stored pipeline that is not attributed to within-HARP content (the restack shares it, or no specialist beats the restack in every year of its path). Every candidate that meets the goal is named; none is selected. Outcome label result:partial.",
+    "S3_no_gain": "Otherwise: no candidate raises alert precision by the frozen rule. Reported as is, with the secondary and descriptive measures showing where it falls short. Outcome label result:no-gain.",
+    "exclusive": "The rules are applied in this order; the first that holds is the reading, so every result falls in exactly one."
+  },
+  "acceptance_rule": {
+    "description": "Accept when at least one of harp_ranker and timing_specialist meets specific_goal (reading S1_within_harp_helps); reject otherwise (S2_restack_or_unattributed or S3_no_gain).",
+    "metric_path": "decision.specific_candidates_meeting_goal",
+    "op": ">=",
+    "value": 1
+  },
+  "measures": [
+    "Alert and watch tier per year for control, restack_control, harp_ranker and timing_specialist: the measures listed under acceptance.also_reported and acceptance.descriptive_named_in_advance.",
+    "The per-year acceptance flags against control for all three candidates and against restack_control for both specialists, with the paired bootstrap intervals."
+  ],
+  "development_basis": "Relabelled table, config/walk-forward-v2.json and config/operating-point-v3.json. The report gives precision with delivered recall and missed positive runs per year and tier, marks alert fallback years, and keeps the frozen-label results of the stored pipeline visible for comparison (copied from tracked reports, not recomputed; a different basis, never pooled).",
+  "limits": "The stack is fitted and the thresholds are selected on the same calibration year, and the control's sigmoid calibration was fitted on that year too; restack_control carries the same reuse and is the matched control for it. The ranking margin has no calibrated scale and enters only through the stack. harp_ranker sees only flaring training HARPs and timing_specialist only the 72-hour positive training windows (about a third of the training windows have an unknown 72-hour label and are left out, see population), so both learn from far fewer rows than the control; their margins on never-flaring regions are extrapolations that the stack must weigh. The timing subset inherits the knowability rule of config/horizon-72h-v1.json, and which windows exist depends in part on outcome-based exclusions of the table; this is a training-only limit, not an input at prediction time. One objective setting per specialist and one stack were fixed in advance; a null result says nothing about other rankers, other subsets or other features. Consecutive hourly windows overlap in 23 of their 24 hours and HARPs repeat, so counts are windows and positive runs, never independent events, and intervals are HARP-clustered. The relabelled labels are an association by NOAA SGAS and JSOC NOAA_ARS, not ground truth. Already inspected years: adaptive development evidence, not an independent test.",
+  "prohibitions": [
+    "No evaluation label in any query group, subset, fit, stack or threshold",
+    "No calibration-role or evaluation-role label in query groups or timing-subset membership: training role only",
+    "No stack fitted on any row outside the calibration year",
+    "No ranking margin used without the stack",
+    "No candidate, year, measure or reading added or dropped after results",
+    "No hyperparameter, feature, objective or recipe change, and no more than 24 constituent fits and 18 stack fits",
+    "No change to the control's stored probabilities or thresholds; the refit only supplies calibration-year control scores and must reproduce the stored control",
+    "No models.joblib opened",
+    "No download",
+    "No overwrite of an existing output directory",
+    "No model promotion, threshold, operating point or dashboard change",
+    "No reserved 2024-2025 access: no year after 2023 and no timestamp at or after 2024-01-01"
+  ],
+  "reserved_test_accessed": false
+}
