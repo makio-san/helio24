@@ -177,3 +177,5 @@ their technical names. Numeric tables retain the source document's number notati
 | Benimsenen hatta alarm soğuma süresi ve alarm yanlış pozitiflerinin yönü / Alert cooldown and direction of alert false positives on the adopted pipeline | [Türkçe](alert-cooldown-20261125.tr.md) | [English](alert-cooldown-20261125.md) |
 
 | Benimsenen hatta alarm katmanında ramak kala eğitim ağırlıkları / Near-miss training weights at the alert tier on the adopted pipeline | [Türkçe](near-miss-weighting-20261126.tr.md) | [English](near-miss-weighting-20261126.md) |
+
+| Benimsenen hatta alarm katmanında yayımlanan SRS bölge tanımının 24 saatlik değişimi / 24-hour evolution of the issued SRS region description at the alert tier on the adopted pipeline | [Türkçe](srs-evolution-20261127.tr.md) | [English](srs-evolution-20261127.md) |
