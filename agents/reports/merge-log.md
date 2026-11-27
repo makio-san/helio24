@@ -13,3 +13,6 @@ One line per pull request the release-merger considered. Appended by the merger 
 | 2026-11-26T20:29Z | #21 | agents/protocol-author-2026-11-26-2 | 1e11c24 | merged | all gates hold; 442 passed, 6 skipped on the merged result; evidence: none |
 | 2026-11-26T20:31Z | #16 | agents/experimenter-2026-11-26 | 1aace07 | merged | all gates hold; 442 passed, 6 skipped and publisher passed on the merged result; protocol near-miss-weighting-v1 (7737cd2) on main; evidence promoted: near_miss_weighting_20261126_r1, bilingual_reports_20261126_r1 |
 | 2026-11-26T20:32Z | #20 | agents/experimenter-2026-11-26-2 | 9d1e507 | skipped | one execution PR per run; #16 merged this run |
+| 2026-11-27T11:26Z | #25 | agents/protocol-author-2026-11-27 | 12ed277 | merged | all gates hold; 478 passed, 6 skipped on the merged result; evidence: none |
+| 2026-11-27T11:28Z | #26 | agents/experimenter-2026-11-27 | cdc2f56 | merged | all gates hold; 478 passed, 6 skipped and publisher passed on the merged result; protocol srs-evolution-v1 (90b88b0) on main; evidence promoted: srs_evolution_20261127_r1, bilingual_reports_20261127_r1 |
+| 2026-11-27T11:30Z | #20 | agents/experimenter-2026-11-26-2 | 9d1e507 | skipped | conflicts with main in agents/state/protocol-ledger.md, docs/reports.json, docs/reports.md; commented on the PR; also one execution PR per run, #26 merged this run |
